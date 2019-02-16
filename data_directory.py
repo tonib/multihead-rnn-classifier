@@ -29,12 +29,12 @@ class DataDirectory:
             self._files.append( DataFile( data_definition , file_name ) )
 
 
-    def traverse_sequences( self, padding_element : List , sequence_length : int ): 
+    def traverse_sequences( self, data_definition : ModelDataDefinition ): 
 
         shuffled_files = self._files.copy()
         random.shuffle(shuffled_files)
         
         for data_file in shuffled_files:
-            for row in data_file.get_sequences( padding_element , sequence_length ):
+            for row in data_file.get_sequences( data_definition.padding_element , data_definition.sequence_length ):
                 yield row
 

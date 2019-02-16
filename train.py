@@ -3,9 +3,6 @@ from model_data_definition import ModelDataDefinition
 from model import Model
 import tensorflow as tf
 
-SEQUENCE_LENGHT = 3
-PADDING_ELEMENT = [0,0]
-
 data_definition = ModelDataDefinition( 'data' )
 data_dir = DataDirectory( data_definition )
 
@@ -20,13 +17,13 @@ def input_fn() -> tf.data.Dataset:
 
     # The dataset
     ds = tf.data.Dataset.from_generator( 
-        generator=lambda: data_dir.traverse_sequences( padding_element=PADDING_ELEMENT , sequence_length=SEQUENCE_LENGHT ), 
+        generator=lambda: data_dir.traverse_sequences( data_definition ), 
         output_types=( 
             { 'column1' : tf.int32 , 'column2' : tf.int32 } , 
             { 'headcol1' : tf.int32 , 'headcol2' : tf.int32 } 
         )
         ,output_shapes=( 
-            { 'column1' : (SEQUENCE_LENGHT,) , 'column2' : (SEQUENCE_LENGHT,) } , 
+            { 'column1' : (data_definition.sequence_length,) , 'column2' : (data_definition.sequence_length,) } , 
             { 'headcol1' : () , 'headcol2' : () } 
         )
     )
