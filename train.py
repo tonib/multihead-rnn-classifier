@@ -29,16 +29,16 @@ def input_fn() -> tf.data.Dataset:
         )
     )
 
-    ds = ds.repeat(1000)
+    #ds = ds.repeat(1000)
     ds = ds.batch(64)
-    ds = ds.prefetch(1)
+    ds = ds.prefetch(64)
 
     return ds
 
 
-print("training...")
-model.estimator.train(input_fn=input_fn)
+# print("training...")
+# model.estimator.train(input_fn=input_fn)
 
-print("evaluating...")
-result = model.estimator.evaluate(input_fn=input_fn)
-print("Evaluation: ", result)
+# print("evaluating...")
+# result = model.estimator.evaluate(input_fn=input_fn)
+# print("Evaluation: ", result)

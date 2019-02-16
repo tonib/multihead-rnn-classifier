@@ -14,11 +14,11 @@ class DataFile:
         self.file_name = file_name
 
         csv_file_path = os.path.join( data_directory , file_name )
-        print("Reading", csv_file_path)
+        #print("Reading", csv_file_path)
 
         self.file_rows = []
         with open( csv_file_path , 'r', encoding='utf-8')  as file:
-            csv_reader = csv.reader(file, delimiter=',')
+            csv_reader = csv.reader(file, delimiter=';')
             for raw_row in csv_reader:
                 row = []
                 for data in raw_row:
@@ -60,8 +60,6 @@ class DataFile:
         
         for i in range(len(self.file_rows)):
             pre_sequence = self.get_elements( padding_element , i - sequence_length , i )
-            #print('seq generated')
-            #yield ( DataFile._sequence_to_tensorflow_format(pre_sequence) , self.file_rows[i] )
             yield ( 
                 DataFile._sequence_to_tensorflow_format(pre_sequence) ,  # Input sequence
                 { 'headcol1' : self.file_rows[i][0] , 'headcol2' : self.file_rows[i][1] } # Output for multihead
