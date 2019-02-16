@@ -32,12 +32,12 @@ class DataFile:
 
         if idx_end <= 0:
             # Every element will be padding
-            return [ padding_element * (idx_end - idx_start ) ]
+            return [ padding_element ] * (idx_end - idx_start)
 
         result = []
         if idx_start < 0:
             # We will need padding:
-            result = [ padding_element * (0 - idx_start)]
+            result = [ padding_element ] * (0 - idx_start)
             idx_start = 0
 
         # Append part inside file_rows
@@ -45,6 +45,12 @@ class DataFile:
         
         return result
 
+    @staticmethod
+    def _sequence_to_tensorflow_format(sequence: List) -> object:
+        return {
+            'column1': [item[0] for item in sequence],
+            'column2': [item[1] for item in sequence]
+        }
 
     def get_sequences(self, padding_element : List , sequence_length : int ):
         """
@@ -54,4 +60,4 @@ class DataFile:
         
         for i in range(len(self.file_rows)):
             pre_sequence = self.get_elements( padding_element , i - sequence_length , i )
-            yield ( { 'sequence' : pre_sequence } , self.file_rows[i] )
+            yield ( DataFile._sequence_to_tensorflow_format(pre_sequence) , self.file_rows[i] )
