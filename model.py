@@ -3,6 +3,8 @@ from tensorflow.contrib.estimator import multi_head
 import tensorflow as tf
 from tensorflow.python.estimator.canned import head as head_lib
 from tensorflow.python.ops.losses import losses
+import tensorflow.contrib.feature_column as contrib_feature_column
+import tensorflow.feature_column as feature_column
 
 class Model:
 
@@ -12,8 +14,14 @@ class Model:
     def _create_estimator(self):
         
         # Input columns
-        column1 = tf.feature_column.categorical_column_with_identity('column1', 4)
-        column2 = tf.feature_column.categorical_column_with_identity('column2', 4)
+        #column1 = tf.feature_column.categorical_column_with_identity('column1', 4)
+        #column2 = tf.feature_column.categorical_column_with_identity('column2', 4)
+        column1 = contrib_feature_column.sequence_categorical_column_with_identity('column1', 4)
+        column2 = contrib_feature_column.sequence_categorical_column_with_identity('column2', 4)
+
+        # To indicator columns
+        column1 = feature_column.indicator_column( column1 )
+        column2 = feature_column.indicator_column( column2 )
 
         # Output heads
         head_classify_col1 = head_lib._multi_class_head_with_softmax_cross_entropy_loss(4, name='headcol1')

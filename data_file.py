@@ -60,4 +60,9 @@ class DataFile:
         
         for i in range(len(self.file_rows)):
             pre_sequence = self.get_elements( padding_element , i - sequence_length , i )
-            yield ( DataFile._sequence_to_tensorflow_format(pre_sequence) , self.file_rows[i] )
+            #print('seq generated')
+            #yield ( DataFile._sequence_to_tensorflow_format(pre_sequence) , self.file_rows[i] )
+            yield ( 
+                DataFile._sequence_to_tensorflow_format(pre_sequence) ,  # Input sequence
+                { 'headcol1' : self.file_rows[i][0] , 'headcol2' : self.file_rows[i][1] } # Output for multihead
+            )

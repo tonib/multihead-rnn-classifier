@@ -33,6 +33,3 @@ class DataDirectory:
             for row in data_file.get_sequences( padding_element , sequence_length ):
                 yield row
 
-    def generator_function(self, padding_element : List , sequence_length : int ) -> Callable: 
-        return lambda: self.traverse_sequences( padding_element , sequence_length )
-
