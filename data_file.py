@@ -1,19 +1,20 @@
 import os
 import csv
 from typing import List, Tuple
+from model_data_definition import ModelDataDefinition
 
 class DataFile:
 
-    def __init__(self, data_directory : str , file_name : str ):
+    def __init__(self, data_definition : ModelDataDefinition , file_name : str ):
         """
         Read a CSV data file content
-            data_directory: Directory path
+            data_definition: Model data definition
             file_name: File name
         """
 
         self.file_name = file_name
 
-        csv_file_path = os.path.join( data_directory , file_name )
+        csv_file_path = os.path.join( data_definition.data_directory , file_name )
         #print("Reading", csv_file_path)
 
         self.file_rows = []

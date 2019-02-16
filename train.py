@@ -1,11 +1,13 @@
 from data_directory import DataDirectory
+from model_data_definition import ModelDataDefinition
 from model import Model
 import tensorflow as tf
 
 SEQUENCE_LENGHT = 3
 PADDING_ELEMENT = [0,0]
 
-data_dir = DataDirectory('data')
+data_definition = ModelDataDefinition( 'data' )
+data_dir = DataDirectory( data_definition )
 
 # print("Testing data set")
 # for row in data_dir.traverse_sequences( padding_element=PADDING_ELEMENT , sequence_length=SEQUENCE_LENGHT ):
