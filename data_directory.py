@@ -35,6 +35,6 @@ class DataDirectory:
         random.shuffle(shuffled_files)
         
         for data_file in shuffled_files:
-            for row in data_file.get_sequences( data_definition.padding_element , data_definition.sequence_length ):
+            for row in data_file.get_sequences( data_definition ):
                 yield row
 

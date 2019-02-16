@@ -7,7 +7,7 @@ data_definition = ModelDataDefinition( 'data' )
 data_dir = DataDirectory( data_definition )
 
 # print("Testing data set")
-# for row in data_dir.traverse_sequences( padding_element=PADDING_ELEMENT , sequence_length=SEQUENCE_LENGHT ):
+# for row in data_dir.traverse_sequences( data_definition ):
 #     print(row)
 
 model = Model()

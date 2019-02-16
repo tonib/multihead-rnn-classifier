@@ -53,14 +53,14 @@ class DataFile:
             'column2': [item[1] for item in sequence]
         }
 
-    def get_sequences(self, padding_element : List , sequence_length : int ):
+    def get_sequences(self, data_definition : ModelDataDefinition ):
         """
         Return sequences in file. There is a sequence for each row in file, of length "padding_element", 
         padded with "padding_element" if needed.
         """
         
         for i in range(len(self.file_rows)):
-            pre_sequence = self.get_elements( padding_element , i - sequence_length , i )
+            pre_sequence = self.get_elements( data_definition.get_padding_element() , i - data_definition.sequence_length , i )
             yield ( 
                 DataFile._sequence_to_tensorflow_format(pre_sequence) ,  # Input sequence
                 { 'headcol1' : self.file_rows[i][0] , 'headcol2' : self.file_rows[i][1] } # Output for multihead

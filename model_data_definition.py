@@ -3,6 +3,10 @@ import json
 from column_info import ColumnInfo
 from typing import List
 import tensorflow as tf
+import tensorflow.contrib.feature_column as contrib_feature_column
+import tensorflow.feature_column as feature_column
+from tensorflow.python.estimator.canned import head as head_lib
+from tensorflow.contrib.estimator import multi_head
 
 class ModelDataDefinition:
 
@@ -26,8 +30,8 @@ class ModelDataDefinition:
         self.sequence_length = 50
 
 
-    def padding_element(self) :
-        """ The padding element tokents at object start: ALL ZEROS """
+    def get_padding_element(self) :
+        """ The padding element for tokens at object start: ARRAY WITH ALL ZEROS """
         return [0] * len(self.columns)
 
 
@@ -49,3 +53,21 @@ class ModelDataDefinition:
             inputs[ column.name ] = (self.sequence_length,) # Sequence of "self.sequence_length" elements
             outputs[ column.name ] = () # Scalar (one) element
         return ( inputs , outputs )
+
+    def get_model_input_columns(self):
+        """ The model input features definition """
+        result = []
+        for def_column in self.columns:
+            # Input column
+            column = contrib_feature_column.sequence_categorical_column_with_identity( def_column.name , len(def_column.labels) )
+            # To indicator column
+            column = feature_column.indicator_column( column )
+            result.append( column )
+        return result
+
+    def get_model_head(self):
+        """ The model head """
+        head_parts = []
+        for def_column in self.columns:
+            head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
+        return multi_head( head_parts )

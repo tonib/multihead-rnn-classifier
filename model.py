@@ -14,8 +14,6 @@ class Model:
     def _create_estimator(self):
         
         # Input columns
-        #column1 = tf.feature_column.categorical_column_with_identity('column1', 4)
-        #column2 = tf.feature_column.categorical_column_with_identity('column2', 4)
         column1 = contrib_feature_column.sequence_categorical_column_with_identity('column1', 4)
         column2 = contrib_feature_column.sequence_categorical_column_with_identity('column2', 4)
 
