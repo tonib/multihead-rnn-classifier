@@ -27,7 +27,7 @@ class ModelDataDefinition:
                 self.columns.append( ColumnInfo( json_column['Name'] , json_column['Labels'] ) )
 
         # Constant
-        self.sequence_length = 256
+        self.sequence_length = 128
 
     def get_padding_element(self) :
         """ The padding element for tokens at object start: ARRAY WITH ALL ZEROS """

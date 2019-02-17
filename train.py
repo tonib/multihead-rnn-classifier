@@ -25,12 +25,6 @@ eval_data.print_summary("Evaluation data")
 print("Creating model...")
 model = Model( data_definition )
 
-# TODO: Create a Model method for this
+# Training loop
 # TODO: When to stop ???
-while True:
-    print("Training...")
-    model.estimator.train( input_fn=lambda:train_data.get_tf_input_fn( data_definition ) )
-
-    print("Evaluating...")
-    result = model.estimator.evaluate( input_fn=lambda:eval_data.get_tf_input_fn( data_definition ) )
-    print("Evaluation: ", result)
+model.train_model( train_data , eval_data , data_definition )

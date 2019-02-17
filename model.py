@@ -1,11 +1,7 @@
 from tensorflow.contrib.estimator import RNNEstimator
-from tensorflow.contrib.estimator import multi_head
 import tensorflow as tf
-from tensorflow.python.estimator.canned import head as head_lib
-from tensorflow.python.ops.losses import losses
-import tensorflow.contrib.feature_column as contrib_feature_column
-import tensorflow.feature_column as feature_column
 from model_data_definition import ModelDataDefinition
+from data_directory import DataDirectory
 
 class Model:
 
@@ -23,3 +19,13 @@ class Model:
     def export_model(self, export_dir_path : str , data_definition: ModelDataDefinition):
         """ Exports the model to the given directory """
         self.estimator.export_savedmodel( export_dir_path , lambda:data_definition.serving_input_receiver_fn() , strip_default_attrs=True)
+
+    def train_model(self, train_data : DataDirectory , eval_data : DataDirectory , data_definition : ModelDataDefinition ):
+        # TODO: When to stop ???
+        while True:
+            print("Training...")
+            self.estimator.train( input_fn=lambda:train_data.get_tf_input_fn( data_definition ) )
+
+            print("Evaluating...")
+            result = self.estimator.evaluate( input_fn=lambda:eval_data.get_tf_input_fn( data_definition ) )
+            print("Evaluation: ", result)
