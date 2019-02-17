@@ -59,6 +59,7 @@ class DataFile:
         padded with "padding_element" if needed.
         """
         
+        padding_element = data_definition.get_padding_element()
         for i in range(len(self.file_rows)):
-            pre_sequence = self.get_elements( data_definition.get_padding_element() , i - data_definition.sequence_length , i )
+            pre_sequence = self.get_elements( padding_element , i - data_definition.sequence_length , i )
             yield data_definition.sequence_to_tf_train_format( pre_sequence , self.file_rows[i] )

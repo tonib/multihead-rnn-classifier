@@ -5,6 +5,6 @@ class ColumnInfo:
 
     def __init__(self, name : str , labels : List[str] ):
         self.name = name
-        print("Column name:", name)
+        #print("Column name:", name)
         self.labels = labels
-        print("Column labels:", labels)
+        #print("Column labels:", labels)

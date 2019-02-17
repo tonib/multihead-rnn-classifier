@@ -3,35 +3,30 @@ from model_data_definition import ModelDataDefinition
 from model import Model
 import tensorflow as tf
 
+# Read data
 data_definition = ModelDataDefinition( 'data' )
-data_dir = DataDirectory( data_definition )
+train_data = DataDirectory()
+train_data.read_data_files( data_definition )
 
 # print("Testing data set")
 # for row in data_dir.traverse_sequences( data_definition ):
 #     print(row)
 
+# Extract 15% of files for evaluation
+eval_data = train_data.extract_evaluation_files(0.15)
+
+# Print summary
+train_data.print_summary("Train data")
+eval_data.print_summary("Evaluation data")
+
+# Create model
+print("Creating model...")
 model = Model( data_definition )
 
-
-def input_fn() -> tf.data.Dataset:
-
-    # The dataset
-    ds = tf.data.Dataset.from_generator( 
-        generator=lambda: data_dir.traverse_sequences( data_definition ), 
-        output_types = data_definition.model_input_output_types(),
-        output_shapes = data_definition.model_input_output_shapes()
-    )
-
-    #ds = ds.repeat(1000)
-    ds = ds.batch(64)
-    ds = ds.prefetch(64)
-
-    return ds
-
 while True:
-    print("training...")
-    model.estimator.train(input_fn=input_fn)
+    print("Training...")
+    model.estimator.train( input_fn=lambda:train_data.get_tf_input_fn( data_definition ) )
 
-    print("evaluating...")
-    result = model.estimator.evaluate(input_fn=input_fn)
+    print("Evaluating...")
+    result = model.estimator.evaluate( input_fn=lambda:eval_data.get_tf_input_fn( data_definition ) )
     print("Evaluation: ", result)
