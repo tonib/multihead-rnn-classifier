@@ -6,3 +6,6 @@ model
 
 # Data samples
 data
+
+# VS Code stuff
+.vscode

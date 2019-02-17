@@ -71,3 +71,14 @@ class ModelDataDefinition:
         for def_column in self.columns:
             head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
         return multi_head( head_parts )
+
+    def sequence_to_tf_train_format(self, input_sequence : List[List[int]] , output : List[int] ) -> dict:
+        """ Convert a data file sequence input and the theorical output to the Tensorflow expected format """
+
+        input_record = {}
+        output_record = {}
+        for idx , def_column in enumerate(self.columns):
+            input_record[def_column.name] = [item[idx] for item in input_sequence]
+            output_record[def_column.name] = output[idx]
+
+        return ( input_record , output_record )

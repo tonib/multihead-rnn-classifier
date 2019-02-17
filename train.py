@@ -10,7 +10,7 @@ data_dir = DataDirectory( data_definition )
 # for row in data_dir.traverse_sequences( data_definition ):
 #     print(row)
 
-model = Model()
+model = Model( data_definition )
 
 
 def input_fn() -> tf.data.Dataset:
@@ -18,14 +18,8 @@ def input_fn() -> tf.data.Dataset:
     # The dataset
     ds = tf.data.Dataset.from_generator( 
         generator=lambda: data_dir.traverse_sequences( data_definition ), 
-        output_types=( 
-            { 'column1' : tf.int32 , 'column2' : tf.int32 } , 
-            { 'headcol1' : tf.int32 , 'headcol2' : tf.int32 } 
-        )
-        ,output_shapes=( 
-            { 'column1' : (data_definition.sequence_length,) , 'column2' : (data_definition.sequence_length,) } , 
-            { 'headcol1' : () , 'headcol2' : () } 
-        )
+        output_types = data_definition.model_input_output_types(),
+        output_shapes = data_definition.model_input_output_shapes()
     )
 
     #ds = ds.repeat(1000)
@@ -34,10 +28,10 @@ def input_fn() -> tf.data.Dataset:
 
     return ds
 
+while True:
+    print("training...")
+    model.estimator.train(input_fn=input_fn)
 
-# print("training...")
-# model.estimator.train(input_fn=input_fn)
-
-# print("evaluating...")
-# result = model.estimator.evaluate(input_fn=input_fn)
-# print("Evaluation: ", result)
+    print("evaluating...")
+    result = model.estimator.evaluate(input_fn=input_fn)
+    print("Evaluation: ", result)
