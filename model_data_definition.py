@@ -73,7 +73,6 @@ class ModelDataDefinition:
 
     def sequence_to_tf_train_format(self, input_sequence : List[List[int]] , output : List[int] ) -> dict:
         """ Convert a data file sequence input and the theorical output to the Tensorflow expected format """
-
         input_record = {}
         output_record = {}
         for idx , def_column in enumerate(self.columns):
@@ -81,6 +80,15 @@ class ModelDataDefinition:
             output_record[def_column.name] = output[idx]
 
         return ( input_record , output_record )
+
+
+    def input_sequence_to_tf_predict_format( self , input_sequence : List[List[int]] ) -> dict:
+        """ Convert an input sequence to the Tensorflow expected format """
+        input_record = {}
+        for idx , def_column in enumerate(self.columns):
+            # TF expects a BATCH of size 1, so that's why the extra []
+            input_record[def_column.name] = [ [item[idx] for item in input_sequence] ]
+        return input_record
 
     def serving_input_receiver_fn(self):
         """ Function to define the model signature """

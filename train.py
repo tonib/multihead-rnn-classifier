@@ -1,6 +1,6 @@
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
-from model import Model
+from train_model import TrainModel
 import tensorflow as tf
 
 # Read data definition
@@ -23,7 +23,7 @@ eval_data.print_summary("Evaluation data")
 
 # Create model
 print("Creating model...")
-model = Model( data_definition )
+model = TrainModel( data_definition )
 
 # Training loop
 # TODO: When to stop ???

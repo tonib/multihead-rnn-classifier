@@ -2,8 +2,10 @@ from tensorflow.contrib.estimator import RNNEstimator
 import tensorflow as tf
 from model_data_definition import ModelDataDefinition
 from data_directory import DataDirectory
+from prediction_model import PredictionModel
 
-class Model:
+class TrainModel:
+    """ Model for training """
 
     def __init__(self, data_definition: ModelDataDefinition):        
         # The estimator
@@ -16,9 +18,10 @@ class Model:
             model_dir='model'
         )
 
-    def export_model(self, export_dir_path : str , data_definition: ModelDataDefinition):
-        """ Exports the model to the given directory """
-        self.estimator.export_savedmodel( export_dir_path , lambda:data_definition.serving_input_receiver_fn() , strip_default_attrs=True)
+    def export_model(self, data_definition: ModelDataDefinition):
+        """ Exports the model to the exports directory """
+        self.estimator.export_savedmodel( PredictionModel.EXPORTED_MODELS_DIR_PATH , 
+            lambda:data_definition.serving_input_receiver_fn() , strip_default_attrs=True)
 
     def train_model(self, train_data : DataDirectory , eval_data : DataDirectory , data_definition : ModelDataDefinition ):
         # TODO: When to stop ???
