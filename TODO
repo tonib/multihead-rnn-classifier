@@ -1,0 +1,32 @@
+REMINDERS
+
+git push -u origin master
+
+tensorboard --logdir model
+http://localhost:6006
+
+Estimator inference performance / Serving model / Use of Predictor:
+https://github.com/MtDersvan/tf_playground/blob/master/wide_and_deep_tutorial/wide_and_deep_basic_serving.md
+https://github.com/tensorflow/tensorflow/issues/4648
+https://gist.github.com/mikeoconnor0308/521ae2eb1555edc6550014ce0500e6a2
+https://cs230-stanford.github.io/tensorflow-input-data.html#introduction-to-tfdata-with-a-text-example
+https://highnoongmt.wordpress.com/2015/05/22/lisls-stis-recurrent-neural-networks-for-folk-music-generation/
+
+Export model and predict / serve:
+    http://shzhangji.com/blog/2018/05/14/serve-tensorflow-estimator-with-savedmodel/
+
+
+* saved_model_cli:
+    saved_model_cli show --dir=exportedmodel/1550399753 --tag_set serve --signature_def predict
+
+tensorflow_model_server --port=9000 --model_base_path=exportedmodel/1545244360
+
+START WITH THIS:
+https://stackoverflow.com/questions/46098863/how-to-import-an-saved-tensorflow-model-train-using-tf-estimator-and-predict-on/46139198
+
+222 CPM -> 48 WPM
+3,7 CPS -> 0,8 WPS
+
+requirements:
+tensorflow 1.2
+nltk 

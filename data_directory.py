@@ -50,6 +50,7 @@ class DataDirectory:
         total_tokens = sum( len(file.file_rows) for file in self._files )
         print("Total n. tokens:" , total_tokens )
         print("Mean tokens / file:" , total_tokens / len(self._files))
+        print("Maximum file tokens lenght:" , max( len(file.file_rows) for file in self._files ) )
         print()
 
     def get_tf_input_fn(self, data_definition : ModelDataDefinition ) -> Callable:

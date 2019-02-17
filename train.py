@@ -3,8 +3,10 @@ from model_data_definition import ModelDataDefinition
 from model import Model
 import tensorflow as tf
 
-# Read data
+# Read data definition
 data_definition = ModelDataDefinition( 'data' )
+
+# Read data
 train_data = DataDirectory()
 train_data.read_data_files( data_definition )
 
@@ -23,6 +25,8 @@ eval_data.print_summary("Evaluation data")
 print("Creating model...")
 model = Model( data_definition )
 
+# TODO: Create a Model method for this
+# TODO: When to stop ???
 while True:
     print("Training...")
     model.estimator.train( input_fn=lambda:train_data.get_tf_input_fn( data_definition ) )

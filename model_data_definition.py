@@ -27,8 +27,7 @@ class ModelDataDefinition:
                 self.columns.append( ColumnInfo( json_column['Name'] , json_column['Labels'] ) )
 
         # Constant
-        self.sequence_length = 50
-
+        self.sequence_length = 256
 
     def get_padding_element(self) :
         """ The padding element for tokens at object start: ARRAY WITH ALL ZEROS """
@@ -82,3 +81,21 @@ class ModelDataDefinition:
             output_record[def_column.name] = output[idx]
 
         return ( input_record , output_record )
+
+    def serving_input_receiver_fn(self):
+        """ Function to define the model signature """
+
+        # TODO: Check if placeholder with variable input lenght  is allowed, for variable input sequences
+        # It seems the shape MUST include the batch size (the 1)
+        # x = tf.placeholder(dtype=tf.string, shape=[1, self.sequence_length], name='character')
+        # #print("Input shape: " , x)
+        # inputs =  {'character': x }
+        # return tf.estimator.export.ServingInputReceiver(inputs, inputs)
+
+        inputs_signature = {}
+        for def_column in self.columns:
+            # It seems the shape MUST include the batch size (the 1)
+            column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, self.sequence_length], name=def_column.name)
+            inputs_signature[def_column.name] = column_placeholder
+
+        return tf.estimator.export.ServingInputReceiver(inputs_signature, inputs_signature)

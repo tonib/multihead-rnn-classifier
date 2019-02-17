@@ -9,11 +9,7 @@ from model_data_definition import ModelDataDefinition
 
 class Model:
 
-    def __init__(self, data_definition: ModelDataDefinition):
-        self._create_estimator(data_definition)
-
-    def _create_estimator(self, data_definition: ModelDataDefinition):
-        
+    def __init__(self, data_definition: ModelDataDefinition):        
         # The estimator
         self.estimator = RNNEstimator(
             head = data_definition.get_model_head(),
@@ -23,3 +19,7 @@ class Model:
             optimizer=tf.train.AdamOptimizer,
             model_dir='model'
         )
+
+    def export_model(self, export_dir_path : str , data_definition: ModelDataDefinition):
+        """ Exports the model to the given directory """
+        self.estimator.export_savedmodel( export_dir_path , lambda:data_definition.serving_input_receiver_fn() , strip_default_attrs=True)
