@@ -8,6 +8,8 @@ import tensorflow.feature_column as feature_column
 from tensorflow.python.estimator.canned import head as head_lib
 from tensorflow.contrib.estimator import multi_head
 
+# TODO: Move members here to other classes
+
 class ModelDataDefinition:
 
     def __init__(self, data_directory : str):
