@@ -10,3 +10,9 @@ data
 
 # VS Code stuff
 .vscode
+
+# Visual studio 2017 stuff
+.vs
+
+# Virtual environment
+venv
