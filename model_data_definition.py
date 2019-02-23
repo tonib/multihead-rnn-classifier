@@ -25,7 +25,7 @@ class ModelDataDefinition:
             json_text = file.read()
             json_metadata = json.loads(json_text)
 
-            for json_column in json_metadata['ColumnsInfo']:
+            for json_column in json_metadata:
                 self.columns.append( ColumnInfo( json_column['Name'] , json_column['Labels'] ) )
 
         # Constant
