@@ -26,7 +26,7 @@ class TrainModel:
     def train_model(self, train_data : DataDirectory , eval_data : DataDirectory , data_definition : ModelDataDefinition ):
         # TODO: When to stop ???
         #while True:
-        for i in range(1):
+        for i in range(10):
             print("Training...")
             self.estimator.train( input_fn=lambda:train_data.get_tf_input_fn( data_definition ) )
 

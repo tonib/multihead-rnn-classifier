@@ -10,10 +10,10 @@ data_definition = ModelDataDefinition( 'data' )
 print("# Reading latest exported model")
 predictor = PredictionModel()
 
+print("# Sample:", json.dumps( [data_definition.get_padding_element() ] * data_definition.sequence_length ) )
+
 # This text will be used as flag to start sending requests
 print("READY TO SERVE")
-
-print("# Sample:", json.dumps( [data_definition.get_padding_element() ] * data_definition.sequence_length ) )
 
 while True:
     try:
@@ -24,7 +24,5 @@ while True:
     except Exception as e:
         # Return exception info
         error_info = {}
-        error_info['type'] = 'error'
-        error_info['message'] = str(e)
-        error_info['stacktrace'] = traceback.format_exc()
+        error_info['error'] = str(e) + '\n' + traceback.format_exc()
         sys.stdout.write( json.dumps(error_info) + '\n')
