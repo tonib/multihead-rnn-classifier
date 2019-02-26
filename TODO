@@ -1,5 +1,6 @@
 TODO:
 - Auto stop training, by time or lower loss decrement 
+- Command line option to delete model in train.py
 - Train / evaluation: Limit number of steps, limit number of files to evaluate
 - Log times of train / evaluation, % loss decrement
 - Add command line options for model and exported model path
@@ -36,14 +37,23 @@ https://stackoverflow.com/questions/46098863/how-to-import-an-saved-tensorflow-m
 requirements:
 tensorflow 1.2
 
-Install Tensorflow in Windows
-cd [PROJECTDIR]
-virtualenv --system-site-packages -p python ./venv
-.\venv\Scripts\activate
-pip install --upgrade pip
-pip list
-pip install --upgrade tensorflow
-python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
+Install Tensorflow in Windows with virtualenv
+    cd [PROJECTDIR]
+    virtualenv --system-site-packages -p python ./venv
+    .\venv\Scripts\activate
+    pip install --upgrade pip
+    pip list
+    pip install --upgrade tensorflow
+    python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
+
+Install Tensorflow in Linux with virtualenv
+    virtualenv --system-site-packages -p python3 ./venv
+    source ./venv/bin/activate
+    pip install --upgrade pip
+    pip list
+    pip install --upgrade tensorflow
+    python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
+
 
 # Sample FILE START
 [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]

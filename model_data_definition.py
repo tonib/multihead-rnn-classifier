@@ -25,11 +25,26 @@ class ModelDataDefinition:
             json_text = file.read()
             json_metadata = json.loads(json_text)
 
-            for json_column in json_metadata:
+            # Read settings
+            self.max_train_seconds = int( ModelDataDefinition._read_setting( json_metadata , 'MaxTrainSeconds' , '0' ) )
+            self.min_loss_percentage = int( ModelDataDefinition._read_setting( json_metadata , 'MinLossPercentage' , '0' ) )
+            self.model_directory = ModelDataDefinition._read_setting( json_metadata , 'ModelDirectory' , 'model' )
+            self.exports_directory = ModelDataDefinition._read_setting( json_metadata , 'ExportsDirectory' , 'exports' )
+
+            # Read columns
+            for json_column in json_metadata['Columns']:
                 self.columns.append( ColumnInfo( json_column['Name'] , json_column['Labels'] ) )
 
         # Constant
         self.sequence_length = 128
+
+
+    @staticmethod
+    def _read_setting( json_metadata : dict , setting_name : str , default_value : object ) -> str:
+        if not json_metadata[setting_name]:
+            return default_value
+        return json_metadata[setting_name]
+        
 
     def get_padding_element(self) :
         """ The padding element for tokens at object start: ARRAY WITH ALL ZEROS """
