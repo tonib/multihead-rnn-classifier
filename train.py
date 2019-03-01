@@ -4,7 +4,7 @@ from train_model import TrainModel
 import tensorflow as tf
 
 # Read data definition
-data_definition = ModelDataDefinition( 'data' )
+data_definition = ModelDataDefinition()
 
 # Read data
 train_data = DataDirectory()
@@ -27,5 +27,5 @@ print("Creating model...")
 model = TrainModel( data_definition )
 
 # Training loop
-# TODO: When to stop ???
+print()
 model.train_model( train_data , eval_data , data_definition )

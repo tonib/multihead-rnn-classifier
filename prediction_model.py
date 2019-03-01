@@ -7,15 +7,14 @@ import json
 class PredictionModel:
     """ Model for prediction """
 
-    EXPORTED_MODELS_DIR_PATH = 'exportedmodels'
-
-    def __init__(self):
+    def __init__(self, data_definition : ModelDataDefinition):
         """ Loads the latest exported model """
 
         # Get latest export. Exports are versioned by a timestamp
         latest_export = ''
         max_timestamp = 0
-        for export_dir in os.listdir( PredictionModel.EXPORTED_MODELS_DIR_PATH ):
+        exports_dir_path = data_definition.get_exports_dir_path()
+        for export_dir in os.listdir( exports_dir_path ):
             try:
                 timestamp = int(export_dir)
             except:
@@ -25,7 +24,7 @@ class PredictionModel:
                 max_timestamp = timestamp
                 latest_export = export_dir
         # The full path
-        latest_export = os.path.join( PredictionModel.EXPORTED_MODELS_DIR_PATH , latest_export )
+        latest_export = os.path.join( exports_dir_path , latest_export )
         print("Using export from" , latest_export)
 
         # Import model

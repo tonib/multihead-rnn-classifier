@@ -7,16 +7,17 @@ import tensorflow.contrib.feature_column as contrib_feature_column
 import tensorflow.feature_column as feature_column
 from tensorflow.python.estimator.canned import head as head_lib
 from tensorflow.contrib.estimator import multi_head
+import argparse
 
 # TODO: Move members here to other classes
 
 class ModelDataDefinition:
 
-    def __init__(self, data_directory : str):
+    def __init__(self):
 
-        self.data_directory = data_directory
+        self._read_cmd_line_arguments()
 
-        metadata_file_path = os.path.join( data_directory , 'data_info.json' )
+        metadata_file_path = os.path.join( self.data_directory , 'data_info.json' )
         print("Reading data structure info from " , metadata_file_path)
 
         self.columns = []
@@ -28,8 +29,6 @@ class ModelDataDefinition:
             # Read settings
             self.max_train_seconds = int( ModelDataDefinition._read_setting( json_metadata , 'MaxTrainSeconds' , '0' ) )
             self.min_loss_percentage = int( ModelDataDefinition._read_setting( json_metadata , 'MinLossPercentage' , '0' ) )
-            self.model_directory = ModelDataDefinition._read_setting( json_metadata , 'ModelDirectory' , 'model' )
-            self.exports_directory = ModelDataDefinition._read_setting( json_metadata , 'ExportsDirectory' , 'exports' )
             self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
             
             # Read columns
@@ -38,12 +37,25 @@ class ModelDataDefinition:
 
         # Constant
         self.sequence_length = 128
-        #self.sequence_length = 160
 
+    def _read_cmd_line_arguments(self):
+        parser = argparse.ArgumentParser(description='Train and predict sequeces')
+        parser.add_argument('--datadir', type=str, default='data' , help='Directory path with data. Default="data"')
+        args = parser.parse_args()
+        self.data_directory = args.datadir
+        print("Data directory:" , self.data_directory )
+
+    def get_exports_dir_path(self):
+        """ The directory for exported models """
+        return os.path.join( self.data_directory , 'exportedmodels' )
+
+    def get_current_model_dir_path(self):
+        """ The directory for current train model """
+        return os.path.join( self.data_directory , 'model' )
 
     @staticmethod
     def _read_setting( json_metadata : dict , setting_name : str , default_value : object ) -> str:
-        if not json_metadata[setting_name]:
+        if not setting_name in json_metadata:
             return default_value
         return json_metadata[setting_name]
         

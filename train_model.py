@@ -8,7 +8,11 @@ from time import time
 class TrainModel:
     """ Model for training """
 
-    def __init__(self, data_definition: ModelDataDefinition):        
+    def __init__(self, data_definition: ModelDataDefinition):
+
+        model_dir = data_definition.get_current_model_dir_path()
+        print("Current train model dir:" , model_dir)
+
         # The estimator
         self.estimator = RNNEstimator(
             head = data_definition.get_model_head(),
@@ -18,12 +22,14 @@ class TrainModel:
             #num_units=[80], 
             cell_type='gru', 
             optimizer=tf.train.AdamOptimizer,
-            model_dir='model'
+            model_dir=model_dir
         )
 
     def export_model(self, data_definition: ModelDataDefinition):
         """ Exports the model to the exports directory """
-        self.estimator.export_savedmodel( PredictionModel.EXPORTED_MODELS_DIR_PATH , 
+        export_path = data_definition.get_exports_dir_path()
+        print("Exporting model to " , export_path)
+        self.estimator.export_savedmodel( export_path , 
             lambda:data_definition.serving_input_receiver_fn() , strip_default_attrs=True)
 
     def train_model(self, train_data : DataDirectory , eval_data : DataDirectory , data_definition : ModelDataDefinition ):

@@ -5,11 +5,10 @@ import tensorflow as tf
 import os
 
 # Read data definition
-data_definition = ModelDataDefinition( 'data' )
+data_definition = ModelDataDefinition()
 
 # Create model
 print("Creating model...")
 model = TrainModel( data_definition )
 
-print("Exporting to" , PredictionModel.EXPORTED_MODELS_DIR_PATH)
 model.export_model( data_definition )

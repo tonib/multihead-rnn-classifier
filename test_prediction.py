@@ -3,10 +3,10 @@ from model_data_definition import ModelDataDefinition
 from time import time
 
 # Read data definition
-data_definition = ModelDataDefinition( 'data' )
+data_definition = ModelDataDefinition()
 
 print("Reading latest exported model")
-predictor = PredictionModel()
+predictor = PredictionModel(data_definition)
 
 # Sample input: First file word (sequence with all paddign elements)
 input = [ data_definition.get_padding_element() ] * data_definition.sequence_length
