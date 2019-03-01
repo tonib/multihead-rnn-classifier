@@ -18,6 +18,7 @@ train_data.read_data_files( data_definition )
 eval_data = train_data.extract_evaluation_files(0.15)
 
 # Print summary
+print()
 train_data.print_summary("Train data")
 eval_data.print_summary("Evaluation data")
 

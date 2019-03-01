@@ -43,11 +43,15 @@ class DataDirectory:
 
         return new_data_dir
 
+    def get_n_total_tokens(self) -> int:
+        """ Total number of tokens in all files """
+        return sum( len(file.file_rows) for file in self._files )
+
     def print_summary(self, name : str):
         """ Print summary with data files info """
         print(name, "summary:")
         print("N. files:" , len(self._files))
-        total_tokens = sum( len(file.file_rows) for file in self._files )
+        total_tokens = self.get_n_total_tokens()
         print("Total n. tokens:" , total_tokens )
         print("Mean tokens / file:" , total_tokens / len(self._files))
         print("Maximum file tokens lenght:" , max( len(file.file_rows) for file in self._files ) )
@@ -62,6 +66,7 @@ class DataDirectory:
             output_shapes = data_definition.model_input_output_shapes()
         )
         #ds = ds.repeat(1000)
+        ds = ds.shuffle(5000)
         ds = ds.batch(64)
         ds = ds.prefetch(64)
 

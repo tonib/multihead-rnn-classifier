@@ -30,13 +30,15 @@ class ModelDataDefinition:
             self.min_loss_percentage = int( ModelDataDefinition._read_setting( json_metadata , 'MinLossPercentage' , '0' ) )
             self.model_directory = ModelDataDefinition._read_setting( json_metadata , 'ModelDirectory' , 'model' )
             self.exports_directory = ModelDataDefinition._read_setting( json_metadata , 'ExportsDirectory' , 'exports' )
-
+            self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
+            
             # Read columns
             for json_column in json_metadata['Columns']:
                 self.columns.append( ColumnInfo( json_column['Name'] , json_column['Labels'] ) )
 
         # Constant
         self.sequence_length = 128
+        #self.sequence_length = 160
 
 
     @staticmethod
