@@ -8,7 +8,8 @@ import os
 data_definition = ModelDataDefinition()
 
 # Create model
-print("Creating model...")
+print("\nCreating train model...")
 model = TrainModel( data_definition )
 
+print("\nExporing model...")
 model.export_model( data_definition )

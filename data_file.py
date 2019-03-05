@@ -4,6 +4,7 @@ from typing import List, Tuple
 from model_data_definition import ModelDataDefinition
 
 class DataFile:
+    """ CSV train data file content """
 
     def __init__(self, data_definition : ModelDataDefinition , file_name : str ):
         """
@@ -29,7 +30,7 @@ class DataFile:
 
 
     def get_elements(self, padding_element : List , idx_start : int , idx_end : int ) -> List:
-        """ Get range of elements in file. "idx_end" element will not be included """
+        """ Get a range of elements in file. "idx_end" element will not be included """
 
         if idx_end <= 0:
             # Every element will be padding
@@ -46,16 +47,10 @@ class DataFile:
         
         return result
 
-    @staticmethod
-    def _sequence_to_tensorflow_format(sequence: List) -> object:
-        return {
-            'column1': [item[0] for item in sequence],
-            'column2': [item[1] for item in sequence]
-        }
 
     def get_sequences(self, data_definition : ModelDataDefinition ):
         """
-        Return sequences in file. There is a sequence for each row in file, of length "padding_element", 
+        Return sequences in file. There is a sequence for each row in file, of length "data_definition.sequence_length", 
         padded with "padding_element" if needed.
         """
         

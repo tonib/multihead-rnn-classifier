@@ -78,20 +78,3 @@ class ModelDataDefinition:
             input_record[def_column.name] = [ [item[idx] for item in input_sequence] ]
         return input_record
 
-    def serving_input_receiver_fn(self):
-        """ Function to define the model signature """
-
-        # TODO: Check if placeholder with variable input lenght  is allowed, for variable input sequences
-        # It seems the shape MUST include the batch size (the 1)
-        # x = tf.placeholder(dtype=tf.string, shape=[1, self.sequence_length], name='character')
-        # #print("Input shape: " , x)
-        # inputs =  {'character': x }
-        # return tf.estimator.export.ServingInputReceiver(inputs, inputs)
-
-        inputs_signature = {}
-        for def_column in self.columns:
-            # It seems the shape MUST include the batch size (the 1)
-            column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, self.sequence_length], name=def_column.name)
-            inputs_signature[def_column.name] = column_placeholder
-
-        return tf.estimator.export.ServingInputReceiver(inputs_signature, inputs_signature)

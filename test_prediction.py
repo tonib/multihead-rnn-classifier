@@ -23,4 +23,4 @@ for i in range(n_repetitions):
     predictor.predict_json(json_test, data_definition) # About 6.9 ms
 end = time()
 print("Total time:" , end - start , "s")
-print("Seconds/prediction:" , ((end - start) / n_repetitions) * 1000 , "ms")
+print("Prediction performance:" , ((end - start) / n_repetitions) * 1000 , "ms")

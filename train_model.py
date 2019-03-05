@@ -65,7 +65,18 @@ class TrainModel:
         export_path = data_definition.get_exports_dir_path()
         print("Exporting model to " , export_path)
         self.estimator.export_savedmodel( export_path , 
-            lambda:data_definition.serving_input_receiver_fn() , strip_default_attrs=True)
+            lambda:self._serving_input_receiver_fn(data_definition) , strip_default_attrs=True)
+
+
+    def _serving_input_receiver_fn(self, data_definition: ModelDataDefinition):
+        """ Function to define the model signature """
+        inputs_signature = {}
+        for def_column in data_definition.columns:
+            # It seems the shape MUST include the batch size (the 1)
+            column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, data_definition.sequence_length], name=def_column.name)
+            inputs_signature[def_column.name] = column_placeholder
+
+        return tf.estimator.export.ServingInputReceiver(inputs_signature, inputs_signature)
 
 
     ###################################
