@@ -1,5 +1,7 @@
 from tensorflow.contrib.estimator import RNNEstimator
 import tensorflow as tf
+import tensorflow.contrib.feature_column as contrib_feature_column
+import tensorflow.feature_column as feature_column
 from model_data_definition import ModelDataDefinition
 from data_directory import DataDirectory
 from prediction_model import PredictionModel
@@ -17,14 +19,26 @@ class TrainModel:
         # The estimator
         self.estimator = RNNEstimator(
             head = data_definition.get_model_head(),
-            sequence_feature_columns = data_definition.get_model_input_columns(),
+            sequence_feature_columns = self._get_model_input_columns(data_definition),
             #num_units=[64, 64], # Removed, extra layer reports same results
             num_units=[64], 
-            #num_units=[80], 
             cell_type='gru', 
             optimizer=tf.train.AdamOptimizer,
             model_dir=model_dir
         )
+
+
+    def _get_model_input_columns(self, data_definition: ModelDataDefinition) -> list:
+        """ Returns the model input features list definition """
+        result = []
+        for def_column in data_definition.columns:
+            # Input column
+            column = contrib_feature_column.sequence_categorical_column_with_identity( def_column.name , len(def_column.labels) )
+            # To indicator column
+            column = feature_column.indicator_column( column )
+            result.append( column )
+        return result
+
 
     def export_model(self, data_definition: ModelDataDefinition):
         """ Exports the model to the exports directory """
