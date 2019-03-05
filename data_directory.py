@@ -23,13 +23,17 @@ class DataDirectory:
 
 
     def traverse_sequences( self, data_definition : ModelDataDefinition ): 
+        """ Traverse all sequences of all files on this data directory """
 
+        # Shuffle the files list
         shuffled_files = self._files.copy()
         random.shuffle(shuffled_files)
         
+        # Traverse all sequences. Those sequences are ordered, will be shuffled by the TF dataset in TrainModel class
         for data_file in shuffled_files:
             for row in data_file.get_sequences( data_definition ):
                 yield row
+
 
     def extract_evaluation_files(self, percentage : float) -> object:
         """ Extract randomly a percentage of files to other DataDirectory """
@@ -56,18 +60,3 @@ class DataDirectory:
         print("Mean tokens / file:" , total_tokens / len(self._files))
         print("Maximum file tokens lenght:" , max( len(file.file_rows) for file in self._files ) )
         print()
-
-    def get_tf_input_fn(self, data_definition : ModelDataDefinition ) -> Callable:
-        """ Returns the Tensorflow input function for data files """
-        # The dataset
-        ds = tf.data.Dataset.from_generator( 
-            generator=lambda: self.traverse_sequences( data_definition ), 
-            output_types = data_definition.model_input_output_types(),
-            output_shapes = data_definition.model_input_output_shapes()
-        )
-        #ds = ds.repeat(1000)
-        ds = ds.shuffle(5000)
-        ds = ds.batch(64)
-        ds = ds.prefetch(64)
-
-        return ds
