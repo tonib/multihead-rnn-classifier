@@ -2,6 +2,8 @@ from tensorflow.contrib.estimator import RNNEstimator
 import tensorflow as tf
 import tensorflow.contrib.feature_column as contrib_feature_column
 import tensorflow.feature_column as feature_column
+from tensorflow.python.estimator.canned import head as head_lib
+from tensorflow.contrib.estimator import multi_head
 from model_data_definition import ModelDataDefinition
 from data_directory import DataDirectory
 from prediction_model import PredictionModel
@@ -11,14 +13,20 @@ from typing import Callable
 class TrainModel:
     """ Model for training """
 
+    ###################################
+    # MODEL DEFINITION
+    ###################################
+
     def __init__(self, data_definition: ModelDataDefinition):
+
+        # TODO: Store a reference to ModelDataDefinition
 
         model_dir = data_definition.get_current_model_dir_path()
         print("Current train model dir:" , model_dir)
 
         # The estimator
         self.estimator = RNNEstimator(
-            head = data_definition.get_model_head(),
+            head = self._get_model_head(data_definition),
             sequence_feature_columns = self._get_model_input_columns(data_definition),
             #num_units=[64, 64], # Removed, extra layer reports same results
             num_units=[64], 
@@ -40,6 +48,18 @@ class TrainModel:
         return result
 
 
+    def _get_model_head(self, data_definition: ModelDataDefinition):
+        """ The model head """
+        head_parts = []
+        for def_column in data_definition.columns:
+            head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
+        return multi_head( head_parts )
+
+
+    ###################################
+    # EXPORT MODEL
+    ###################################
+
     def export_model(self, data_definition: ModelDataDefinition):
         """ Exports the model to the exports directory """
         export_path = data_definition.get_exports_dir_path()
@@ -47,6 +67,10 @@ class TrainModel:
         self.estimator.export_savedmodel( export_path , 
             lambda:data_definition.serving_input_receiver_fn() , strip_default_attrs=True)
 
+
+    ###################################
+    # INPUT MODEL FUNCTION
+    ###################################
 
     def _get_tf_input_fn(self, data_definition : ModelDataDefinition , train_data : DataDirectory ) -> Callable:
         """ Returns the Tensorflow input function for data files """
@@ -81,6 +105,9 @@ class TrainModel:
             outputs[ column.name ] = () # Scalar (one) element
         return ( inputs , outputs )
 
+    ###################################
+    # TRAINING
+    ###################################
 
     def train_model(self, train_data : DataDirectory , eval_data : DataDirectory , data_definition : ModelDataDefinition ):
         """ Train dataset """

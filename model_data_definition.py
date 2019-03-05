@@ -3,11 +3,7 @@ import json
 from column_info import ColumnInfo
 from typing import List
 import tensorflow as tf
-from tensorflow.python.estimator.canned import head as head_lib
-from tensorflow.contrib.estimator import multi_head
 import argparse
-
-# TODO: Move members here to other classes
 
 class ModelDataDefinition:
 
@@ -62,12 +58,6 @@ class ModelDataDefinition:
         """ The padding element for tokens at object start: ARRAY WITH ALL ZEROS """
         return [0] * len(self.columns)
 
-    def get_model_head(self):
-        """ The model head """
-        head_parts = []
-        for def_column in self.columns:
-            head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
-        return multi_head( head_parts )
 
     def sequence_to_tf_train_format(self, input_sequence : List[List[int]] , output : List[int] ) -> dict:
         """ Convert a data file sequence input and the theorical output to the Tensorflow expected format """
