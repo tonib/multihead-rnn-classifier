@@ -29,7 +29,7 @@ class ModelDataDefinition:
             for json_column in json_metadata['Columns']:
                 self.columns.append( ColumnInfo( json_column['Name'] , json_column['Labels'] ) )
 
-        # Constant
+        # Constant. TODO: Load this from data_info.json
         self.sequence_length = 128
 
     def _read_cmd_line_arguments(self):

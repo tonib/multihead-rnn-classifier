@@ -19,15 +19,15 @@ class TrainModel:
 
     def __init__(self, data_definition: ModelDataDefinition):
 
-        # TODO: Store a reference to ModelDataDefinition
+        self.data_definition = data_definition
 
-        model_dir = data_definition.get_current_model_dir_path()
+        model_dir = self.data_definition.get_current_model_dir_path()
         print("Current train model dir:" , model_dir)
 
         # The estimator
         self.estimator = RNNEstimator(
-            head = self._get_model_head(data_definition),
-            sequence_feature_columns = self._get_model_input_columns(data_definition),
+            head = self._get_model_head(),
+            sequence_feature_columns = self._get_model_input_columns(),
             #num_units=[64, 64], # Removed, extra layer reports same results
             num_units=[64], 
             cell_type='gru', 
@@ -36,10 +36,10 @@ class TrainModel:
         )
 
 
-    def _get_model_input_columns(self, data_definition: ModelDataDefinition) -> list:
+    def _get_model_input_columns(self) -> list:
         """ Returns the model input features list definition """
         result = []
-        for def_column in data_definition.columns:
+        for def_column in self.data_definition.columns:
             # Input column
             column = contrib_feature_column.sequence_categorical_column_with_identity( def_column.name , len(def_column.labels) )
             # To indicator column
@@ -48,10 +48,10 @@ class TrainModel:
         return result
 
 
-    def _get_model_head(self, data_definition: ModelDataDefinition):
+    def _get_model_head(self):
         """ The model head """
         head_parts = []
-        for def_column in data_definition.columns:
+        for def_column in self.data_definition.columns:
             head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
         return multi_head( head_parts )
 
@@ -60,20 +60,20 @@ class TrainModel:
     # EXPORT MODEL
     ###################################
 
-    def export_model(self, data_definition: ModelDataDefinition):
+    def export_model(self):
         """ Exports the model to the exports directory """
-        export_path = data_definition.get_exports_dir_path()
+        export_path = self.data_definition.get_exports_dir_path()
         print("Exporting model to " , export_path)
         self.estimator.export_savedmodel( export_path , 
-            lambda:self._serving_input_receiver_fn(data_definition) , strip_default_attrs=True)
+            lambda:self._serving_input_receiver_fn() , strip_default_attrs=True)
 
 
-    def _serving_input_receiver_fn(self, data_definition: ModelDataDefinition):
+    def _serving_input_receiver_fn(self):
         """ Function to define the model signature """
         inputs_signature = {}
-        for def_column in data_definition.columns:
+        for def_column in self.data_definition.columns:
             # It seems the shape MUST include the batch size (the 1)
-            column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, data_definition.sequence_length], name=def_column.name)
+            column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, self.data_definition.sequence_length], name=def_column.name)
             inputs_signature[def_column.name] = column_placeholder
 
         return tf.estimator.export.ServingInputReceiver(inputs_signature, inputs_signature)
@@ -83,13 +83,13 @@ class TrainModel:
     # INPUT MODEL FUNCTION
     ###################################
 
-    def _get_tf_input_fn(self, data_definition : ModelDataDefinition , train_data : DataDirectory ) -> Callable:
+    def _get_tf_input_fn(self, train_data : DataDirectory ) -> Callable:
         """ Returns the Tensorflow input function for data files """
         # The dataset
         ds = tf.data.Dataset.from_generator( 
-            generator=lambda: train_data.traverse_sequences( data_definition ), 
-            output_types = self._model_input_output_types(data_definition),
-            output_shapes = self._model_input_output_shapes(data_definition)
+            generator=lambda: train_data.traverse_sequences( self.data_definition ), 
+            output_types = self._model_input_output_types(),
+            output_shapes = self._model_input_output_shapes()
         )
         ds = ds.shuffle(5000)
         ds = ds.batch(64)
@@ -97,22 +97,22 @@ class TrainModel:
         return ds
 
 
-    def _model_input_output_types(self, data_definition: ModelDataDefinition ) -> tuple:
+    def _model_input_output_types(self) -> tuple:
         """ Returns data model input and output types definition """
         inputs = {}
         outputs = {}
-        for column in data_definition.columns:
+        for column in self.data_definition.columns:
             inputs[ column.name ] = tf.int32 # All int numbers: They are indexes to labels (see ColumnInfo)
             outputs[ column.name ] = tf.int32
         return ( inputs , outputs )
 
 
-    def _model_input_output_shapes(self, data_definition: ModelDataDefinition ) -> tuple:
+    def _model_input_output_shapes(self) -> tuple:
         """ Returns data model input and output shapes definition """
         inputs = {}
         outputs = {}
-        for column in data_definition.columns:
-            inputs[ column.name ] = (data_definition.sequence_length,) # Sequence of "self.sequence_length" elements
+        for column in self.data_definition.columns:
+            inputs[ column.name ] = (self.data_definition.sequence_length,) # Sequence of "self.sequence_length" elements
             outputs[ column.name ] = () # Scalar (one) element
         return ( inputs , outputs )
 
@@ -120,23 +120,23 @@ class TrainModel:
     # TRAINING
     ###################################
 
-    def train_model(self, train_data : DataDirectory , eval_data : DataDirectory , data_definition : ModelDataDefinition ):
+    def train_model(self, train_data : DataDirectory , eval_data : DataDirectory ):
         """ Train dataset """
 
         epoch = 0
         last_loss = 0
         train_start = time()
         n_tokens = train_data.get_n_total_tokens()
-        for _ in range(data_definition.max_epochs):
+        for _ in range(self.data_definition.max_epochs):
             epoch += 1
             
             epoch_start = time()
             print("Training epoch", epoch, "...")
-            self.estimator.train( input_fn=lambda:self._get_tf_input_fn( data_definition , train_data ) )
+            self.estimator.train( input_fn=lambda:self._get_tf_input_fn( train_data ) )
             train_time = time() - epoch_start
             
             print("Evaluating...")
-            result = self.estimator.evaluate( input_fn=lambda:self._get_tf_input_fn( data_definition , eval_data ) )
+            result = self.estimator.evaluate( input_fn=lambda:self._get_tf_input_fn( eval_data ) )
             print("Evaluation: ", result)
 
             new_loss = result['loss']
@@ -153,11 +153,11 @@ class TrainModel:
             print("Total train time:" , total_time , "s")
             print()
 
-            if data_definition.max_train_seconds > 0 and total_time > data_definition.max_train_seconds:
+            if self.data_definition.max_train_seconds > 0 and total_time > self.data_definition.max_train_seconds:
                 print("Max. train time reached, stopping")
                 return
             
-            if epoch > 1 and data_definition.min_loss_percentage > 0 and loss_decrease < data_definition.min_loss_percentage:
+            if epoch > 1 and self.data_definition.min_loss_percentage > 0 and loss_decrease < self.data_definition.min_loss_percentage:
                 print("Min. loss decrease reached, stopping")
                 return
 

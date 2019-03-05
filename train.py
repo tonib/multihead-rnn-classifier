@@ -28,4 +28,4 @@ model = TrainModel( data_definition )
 
 # Training loop
 print()
-model.train_model( train_data , eval_data , data_definition )
+model.train_model( train_data , eval_data )
