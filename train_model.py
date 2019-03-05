@@ -33,20 +33,40 @@ class TrainModel:
         self.estimator.export_savedmodel( export_path , 
             lambda:data_definition.serving_input_receiver_fn() , strip_default_attrs=True)
 
+
     def _get_tf_input_fn(self, data_definition : ModelDataDefinition , train_data : DataDirectory ) -> Callable:
         """ Returns the Tensorflow input function for data files """
-        
         # The dataset
         ds = tf.data.Dataset.from_generator( 
             generator=lambda: train_data.traverse_sequences( data_definition ), 
-            output_types = data_definition.model_input_output_types(),
-            output_shapes = data_definition.model_input_output_shapes()
+            output_types = self._model_input_output_types(data_definition),
+            output_shapes = self._model_input_output_shapes(data_definition)
         )
         ds = ds.shuffle(5000)
         ds = ds.batch(64)
         ds = ds.prefetch(64)
-
         return ds
+
+
+    def _model_input_output_types(self, data_definition: ModelDataDefinition ) -> tuple:
+        """ Returns data model input and output types definition """
+        inputs = {}
+        outputs = {}
+        for column in data_definition.columns:
+            inputs[ column.name ] = tf.int32 # All int numbers: They are indexes to labels (see ColumnInfo)
+            outputs[ column.name ] = tf.int32
+        return ( inputs , outputs )
+
+
+    def _model_input_output_shapes(self, data_definition: ModelDataDefinition ) -> tuple:
+        """ Returns data model input and output shapes definition """
+        inputs = {}
+        outputs = {}
+        for column in data_definition.columns:
+            inputs[ column.name ] = (data_definition.sequence_length,) # Sequence of "self.sequence_length" elements
+            outputs[ column.name ] = () # Scalar (one) element
+        return ( inputs , outputs )
+
 
     def train_model(self, train_data : DataDirectory , eval_data : DataDirectory , data_definition : ModelDataDefinition ):
         """ Train dataset """

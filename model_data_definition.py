@@ -65,25 +65,6 @@ class ModelDataDefinition:
         return [0] * len(self.columns)
 
 
-    def model_input_output_types(self):
-        """ The data model input and output types definition """
-        inputs = {}
-        outputs = {}
-        for column in self.columns:
-            inputs[ column.name ] = tf.int32 # All int numbers: They are indexes to labels (see ColumnInfo)
-            outputs[ column.name ] = tf.int32
-        return ( inputs , outputs )
-
-
-    def model_input_output_shapes(self):
-        """ The data model input and output shapes definition """
-        inputs = {}
-        outputs = {}
-        for column in self.columns:
-            inputs[ column.name ] = (self.sequence_length,) # Sequence of "self.sequence_length" elements
-            outputs[ column.name ] = () # Scalar (one) element
-        return ( inputs , outputs )
-
     def get_model_input_columns(self):
         """ The model input features definition """
         result = []
