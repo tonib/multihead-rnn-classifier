@@ -11,8 +11,9 @@ train_data = DataDirectory()
 train_data.read_data_files( data_definition )
 
 # print("Testing data set")
-# for row in data_dir.traverse_sequences( data_definition ):
+# for row in train_data.traverse_sequences( data_definition ):
 #     print(row)
+# exit()
 
 # Extract 15% of files for evaluation
 eval_data = train_data.extract_evaluation_files(0.15)

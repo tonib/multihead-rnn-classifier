@@ -13,8 +13,6 @@ class ModelDataDefinition:
 
         metadata_file_path = os.path.join( self.data_directory , 'data_info.json' )
         print("Reading data structure info from " , metadata_file_path)
-
-        self.columns = []
         
         with open( metadata_file_path , 'r' , encoding='utf-8' )  as file:
             json_text = file.read()
@@ -25,12 +23,21 @@ class ModelDataDefinition:
             self.min_loss_percentage = int( ModelDataDefinition._read_setting( json_metadata , 'MinLossPercentage' , '0' ) )
             self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
             
-            # Read columns
-            for json_column in json_metadata['Columns']:
-                self.columns.append( ColumnInfo( json_column['Name'] , json_column['Labels'] ) )
+            # Read columns definitions
+            self.input_columns = []
+            self._read_columns_definitions( self.input_columns, json_metadata['InputColumns'] )
+            self.output_columns = []
+            self._read_columns_definitions( self.output_columns, json_metadata['OutputColumns'] )
 
         # Constant. TODO: Load this from data_info.json
         self.sequence_length = 128
+
+
+    def _read_columns_definitions(self, columns : List[ColumnInfo] , columns_json : List[dict] ):
+        """ Read columns definitions """
+        for json_column in columns_json:
+            columns.append( ColumnInfo( json_column['Name'] , json_column['Labels'] , int( json_column['Index'] ) ) )
+
 
     def _read_cmd_line_arguments(self):
         parser = argparse.ArgumentParser(description='Train and predict sequeces')
@@ -56,25 +63,27 @@ class ModelDataDefinition:
 
     def get_padding_element(self) :
         """ The padding element for tokens at object start: ARRAY WITH ALL ZEROS """
-        return [0] * len(self.columns)
+        return [0] * len(self.input_columns)
 
 
-    def sequence_to_tf_train_format(self, input_sequence : List[List[int]] , output : List[int] ) -> dict:
+    def sequence_to_tf_train_format(self, input_sequence : List[List[int]] , output : List[int] ) -> tuple:
         """ Convert a data file sequence input and the theorical output to the Tensorflow expected format """
         input_record = {}
+        for def_column in self.input_columns:
+            input_record[def_column.name] = [item[def_column.index] for item in input_sequence]
+
         output_record = {}
-        for idx , def_column in enumerate(self.columns):
-            input_record[def_column.name] = [item[idx] for item in input_sequence]
-            output_record[def_column.name] = output[idx]
+        for def_column in self.output_columns:
+            output_record[def_column.name] = output[def_column.index]
 
         return ( input_record , output_record )
 
 
     def input_sequence_to_tf_predict_format( self , input_sequence : List[List[int]] ) -> dict:
-        """ Convert an input sequence to the Tensorflow expected format """
+        """ Convert an input sequence to the Tensorflow prediction expected format """
         input_record = {}
-        for idx , def_column in enumerate(self.columns):
+        for def_column in self.input_columns:
             # TF expects a BATCH of size 1, so that's why the extra []
-            input_record[def_column.name] = [ [item[idx] for item in input_sequence] ]
+            input_record[def_column.name] = [ [item[def_column.index] for item in input_sequence] ]
         return input_record
 

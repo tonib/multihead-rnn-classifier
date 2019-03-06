@@ -1,9 +1,9 @@
 TODO:
-- Auto stop training, by time or lower loss decrement 
-- Command line option to delete model in train.py
+- Use tfrecord files?
+- Change DataFile organization: Store an array for each column
 - Train / evaluation: Limit number of steps, limit number of files to evaluate
-- Log times of train / evaluation, % loss decrement
-- Add command line options for model and exported model path
+- Read sequence length from json file
+- Add cfg to set if csv files have header row, default true
 
 REMINDERS
 

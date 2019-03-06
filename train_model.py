@@ -39,7 +39,7 @@ class TrainModel:
     def _get_model_input_columns(self) -> list:
         """ Returns the model input features list definition """
         result = []
-        for def_column in self.data_definition.columns:
+        for def_column in self.data_definition.input_columns:
             # Input column
             column = contrib_feature_column.sequence_categorical_column_with_identity( def_column.name , len(def_column.labels) )
             # To indicator column
@@ -51,7 +51,7 @@ class TrainModel:
     def _get_model_head(self):
         """ The model head """
         head_parts = []
-        for def_column in self.data_definition.columns:
+        for def_column in self.data_definition.output_columns:
             head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
         return multi_head( head_parts )
 
@@ -71,7 +71,7 @@ class TrainModel:
     def _serving_input_receiver_fn(self):
         """ Function to define the model signature """
         inputs_signature = {}
-        for def_column in self.data_definition.columns:
+        for def_column in self.data_definition.input_columns:
             # It seems the shape MUST include the batch size (the 1)
             column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, self.data_definition.sequence_length], name=def_column.name)
             inputs_signature[def_column.name] = column_placeholder
@@ -99,22 +99,30 @@ class TrainModel:
 
     def _model_input_output_types(self) -> tuple:
         """ Returns data model input and output types definition """
+        # All int numbers: They are indexes to labels (see ColumnInfo)
         inputs = {}
+        for column in self.data_definition.input_columns:
+            inputs[ column.name ] = tf.int32
+        
         outputs = {}
-        for column in self.data_definition.columns:
-            inputs[ column.name ] = tf.int32 # All int numbers: They are indexes to labels (see ColumnInfo)
+        for column in self.data_definition.output_columns:
             outputs[ column.name ] = tf.int32
+
         return ( inputs , outputs )
 
 
     def _model_input_output_shapes(self) -> tuple:
         """ Returns data model input and output shapes definition """
         inputs = {}
+        for column in self.data_definition.input_columns:
+            inputs[ column.name ] = (self.data_definition.sequence_length,) # Sequence of "self.data_definition.sequence_length" elements
+
         outputs = {}
-        for column in self.data_definition.columns:
-            inputs[ column.name ] = (self.data_definition.sequence_length,) # Sequence of "self.sequence_length" elements
+        for column in self.data_definition.output_columns:
             outputs[ column.name ] = () # Scalar (one) element
+
         return ( inputs , outputs )
+
 
     ###################################
     # TRAINING

@@ -35,7 +35,7 @@ class PredictionModel:
         prediction = self._predict_fn( data_definition.input_sequence_to_tf_predict_format(raw_sequence) )
         # prediction contains numpy arrays, they are not serializable to JSON. Return an "unpacked" prediction version
         result = {}
-        for column in data_definition.columns:
+        for column in data_definition.output_columns:
             column_result = {}
             column_result['class_prediction'] = int( prediction[ column.name + '/classes' ][0][0] )
             column_result['probabilities'] = prediction[ column.name + '/probabilities' ][0].tolist()
