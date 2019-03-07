@@ -1,5 +1,5 @@
 TODO:
-- Use tfrecord files?
+- Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - Change DataFile organization: Store an array for each column
 - Train / evaluation: Limit number of steps, limit number of files to evaluate
 - Read sequence length from json file

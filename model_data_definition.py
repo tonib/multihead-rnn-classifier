@@ -22,15 +22,13 @@ class ModelDataDefinition:
             self.max_train_seconds = int( ModelDataDefinition._read_setting( json_metadata , 'MaxTrainSeconds' , '0' ) )
             self.min_loss_percentage = int( ModelDataDefinition._read_setting( json_metadata , 'MinLossPercentage' , '0' ) )
             self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
+            self.sequence_length = int( ModelDataDefinition._read_setting( json_metadata , 'SequenceLength' , '128' ) )
             
             # Read columns definitions
             self.input_columns = []
             self._read_columns_definitions( self.input_columns, json_metadata['InputColumns'] )
             self.output_columns = []
             self._read_columns_definitions( self.output_columns, json_metadata['OutputColumns'] )
-
-        # Constant. TODO: Load this from data_info.json
-        self.sequence_length = 128
 
 
     def _read_columns_definitions(self, columns : List[ColumnInfo] , columns_json : List[dict] ):
