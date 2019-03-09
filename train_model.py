@@ -52,7 +52,11 @@ class TrainModel:
         """ The model head """
         head_parts = []
         for def_column in self.data_definition.output_columns:
-            head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
+            if len(def_column.labels) > 2:
+                head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
+            else:
+                # def_column.labels = 2:
+                head_parts.append( head_lib._binary_logistic_head_with_sigmoid_cross_entropy_loss(name=def_column.name) )
         return multi_head( head_parts )
 
 
