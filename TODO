@@ -1,8 +1,7 @@
 TODO:
+- prediction head. If nclasses = 2, use head_lib._binary_logistic_head_with_sigmoid_cross_entropy_loss (see tensorflow rnn.py > RNNClassifier)
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - Change DataFile organization: Store an array for each column
-- Train / evaluation: Limit number of steps, limit number of files to evaluate
-- Read sequence length from json file
 - Add cfg to set if csv files have header row, default true
 
 REMINDERS

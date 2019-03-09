@@ -85,3 +85,6 @@ class ModelDataDefinition:
             input_record[def_column.name] = [ [item[def_column.index] for item in input_sequence] ]
         return input_record
 
+    def get_max_column_idx(self) -> int:
+        """ Get the maximum column index """
+        return max( max(c.index for c in self.input_columns) , max(c.index for c in self.output_columns) )

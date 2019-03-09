@@ -18,13 +18,23 @@ class DataFile:
         csv_file_path = os.path.join( data_definition.data_directory , file_name )
         #print("Reading", csv_file_path)
 
+        # Data columns to read are the first ones. There can be others columns after (usually for debug), they will be ignored
+        max_column = data_definition.get_max_column_idx() + 1
+
         self.file_rows = []
         with open( csv_file_path , 'r', encoding='utf-8')  as file:
             csv_reader = csv.reader(file, delimiter=';')
+            first = True
             for raw_row in csv_reader:
+
+                # IGNORE HEADER ROW!
+                if first:
+                    first = False
+                    continue
+
                 row = []
-                for data in raw_row:
-                    row.append( int(data) )
+                for i in range(max_column):
+                    row.append( int(raw_row[i]) )
                 #print(row)
                 self.file_rows.append(row)
 
