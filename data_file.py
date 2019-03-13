@@ -66,5 +66,10 @@ class DataFile:
         
         padding_element = data_definition.get_padding_element()
         for i in range(len(self.file_rows)):
+            # Check if this row is trainable
+            if data_definition.trainable_column_index >= 0 and self.file_rows[i][data_definition.trainable_column_index] == 0:
+                # It's not trainable
+                continue
+
             pre_sequence = self.get_elements( padding_element , i - data_definition.sequence_length , i )
             yield data_definition.sequence_to_tf_train_format( pre_sequence , self.file_rows[i] )

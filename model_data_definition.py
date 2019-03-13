@@ -23,6 +23,7 @@ class ModelDataDefinition:
             self.min_loss_percentage = int( ModelDataDefinition._read_setting( json_metadata , 'MinLossPercentage' , '0' ) )
             self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
             self.sequence_length = int( ModelDataDefinition._read_setting( json_metadata , 'SequenceLength' , '128' ) )
+            self.trainable_column_index = int( ModelDataDefinition._read_setting( json_metadata , 'TrainableColumnIndex' , '-1' ) )
             
             # Read columns definitions
             self.input_columns = []
@@ -87,4 +88,4 @@ class ModelDataDefinition:
 
     def get_max_column_idx(self) -> int:
         """ Get the maximum column index """
-        return max( max(c.index for c in self.input_columns) , max(c.index for c in self.output_columns) )
+        return max( max(c.index for c in self.input_columns) , max(c.index for c in self.output_columns) , self.trainable_column_index )
