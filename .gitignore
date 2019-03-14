@@ -8,6 +8,9 @@ exportedmodels
 # Data samples
 data
 
+# Previous data samples
+data-old/**
+
 # VS Code stuff
 .vscode
 

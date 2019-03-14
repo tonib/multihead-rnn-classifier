@@ -7,7 +7,7 @@ REMINDERS
 
 git push -u origin master
 
-tensorboard --logdir model
+tensorboard --logdir data/model
 http://localhost:6006
 
 Estimator inference performance / Serving model / Use of Predictor:

@@ -57,6 +57,13 @@ class DataFile:
         
         return result
 
+    def _is_trainable(self, data_definition : ModelDataDefinition, row: int ) -> bool:
+        """ Returns true if the given token index is trainable """
+        return data_definition.trainable_column_index < 0 or row[data_definition.trainable_column_index] == 1
+
+    def get_n_trainable_tokens(self, data_definition : ModelDataDefinition) -> int:
+        """ Returns the number of trainables tokens in this file """
+        return sum( self._is_trainable(data_definition, row) for row in self.file_rows )
 
     def get_sequences(self, data_definition : ModelDataDefinition ):
         """

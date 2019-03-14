@@ -51,12 +51,17 @@ class DataDirectory:
         """ Total number of tokens in all files """
         return sum( len(file.file_rows) for file in self._files )
 
-    def print_summary(self, name : str):
+    def get_n_total_trainable_tokens(self, data_definition : ModelDataDefinition) -> int:
+        """ Total number of tokens in all files """
+        return sum( file.get_n_trainable_tokens(data_definition) for file in self._files )
+
+    def print_summary(self, data_definition : ModelDataDefinition, name : str):
         """ Print summary with data files info """
         print(name, "summary:")
         print("N. files:" , len(self._files))
         total_tokens = self.get_n_total_tokens()
         print("Total n. tokens:" , total_tokens )
+        print("Total n. TRAINABLE tokens:" , self.get_n_total_trainable_tokens( data_definition ) )
         print("Mean tokens / file:" , total_tokens / len(self._files))
         print("Maximum file tokens lenght:" , max( len(file.file_rows) for file in self._files ) )
         print()

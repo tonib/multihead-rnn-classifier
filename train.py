@@ -20,8 +20,8 @@ eval_data = train_data.extract_evaluation_files(0.15)
 
 # Print summary
 print()
-train_data.print_summary("Train data")
-eval_data.print_summary("Evaluation data")
+train_data.print_summary(data_definition, "Train data")
+eval_data.print_summary(data_definition, "Evaluation data")
 
 # Create model
 print("Creating model...")
