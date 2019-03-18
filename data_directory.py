@@ -15,20 +15,24 @@ class DataDirectory:
 
     def read_data_files(self, data_definition : ModelDataDefinition):
 
-        print("Reading data files from ", data_definition.data_directory)
+        print("Reading data files from", data_definition.data_directory)
         for file_name in os.listdir(data_definition.data_directory):
             if not file_name.lower().endswith(".csv"):
                 continue
+            #print( file_name )
             self._files.append( DataFile( data_definition , file_name ) )
+        
+        # Sort by file name to get reproducible results
+        self._files.sort(key=lambda f: f.file_name)
 
-
-    def traverse_sequences( self, data_definition : ModelDataDefinition ): 
+    def traverse_sequences( self, data_definition : ModelDataDefinition, shuffle: bool = True ): 
         """ Traverse all sequences of all files on this data directory """
 
-        # Shuffle the files list
         shuffled_files = self._files.copy()
-        random.shuffle(shuffled_files)
-        
+        if shuffle:
+            # Shuffle the files list
+            random.shuffle(shuffled_files)
+
         # Traverse all sequences. Those sequences are ordered, will be shuffled by the TF dataset in TrainModel class
         for data_file in shuffled_files:
             for row in data_file.get_sequences( data_definition ):
@@ -47,13 +51,16 @@ class DataDirectory:
 
         return new_data_dir
 
+
     def get_n_total_tokens(self) -> int:
         """ Total number of tokens in all files """
         return sum( len(file.file_rows) for file in self._files )
 
+
     def get_n_total_trainable_tokens(self, data_definition : ModelDataDefinition) -> int:
         """ Total number of tokens in all files """
         return sum( file.get_n_trainable_tokens(data_definition) for file in self._files )
+
 
     def print_summary(self, data_definition : ModelDataDefinition, name : str):
         """ Print summary with data files info """
@@ -65,3 +72,12 @@ class DataDirectory:
         print("Mean tokens / file:" , total_tokens / len(self._files))
         print("Maximum file tokens lenght:" , max( len(file.file_rows) for file in self._files ) )
         print()
+
+
+    def get_column_values( self, data_definition : ModelDataDefinition, column_name: str) -> List[int]:
+        column_index = data_definition.get_column_index(column_name)
+        result = []
+        for data_file in self._files:
+            for row in data_file.file_rows:
+                result.append( row[column_index] )
+        return result

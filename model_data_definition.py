@@ -89,3 +89,13 @@ class ModelDataDefinition:
     def get_max_column_idx(self) -> int:
         """ Get the maximum column index """
         return max( max(c.index for c in self.input_columns) , max(c.index for c in self.output_columns) , self.trainable_column_index )
+
+
+    def get_column_index(self, column_name: str) -> int:
+        for c in self.input_columns:
+            if c.name == column_name:
+                return c.index
+        for c in self.output_columns:
+            if c.name == column_name:
+                return c.index
+        return -1

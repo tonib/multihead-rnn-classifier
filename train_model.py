@@ -29,6 +29,7 @@ class TrainModel:
             head = self._get_model_head(),
             sequence_feature_columns = self._get_model_input_columns(),
             #num_units=[64, 64], # Removed, extra layer reports same results
+            #num_units=[64], 
             num_units=[64], 
             cell_type='gru', 
             optimizer=tf.train.AdamOptimizer,
@@ -87,15 +88,16 @@ class TrainModel:
     # INPUT MODEL FUNCTION
     ###################################
 
-    def _get_tf_input_fn(self, train_data : DataDirectory ) -> Callable:
+    def _get_tf_input_fn(self, train_data : DataDirectory , shuffle: bool = True ) -> Callable:
         """ Returns the Tensorflow input function for data files """
         # The dataset
         ds = tf.data.Dataset.from_generator( 
-            generator=lambda: train_data.traverse_sequences( self.data_definition ), 
+            generator=lambda: train_data.traverse_sequences( self.data_definition, shuffle ), 
             output_types = self._model_input_output_types(),
             output_shapes = self._model_input_output_shapes()
         )
-        ds = ds.shuffle(5000)
+        if shuffle:
+            ds = ds.shuffle(5000)
         ds = ds.batch(64)
         ds = ds.prefetch(64)
         return ds
@@ -139,7 +141,8 @@ class TrainModel:
         last_loss = 0
         train_start = time()
         n_tokens = train_data.get_n_total_tokens()
-        for _ in range(self.data_definition.max_epochs):
+        
+        while True:
             epoch += 1
             
             epoch_start = time()
@@ -165,6 +168,10 @@ class TrainModel:
             print("Total train time:" , total_time , "s")
             print()
 
+            if self.data_definition.max_epochs > 0 and epoch >= self.data_definition.max_epochs:
+                print("Max. train epoch reached, stopping")
+                return
+
             if self.data_definition.max_train_seconds > 0 and total_time > self.data_definition.max_train_seconds:
                 print("Max. train time reached, stopping")
                 return
@@ -174,3 +181,17 @@ class TrainModel:
                 return
 
         print("Max. epoch reached, stopping")
+
+    ###################################
+    # DEBUG / EVALUATION
+    ###################################
+
+    def confusion_matrix(self, eval_data : DataDirectory ,  column_name: str ):
+
+        predictions = list( self.estimator.predict( input_fn=lambda:self._get_tf_input_fn( eval_data , shuffle=False ) ) )
+        class_prediction = [ int( p[ (column_name, 'classes') ][0] ) for p in predictions ]
+        print( class_prediction[:10] )
+        real_label = eval_data.get_column_values(self.data_definition, column_name)
+        print( real_label[:10] )
+
+        #confusion_matrix = tf.confusion_matrix(labels, predictions)
