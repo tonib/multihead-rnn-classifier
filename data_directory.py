@@ -39,9 +39,11 @@ class DataDirectory:
                 yield row
 
 
-    def extract_evaluation_files(self, percentage : float) -> object:
+    def extract_evaluation_files(self, data_definition : ModelDataDefinition) -> object:
         """ Extract randomly a percentage of files to other DataDirectory """
-        n_files_to_extract = int( len(self._files) * percentage )
+        n_files_to_extract = int( len(self._files) * data_definition.percentage_evaluation )
+        if n_files_to_extract <= 0:
+            n_files_to_extract = 1
 
         new_data_dir = DataDirectory()
         for i in range(n_files_to_extract):
@@ -81,3 +83,7 @@ class DataDirectory:
             for row in data_file.file_rows:
                 result.append( row[column_index] )
         return result
+
+    def get_n_files(self) -> int:
+        """ Get number of files on this instance """
+        return len(self._files)

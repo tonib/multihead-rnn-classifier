@@ -16,12 +16,16 @@ train_data.read_data_files( data_definition )
 # exit()
 
 # Extract 15% of files for evaluation
-eval_data = train_data.extract_evaluation_files(0.15)
+eval_data = train_data.extract_evaluation_files( data_definition )
 
 # Print summary
 print()
 train_data.print_summary(data_definition, "Train data")
 eval_data.print_summary(data_definition, "Evaluation data")
+
+if train_data.get_n_files() == 0 or eval_data.get_n_files() == 0:
+    print("ERROR: No files enough to train")
+    exit()
 
 # Create model
 print("Creating model...")

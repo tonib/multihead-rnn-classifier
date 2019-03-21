@@ -176,7 +176,7 @@ class TrainModel:
                 print("Max. train time reached, stopping")
                 return
             
-            if epoch > 1 and self.data_definition.min_loss_percentage > 0 and loss_decrease < self.data_definition.min_loss_percentage:
+            if epoch > 1 and self.data_definition.min_loss_percentage != 0 and loss_decrease < self.data_definition.min_loss_percentage:
                 print("Min. loss decrease reached, stopping")
                 return
 
