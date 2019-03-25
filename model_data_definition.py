@@ -25,6 +25,7 @@ class ModelDataDefinition:
             self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
             self.sequence_length = int( ModelDataDefinition._read_setting( json_metadata , 'SequenceLength' , '128' ) )
             self.trainable_column_index = int( ModelDataDefinition._read_setting( json_metadata , 'TrainableColumnIndex' , '-1' ) )
+            self.n_network_elements = int( ModelDataDefinition._read_setting( json_metadata , 'NNetworkElements' , '64' ) )
             
             # Read columns definitions
             self.input_columns = []

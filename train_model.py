@@ -30,7 +30,7 @@ class TrainModel:
             sequence_feature_columns = self._get_model_input_columns(),
             #num_units=[64, 64], # Removed, extra layer reports same results
             #num_units=[64], 
-            num_units=[64], 
+            num_units=[ data_definition.n_network_elements ], 
             cell_type='gru', 
             optimizer=tf.train.AdamOptimizer,
             model_dir=model_dir
