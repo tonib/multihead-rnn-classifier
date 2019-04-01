@@ -46,6 +46,9 @@ tensorflow 1.12
 ** Install tensorflow 1.12
     cd [PARENT_DIR]
 
+	REM Install virtualenv
+	pip install virtualenv
+
 	REM Create the virtualenv
     virtualenv --system-site-packages -p python ./venv
 
