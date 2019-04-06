@@ -9,9 +9,14 @@ file = pd.read_csv( '../data/PAlcTasRec.csv' , sep=';')
 
 # print( file['wordType'][0:10] )
 
-# start_idx = -3
-# idx = 4
-# print( file.loc[start_idx:idx, 'wordType'].to_numpy() )
+print( file.dtypes )
+file['wordType'] = file['wordType'].astype('int32')
+print( file.dtypes )
+
+start_idx = -3
+idx = 4
+print( repr(file.loc[start_idx:idx, 'wordType'].to_numpy()) )
+
 
 # print( file.at[ 3 , 'wordType'] )
 
@@ -24,4 +29,4 @@ file = pd.read_csv( '../data/PAlcTasRec.csv' , sep=';')
 
 #print(file.shape[0] )
 
-print( len(file[ file['trainable'] == 1]) )
+# print( len(file[ file['trainable'] == 1]) )

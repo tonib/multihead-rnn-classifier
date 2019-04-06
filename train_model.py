@@ -94,7 +94,7 @@ class TrainModel:
         inputs_signature = {}
         for col_name in self.data_definition.sequence_columns:
             # It seems the shape MUST include the batch size (the 1)
-            column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, self.data_definition.sequence_length], name=col_name)
+            column_placeholder = tf.placeholder(dtype=tf.int64, shape=[1, self.data_definition.sequence_length], name=col_name)
             inputs_signature[col_name] = column_placeholder
 
         return tf.estimator.export.ServingInputReceiver(inputs_signature, inputs_signature)
@@ -125,11 +125,11 @@ class TrainModel:
         # All int numbers: They are indexes to labels (see ColumnInfo)
         inputs = {}
         for col_name in self.data_definition.sequence_columns:
-            inputs[ col_name ] = tf.int32
+            inputs[ col_name ] = tf.int64
         
         outputs = {}
         for col_name in self.data_definition.output_columns:
-            outputs[ col_name ] = tf.int32
+            outputs[ col_name ] = tf.int64
 
         return ( inputs , outputs )
 
