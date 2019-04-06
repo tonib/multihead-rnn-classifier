@@ -30,6 +30,11 @@ class ModelDataDefinition:
             # Read columns definitions
             self.input_columns = []
             self._read_columns_definitions( self.input_columns, json_metadata['InputColumns'] )
+
+            self.context_columns = []
+            if 'ContextColumns' in json_metadata:
+                self._read_columns_definitions( self.context_columns, json_metadata['ContextColumns'] )
+
             self.output_columns = []
             self._read_columns_definitions( self.output_columns, json_metadata['OutputColumns'] )
 
@@ -72,6 +77,9 @@ class ModelDataDefinition:
         input_record = {}
         for def_column in self.input_columns:
             input_record[def_column.name] = [item[def_column.index] for item in input_sequence]
+
+        for def_column in self.context_columns:
+            input_record[def_column.name] = output[def_column.index]
 
         output_record = {}
         for def_column in self.output_columns:

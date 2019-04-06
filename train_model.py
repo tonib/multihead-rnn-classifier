@@ -28,6 +28,7 @@ class TrainModel:
         self.estimator = RNNEstimator(
             head = self._get_model_head(),
             sequence_feature_columns = self._get_model_input_columns(),
+            context_feature_columns = self._get_context_columns(),
             #num_units=[64, 64], # Removed, extra layer reports same results
             #num_units=[64], 
             num_units=[ data_definition.n_network_elements ], 
@@ -38,7 +39,7 @@ class TrainModel:
 
 
     def _get_model_input_columns(self) -> list:
-        """ Returns the model input features list definition """
+        """ Returns the model input features list definition (sequence) """
         result = []
         for def_column in self.data_definition.input_columns:
             # Input column
@@ -48,6 +49,19 @@ class TrainModel:
             result.append( column )
         return result
 
+
+    def _get_context_columns(self) -> list:
+        """ Returns the input context columns definition, or None if there are no context columns """
+        if len( self.data_definition.context_columns ) == 0:
+            return None
+        result = []
+        for def_column in self.data_definition.context_columns:
+            # Input column
+            column = feature_column.categorical_column_with_identity( def_column.name , len(def_column.labels) )
+            # To indicator column
+            column = feature_column.indicator_column( column )
+            result.append( column )
+        return result
 
     def _get_model_head(self):
         """ The model head """

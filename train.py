@@ -3,6 +3,8 @@ from model_data_definition import ModelDataDefinition
 from train_model import TrainModel
 import tensorflow as tf
 
+print("Tensorflow version:" , tf.__version__ )
+
 # Read data definition
 data_definition = ModelDataDefinition()
 
@@ -34,3 +36,4 @@ model = TrainModel( data_definition )
 # Training loop
 print()
 model.train_model( train_data , eval_data )
+
