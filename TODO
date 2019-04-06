@@ -37,16 +37,41 @@ requirements:
 tensorflow 1.2
 pandas-0.24.2 # pip install pandas
 
-Install Tensorflow in Windows with virtualenv
-    cd [PROJECTDIR]
+* Install Tensorflow in Windows with virtualenv
+** Install Python 3.6.7
+	- Download Python 3.6.7 ("Windows x86-64 executable installer" link) from https://www.python.org/downloads/release/python-367/ 
+	  (or at LSI get it at H:\Programacion\Python)
+	- Run setup
+	- Mark "Add Python 3.6 to PATH"
+	- Click "install now"
+
+** Install tensorflow 1.12
+    cd [PARENT_DIR]
+
+	REM Install virtualenv
+	pip install virtualenv
+
+	REM Create the virtualenv
     virtualenv --system-site-packages -p python ./venv
+
+	REM Activate the virtualenv
     .\venv\Scripts\activate
+
+	REM Upgrade pip?
     pip install --upgrade pip
-    pip list
-    pip install --upgrade tensorflow
+
+	REM Why?
+    REM pip list
+
+	REM Install tensorflow 1.12
+    REM pip install --upgrade tensorflow < NOT TO THE LATEST VERSION!
+	pip install tensorflow==1.12
+
+	REM Test installation
     python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
 
-Install Tensorflow in Linux with virtualenv
+
+* Install Tensorflow in Linux with virtualenv
     virtualenv --system-site-packages -p python3 ./venv
     source ./venv/bin/activate
     pip install --upgrade pip
