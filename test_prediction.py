@@ -9,8 +9,9 @@ data_definition = ModelDataDefinition()
 print("Reading latest exported model")
 predictor = PredictionModel(data_definition)
 
-# Sample input: First file word (sequence with all paddign elements)
-input = [ data_definition.get_padding_element() ] * data_definition.sequence_length
+# Sample input: First file word (sequence with all pad elements)
+input = data_definition.get_empty_element()
+#print(input)
 json_test = json.dumps(input)
 
 print( "Prediction:" , predictor.predict(input, data_definition) )

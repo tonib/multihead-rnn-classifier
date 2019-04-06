@@ -66,9 +66,15 @@ class ModelDataDefinition:
         """ The directory for current train model """
         return os.path.join( self.data_directory , 'model' )        
 
-    # def get_padding_element(self) :
-    #     """ The padding element for tokens at object start: ARRAY WITH ALL ZEROS """
-    #     return [0] * len(self.input_columns)
+
+    def get_empty_element(self) :
+        """ Input entry with all zeros """
+        element = {}
+        for column_name in self.sequence_columns:
+            element[column_name] = [0] * self.sequence_length
+        for column_name in self.context_columns:
+            element[column_name] = 0
+        return element
 
 
     # def sequence_to_tf_train_format(self, input_sequence : List[List[int]] , output : List[int] ) -> tuple:
@@ -93,6 +99,7 @@ class ModelDataDefinition:
         result = {}
         for key in input:
             result[key] = [ input[key] ]
+        return result
 
     def get_column_names(self) -> set:
         """ Set with all used column names """

@@ -10,7 +10,7 @@ data_definition = ModelDataDefinition()
 print("# Reading latest exported model")
 predictor = PredictionModel(data_definition)
 
-print("# Sample:", json.dumps( [data_definition.get_padding_element() ] * data_definition.sequence_length ) )
+print("# Sample:", json.dumps( data_definition.get_empty_element() ) )
 
 # This text will be used as flag to start sending requests
 print("READY TO SERVE")
