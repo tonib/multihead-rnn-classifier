@@ -25,13 +25,17 @@ class DataDirectory:
         # Sort by file name to get reproducible results
         self._files.sort(key=lambda f: f.file_name)
 
+    def get_shuffled_files(self) -> List[DataFile]:
+        shuffled_files = self._files.copy()
+        random.shuffle(shuffled_files)
+        return shuffled_files
+
     def traverse_sequences( self, shuffle: bool = True ): 
         """ Traverse all sequences of all files on this data directory """
-
-        shuffled_files = self._files.copy()
         if shuffle:
-            # Shuffle the files list
-            random.shuffle(shuffled_files)
+            shuffled_files = self.get_shuffled_files()
+        else
+            shuffled_files = self._files
 
         # Traverse all sequences. Those sequences are ordered, will be shuffled by the TF dataset in TrainModel class
         for data_file in shuffled_files:

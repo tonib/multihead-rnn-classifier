@@ -1,6 +1,9 @@
 TODO:
 - Pandas uses int64. Replace int32 by int64
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
+- More on performance:
+  https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator
+  https://stackoverflow.com/questions/48484689/parallelism-isnt-reducing-the-time-in-dataset-map/48781036#48781036
 - Change DataFile organization: Store an array for each column
 - Add cfg to set if csv files have header row, default true
 - Documentation: Fix tf and python version to install
