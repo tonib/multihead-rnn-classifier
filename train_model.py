@@ -27,10 +27,8 @@ class TrainModel:
         # The estimator
         self.estimator = RNNEstimator(
             head = self._get_model_head(),
-            sequence_feature_columns = self._get_model_input_columns(),
+            sequence_feature_columns = self._get_sequence_columns(),
             context_feature_columns = self._get_context_columns(),
-            #num_units=[64, 64], # Removed, extra layer reports same results
-            #num_units=[64], 
             num_units=[ data_definition.n_network_elements ], 
             cell_type='gru', 
             optimizer=tf.train.AdamOptimizer,
@@ -38,12 +36,13 @@ class TrainModel:
         )
 
 
-    def _get_model_input_columns(self) -> list:
+    def _get_sequence_columns(self) -> list:
         """ Returns the model input features list definition (sequence) """
         result = []
-        for def_column in self.data_definition.input_columns:
+        for col_name in self.data_definition.sequence_columns:
             # Input column
-            column = contrib_feature_column.sequence_categorical_column_with_identity( def_column.name , len(def_column.labels) )
+            def_column = self.data_definition.column_definitions[ col_name ]
+            column = contrib_feature_column.sequence_categorical_column_with_identity( col_name , len(def_column.labels) )
             # To indicator column
             column = feature_column.indicator_column( column )
             result.append( column )
@@ -55,9 +54,10 @@ class TrainModel:
         if len( self.data_definition.context_columns ) == 0:
             return None
         result = []
-        for def_column in self.data_definition.context_columns:
+        for col_name in self.data_definition.context_columns:
             # Input column
-            column = feature_column.categorical_column_with_identity( def_column.name , len(def_column.labels) )
+            def_column = self.data_definition.column_definitions[ col_name ]
+            column = feature_column.categorical_column_with_identity( col_name , len(def_column.labels) )
             # To indicator column
             column = feature_column.indicator_column( column )
             result.append( column )
@@ -66,7 +66,8 @@ class TrainModel:
     def _get_model_head(self):
         """ The model head """
         head_parts = []
-        for def_column in self.data_definition.output_columns:
+        for col_name in self.data_definition.output_columns:
+            def_column = self.data_definition.column_definitions[ col_name ]
             if len(def_column.labels) > 2:
                 head_parts.append( head_lib._multi_class_head_with_softmax_cross_entropy_loss( len(def_column.labels) , name=def_column.name) )
             else:
@@ -89,24 +90,25 @@ class TrainModel:
 
     def _serving_input_receiver_fn(self):
         """ Function to define the model signature """
+        # TODO: Add context columns
         inputs_signature = {}
-        for def_column in self.data_definition.input_columns:
+        for col_name in self.data_definition.sequence_columns:
             # It seems the shape MUST include the batch size (the 1)
-            column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, self.data_definition.sequence_length], name=def_column.name)
-            inputs_signature[def_column.name] = column_placeholder
+            column_placeholder = tf.placeholder(dtype=tf.int32, shape=[1, self.data_definition.sequence_length], name=col_name)
+            inputs_signature[col_name] = column_placeholder
 
         return tf.estimator.export.ServingInputReceiver(inputs_signature, inputs_signature)
 
 
     ###################################
-    # INPUT MODEL FUNCTION
+    # INPUT MODEL FUNCTION (TRAINING)
     ###################################
 
     def _get_tf_input_fn(self, train_data : DataDirectory , shuffle: bool = True ) -> Callable:
         """ Returns the Tensorflow input function for data files """
         # The dataset
         ds = tf.data.Dataset.from_generator( 
-            generator=lambda: train_data.traverse_sequences( self.data_definition, shuffle ), 
+            generator=lambda: train_data.traverse_sequences( shuffle ), 
             output_types = self._model_input_output_types(),
             output_shapes = self._model_input_output_shapes()
         )
@@ -119,27 +121,29 @@ class TrainModel:
 
     def _model_input_output_types(self) -> tuple:
         """ Returns data model input and output types definition """
+        # TODO: Add context columns
         # All int numbers: They are indexes to labels (see ColumnInfo)
         inputs = {}
-        for column in self.data_definition.input_columns:
-            inputs[ column.name ] = tf.int32
+        for col_name in self.data_definition.sequence_columns:
+            inputs[ col_name ] = tf.int32
         
         outputs = {}
-        for column in self.data_definition.output_columns:
-            outputs[ column.name ] = tf.int32
+        for col_name in self.data_definition.output_columns:
+            outputs[ col_name ] = tf.int32
 
         return ( inputs , outputs )
 
 
     def _model_input_output_shapes(self) -> tuple:
         """ Returns data model input and output shapes definition """
+        # TODO: Add context columns
         inputs = {}
-        for column in self.data_definition.input_columns:
-            inputs[ column.name ] = (self.data_definition.sequence_length,) # Sequence of "self.data_definition.sequence_length" elements
+        for col_name in self.data_definition.sequence_columns:
+            inputs[ col_name ] = (self.data_definition.sequence_length,) # Sequence of "self.data_definition.sequence_length" elements
 
         outputs = {}
-        for column in self.data_definition.output_columns:
-            outputs[ column.name ] = () # Scalar (one) element
+        for col_name in self.data_definition.output_columns:
+            outputs[ col_name ] = () # Scalar (one) element
 
         return ( inputs , outputs )
 

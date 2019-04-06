@@ -1,8 +1,10 @@
 TODO:
+- Pandas uses int64. Replace int32 by int64
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - Change DataFile organization: Store an array for each column
 - Add cfg to set if csv files have header row, default true
 - Documentation: Fix tf and python version to install
+- Allow to configure the padding value for each column?
 
 REMINDERS
 
@@ -34,8 +36,10 @@ https://stackoverflow.com/questions/46098863/how-to-import-an-saved-tensorflow-m
 3,7 CPS -> 0,8 WPS
 
 requirements:
+pyton 3.6.7
 tensorflow 1.2
-pandas-0.24.2 # pip install pandas
+numpy 1.16.1
+pandas 0.24.2 # pip install pandas
 
 * Install Tensorflow in Windows with virtualenv
 ** Install Python 3.6.7

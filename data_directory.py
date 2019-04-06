@@ -25,7 +25,7 @@ class DataDirectory:
         # Sort by file name to get reproducible results
         self._files.sort(key=lambda f: f.file_name)
 
-    def traverse_sequences( self, data_definition : ModelDataDefinition, shuffle: bool = True ): 
+    def traverse_sequences( self, shuffle: bool = True ): 
         """ Traverse all sequences of all files on this data directory """
 
         shuffled_files = self._files.copy()
@@ -35,7 +35,7 @@ class DataDirectory:
 
         # Traverse all sequences. Those sequences are ordered, will be shuffled by the TF dataset in TrainModel class
         for data_file in shuffled_files:
-            for row in data_file.get_sequences( data_definition ):
+            for row in data_file.get_train_sequences():
                 yield row
 
 
@@ -87,3 +87,10 @@ class DataDirectory:
     def get_n_files(self) -> int:
         """ Get number of files on this instance """
         return len(self._files)
+
+    def get_file(self, file_name : str ) -> DataFile:
+        for file in self._files:
+            if file.file_name == file_name:
+                return file
+        return None
+        

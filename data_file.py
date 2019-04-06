@@ -1,7 +1,8 @@
 import os
-import csv
 from typing import List, Tuple
 from model_data_definition import ModelDataDefinition
+import pandas as pd
+import numpy as np
 
 class DataFile:
     """ CSV train data file content """
@@ -14,29 +15,15 @@ class DataFile:
         """
 
         self.file_name = file_name
+        self.data_definition = data_definition
 
         csv_file_path = os.path.join( data_definition.data_directory , file_name )
         #print("Reading", csv_file_path)
 
-        # Data columns to read are the first ones. There can be others columns after (usually for debug), they will be ignored
-        max_column = data_definition.get_max_column_idx() + 1
-
-        self.file_rows = []
-        with open( csv_file_path , 'r', encoding='utf-8')  as file:
-            csv_reader = csv.reader(file, delimiter=';')
-            first = True
-            for raw_row in csv_reader:
-
-                # IGNORE HEADER ROW!
-                if first:
-                    first = False
-                    continue
-
-                row = []
-                for i in range(max_column):
-                    row.append( int(raw_row[i]) )
-                #print(row)
-                self.file_rows.append(row)
+        # Read raw file with pandas
+        raw_file = pd.read_csv( csv_file_path , sep=';')
+        # Store only referenced columns, less memory
+        self.file_rows = raw_file[ data_definition.get_column_names() ].copy()
 
 
     def get_elements(self, padding_element : List , idx_start : int , idx_end : int ) -> List:
@@ -57,26 +44,62 @@ class DataFile:
         
         return result
 
-    def _is_trainable(self, data_definition : ModelDataDefinition, row: int ) -> bool:
-        """ Returns true if the given token index is trainable """
-        return data_definition.trainable_column_index < 0 or row[data_definition.trainable_column_index] == 1
 
     def get_n_trainable_tokens(self, data_definition : ModelDataDefinition) -> int:
         """ Returns the number of trainables tokens in this file """
-        return sum( self._is_trainable(data_definition, row) for row in self.file_rows )
+        if not self.data_definition.trainable_column:
+            # All trainable
+            return self.file_rows.shape[0]
+        else:
+            return len(self.file_rows[ self.file_rows['trainable'] == 1])
 
-    def get_sequences(self, data_definition : ModelDataDefinition ):
-        """
-        Return sequences in file. There is a sequence for each row in file, of length "data_definition.sequence_length", 
-        padded with "padding_element" if needed.
-        """
-        
-        padding_element = data_definition.get_padding_element()
-        for i in range(len(self.file_rows)):
-            # Check if this row is trainable
-            if data_definition.trainable_column_index >= 0 and self.file_rows[i][data_definition.trainable_column_index] == 0:
-                # It's not trainable
-                continue
 
-            pre_sequence = self.get_elements( padding_element , i - data_definition.sequence_length , i )
-            yield data_definition.sequence_to_tf_train_format( pre_sequence , self.file_rows[i] )
+    def get_input_for_row(self, row_index : int) -> dict:
+        # pandas supports negative indices (are ignored). end_index is included in result
+        start_idx = row_index - self.data_definition.sequence_length
+        end_idx = row_index - 1
+
+        # Get the legth to pad:
+        if start_idx < 0:
+            pad_length = -start_idx
+        else:
+            pad_length = 0
+
+        input = {}
+        for col_name in self.data_definition.sequence_columns:
+            # Get values array for column, unpadded
+            col_values = self.file_rows.loc[ start_idx:end_idx , col_name ].to_numpy()
+            # Add padding (ZEROS!)
+            if pad_length > 0:
+                col_values = np.pad( col_values , (pad_length,0) , 'constant')
+            input[col_name] = col_values
+
+        # Get context values (single values)
+        for col_name in self.data_definition.context_columns:
+            input[col_name] = self.file_rows.at[ row_index , col_name ] 
+
+        return input
+
+
+    def get_train_tuple_for_row(self , row_index : int ) -> tuple:
+        input = self.get_input_for_row( row_index )
+        output = {}
+        for col_name in self.data_definition.output_columns:
+            output[col_name] = self.file_rows.at[ row_index , col_name ]
+        return( input , output )
+
+
+    def _is_trainable(self, row_index: int ) -> bool:
+        """ Returns true if the given token index is trainable """
+        if not self.data_definition.trainable_column:
+            return True
+        return ( self.file_rows.at[ row_index , self.data_definition.trainable_column ] == 1 )
+
+
+    def get_train_sequences(self):
+        # Traverse rows
+        for row_index in range(self.file_rows.shape[0]):
+            if self._is_trainable( row_index ):
+                yield self.get_train_tuple_for_row( row_index )
+
+
