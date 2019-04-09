@@ -34,7 +34,7 @@ class DataDirectory:
         """ Traverse all sequences of all files on this data directory """
         if shuffle:
             shuffled_files = self.get_shuffled_files()
-        else
+        else:
             shuffled_files = self._files
 
         # Traverse all sequences. Those sequences are ordered, will be shuffled by the TF dataset in TrainModel class
