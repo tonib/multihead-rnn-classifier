@@ -77,22 +77,6 @@ class ModelDataDefinition:
         return element
 
 
-    # def sequence_to_tf_train_format(self, input_sequence : List[List[int]] , output : List[int] ) -> tuple:
-    #     """ Convert a data file sequence input and the theorical output to the Tensorflow expected format """
-    #     input_record = {}
-    #     for def_column in self.input_columns:
-    #         input_record[def_column.name] = [item[def_column.index] for item in input_sequence]
-
-    #     for def_column in self.context_columns:
-    #         input_record[def_column.name] = output[def_column.index]
-
-    #     output_record = {}
-    #     for def_column in self.output_columns:
-    #         output_record[def_column.name] = output[def_column.index]
-
-    #     return ( input_record , output_record )
-
-
     def input_sequence_to_tf_predict_format( self , input: dict ) -> dict:
         """ Convert an input to the Tensorflow prediction expected format: Batch with size 1 """
         # TF expects a BATCH of size 1, so that's why the extra []
@@ -107,17 +91,3 @@ class ModelDataDefinition:
         if self.trainable_column:
             all_columns.append( self.trainable_column )
         return set( all_columns )
-
-    # def get_max_column_idx(self) -> int:
-    #     """ Get the maximum column index """
-    #     return max( max(c.index for c in self.input_columns) , max(c.index for c in self.output_columns) , self.trainable_column_index )
-
-
-    # def get_column_index(self, column_name: str) -> int:
-    #     for c in self.input_columns:
-    #         if c.name == column_name:
-    #             return c.index
-    #     for c in self.output_columns:
-    #         if c.name == column_name:
-    #             return c.index
-    #     return -1

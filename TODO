@@ -1,12 +1,8 @@
 TODO:
-- Pandas uses int64. Replace int32 by int64
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
   https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator
   https://stackoverflow.com/questions/48484689/parallelism-isnt-reducing-the-time-in-dataset-map/48781036#48781036
-- Change DataFile organization: Store an array for each column
-- Add cfg to set if csv files have header row, default true
-- Documentation: Fix tf and python version to install
 - Allow to configure the padding value for each column?
 
 REMINDERS
@@ -74,9 +70,11 @@ pandas 0.24.2 # pip install pandas
     REM pip install --upgrade tensorflow < NOT TO THE LATEST VERSION!
 	pip install tensorflow==1.12
 
-	REM Test installation
+	REM Test tf installation
     python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
 
+    REM Install pandas
+    pip install pandas==0.24.2
 
 * Install Tensorflow in Linux with virtualenv
     virtualenv --system-site-packages -p python3 ./venv
