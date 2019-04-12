@@ -90,11 +90,16 @@ class TrainModel:
 
     def _serving_input_receiver_fn(self):
         """ Function to define the model signature """
-        # TODO: Add context columns
         inputs_signature = {}
+        # Sequence columns
         for col_name in self.data_definition.sequence_columns:
             # It seems the shape MUST include the batch size (the 1)
             column_placeholder = tf.placeholder(dtype=tf.int64, shape=[1, self.data_definition.sequence_length], name=col_name)
+            inputs_signature[col_name] = column_placeholder
+        # Context columns (scalar)
+        for col_name in self.data_definition.context_columns:
+            # It seems the shape MUST include the batch size (the 1)
+            column_placeholder = tf.placeholder(dtype=tf.int64, shape=[1,], name=col_name)
             inputs_signature[col_name] = column_placeholder
 
         return tf.estimator.export.ServingInputReceiver(inputs_signature, inputs_signature)
@@ -121,12 +126,12 @@ class TrainModel:
 
     def _model_input_output_types(self) -> tuple:
         """ Returns data model input and output types definition """
-        # TODO: Add context columns
-        # All int numbers: They are indexes to labels (see ColumnInfo)
         inputs = {}
         for col_name in self.data_definition.sequence_columns:
             inputs[ col_name ] = tf.int64
-        
+        for col_name in self.data_definition.context_columns:
+            inputs[ col_name ] = tf.int64
+
         outputs = {}
         for col_name in self.data_definition.output_columns:
             outputs[ col_name ] = tf.int64
@@ -136,10 +141,11 @@ class TrainModel:
 
     def _model_input_output_shapes(self) -> tuple:
         """ Returns data model input and output shapes definition """
-        # TODO: Add context columns
         inputs = {}
         for col_name in self.data_definition.sequence_columns:
             inputs[ col_name ] = (self.data_definition.sequence_length,) # Sequence of "self.data_definition.sequence_length" elements
+        for col_name in self.data_definition.context_columns:
+            inputs[ col_name ] = () # Scalar (one) element
 
         outputs = {}
         for col_name in self.data_definition.output_columns:
