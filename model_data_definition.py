@@ -91,3 +91,24 @@ class ModelDataDefinition:
         if self.trainable_column:
             all_columns.append( self.trainable_column )
         return set( all_columns )
+
+    def _print_column_summary(self, title: str, column_names: List[str]):
+        print(title)
+        for col_name in column_names:
+            column = self.column_definitions[ col_name ]
+            print("   ", column.name, ",", len(column.labels), "labels")
+
+    def print_summary(self):
+        """ Print definitions summary """
+        self._print_column_summary("* SEQUENCE COLUMNS:", self.sequence_columns)
+        self._print_column_summary("* CONTEXT COLUMNS:", self.context_columns)
+        self._print_column_summary("* OUTPUT COLUMNS:", self.output_columns)
+        print("MaxTrainSeconds:", self.max_train_seconds)
+        print("MinLossPercentage:", self.min_loss_percentage)
+        print("PercentageEvaluation:", self.percentage_evaluation)
+        print("MaxEpochs:", self.max_epochs)
+        print("SequenceLength:", self.sequence_length)
+        print("TrainableColumn:", self.trainable_column)
+        print("NNetworkElements:", self.n_network_elements)
+        
+        

@@ -7,6 +7,8 @@ print("Tensorflow version:" , tf.__version__ )
 
 # Read data definition
 data_definition = ModelDataDefinition()
+data_definition.print_summary()
+print()
 
 # Read data
 train_data = DataDirectory()
