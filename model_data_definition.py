@@ -66,6 +66,9 @@ class ModelDataDefinition:
         """ The directory for current train model """
         return os.path.join( self.data_directory , 'model' )        
 
+    def get_validation_set_path(self):
+        """The path to the file with the validation set"""
+        return os.path.join( self.data_directory , 'validationSet.txt' )
 
     def get_empty_element(self) :
         """ Input entry with all zeros """

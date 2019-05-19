@@ -16,3 +16,9 @@ def delete_dir(dir_path: str):
 delete_dir( data_definition.get_current_model_dir_path() )
 delete_dir( data_definition.get_exports_dir_path() )
 
+eval_path = data_definition.get_validation_set_path()
+if os.path.isfile(eval_path):
+    print("Deleting", eval_path)
+    os.remove(eval_path)
+else:
+    print(eval_path, "does not exists")
