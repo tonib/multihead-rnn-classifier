@@ -1,4 +1,5 @@
 TODO:
+- Fix validation dataset for multiple trainings: Write file
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
   https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator

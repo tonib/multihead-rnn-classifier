@@ -43,8 +43,37 @@ class DataDirectory:
                 yield row
 
 
+    def _extract_stored_evaluation_files(self, data_definition : ModelDataDefinition) -> object:
+        """ Try to read the file with the validation set, and return the set """
+        # Files used for validation are stored at dirmodel/validationSet.txt
+        eval_path = data_definition.get_validation_set_path()
+        if not os.path.isfile( eval_path ):
+            return None
+
+        print("Reading evaluation file names from", eval_path)
+        new_data_dir = DataDirectory()
+        with open(eval_path) as f:
+            # Read file lines, each line is a file name
+            for file_name in f.read().splitlines():
+                #print(file_name)
+                data_file = self.get_file(file_name)
+                if data_file == None:
+                    print(file_name , "not found, eval file ignored")
+                    return None
+                self._files.remove(data_file)
+                new_data_dir._files.append(data_file)
+
+        return new_data_dir
+
     def extract_evaluation_files(self, data_definition : ModelDataDefinition) -> object:
         """ Extract randomly a percentage of files to other DataDirectory """
+
+        # Try to read the stored evaluation files
+        existing_eval_set = self._extract_stored_evaluation_files(data_definition)
+        if existing_eval_set:
+            return existing_eval_set
+
+        print("Choosing random samples")
         n_files_to_extract = int( len(self._files) * data_definition.percentage_evaluation )
         if n_files_to_extract <= 0:
             n_files_to_extract = 1
@@ -55,8 +84,13 @@ class DataDirectory:
             self._files.remove(file)
             new_data_dir._files.append(file)
 
-        return new_data_dir
+        eval_path = data_definition.get_validation_set_path()
+        print("Writing evaluation file names to", eval_path)
+        with open(eval_path, 'w') as f:
+            for data_file in new_data_dir._files:
+                print(data_file.file_name, file=f)
 
+        return new_data_dir
 
     def get_n_total_tokens(self) -> int:
         """ Total number of tokens in all files """
@@ -93,6 +127,7 @@ class DataDirectory:
         return len(self._files)
 
     def get_file(self, file_name : str ) -> DataFile:
+        """ Get a file by its name. None if the file is not found """
         for file in self._files:
             if file.file_name == file_name:
                 return file
