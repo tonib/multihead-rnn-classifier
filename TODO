@@ -36,6 +36,8 @@ https://stackoverflow.com/questions/46098863/how-to-import-an-saved-tensorflow-m
 3,7 CPS -> 0,8 WPS
 
 requirements:
+Visual C++ 2015 Redistributable (Windows)
+CPU may requiere AVX (see https://github.com/tensorflow/tensorflow/issues/17386)
 pyton 3.6.7
 tensorflow 1.12
 numpy 1.16.1
