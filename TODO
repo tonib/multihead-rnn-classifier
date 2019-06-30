@@ -37,7 +37,7 @@ https://stackoverflow.com/questions/46098863/how-to-import-an-saved-tensorflow-m
 
 requirements:
 pyton 3.6.7
-tensorflow 1.2
+tensorflow 1.12
 numpy 1.16.1
 pandas 0.24.2 # pip install pandas
 
