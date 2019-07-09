@@ -158,6 +158,13 @@ class TrainModel:
     # TRAINING
     ###################################
 
+    def evaluate(self, eval_data : DataDirectory ) -> object:
+        """ Evaluate model over evaluation data set """
+        print("Evaluating...")
+        result = self.estimator.evaluate( input_fn=lambda:self._get_tf_input_fn( eval_data , False ) )
+        print("Evaluation: ", result)
+        return result
+
     def train_model(self, train_data : DataDirectory , eval_data : DataDirectory ):
         """ Train dataset """
 
@@ -174,9 +181,7 @@ class TrainModel:
             self.estimator.train( input_fn=lambda:self._get_tf_input_fn( train_data ) )
             train_time = time() - epoch_start
             
-            print("Evaluating...")
-            result = self.estimator.evaluate( input_fn=lambda:self._get_tf_input_fn( eval_data ) )
-            print("Evaluation: ", result)
+            result = self.evaluate(eval_data)
 
             new_loss = result['loss']
             loss_decrease = 0

@@ -110,7 +110,7 @@ class DataDirectory:
         print("Total n. tokens:" , total_tokens )
         print("Total n. TRAINABLE tokens:" , self.get_n_total_trainable_tokens( data_definition ) )
         print("Mean tokens / file:" , total_tokens / len(self._files))
-        print("Maximum file tokens lenght:" , max( len(file.file_rows) for file in self._files ) )
+        print("Maximum file tokens length:" , max( len(file.file_rows) for file in self._files ) )
         print()
 
 

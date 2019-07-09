@@ -1,9 +1,10 @@
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
 from train_model import TrainModel
-import tensorflow as tf
 
-print("Tensorflow version:" , tf.__version__ )
+#################################################
+# Evaluates the model performance
+#################################################
 
 # Read data definition
 data_definition = ModelDataDefinition()
@@ -19,18 +20,12 @@ eval_data = train_data.extract_evaluation_files( data_definition )
 
 # Print summary
 print()
-train_data.print_summary(data_definition, "Train data")
 eval_data.print_summary(data_definition, "Evaluation data")
-
-if train_data.get_n_files() == 0 or eval_data.get_n_files() == 0:
-    print("ERROR: No files enough to train")
-    exit()
 
 # Create model
 print("Creating model...")
 model = TrainModel( data_definition )
 
-# Training loop
+# Evaluate model
 print()
-model.train_model( train_data , eval_data )
-
+model.evaluate( eval_data )
