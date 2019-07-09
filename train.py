@@ -22,7 +22,7 @@ print()
 train_data.print_summary(data_definition, "Train data")
 eval_data.print_summary(data_definition, "Evaluation data")
 
-if train_data.get_n_files() == 0 or eval_data.get_n_files() == 0:
+if len( train_data.get_files() ) == 0 or len( eval_data.get_files() ) == 0:
     print("ERROR: No files enough to train")
     exit()
 

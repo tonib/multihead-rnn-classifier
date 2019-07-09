@@ -122,9 +122,9 @@ class DataDirectory:
                 result.append( row[column_index] )
         return result
 
-    def get_n_files(self) -> int:
-        """ Get number of files on this instance """
-        return len(self._files)
+    def get_files(self) -> List[DataFile]:
+        """ Get files on this instance """
+        return self._files
 
     def get_file(self, file_name : str ) -> DataFile:
         """ Get a file by its name. None if the file is not found """
