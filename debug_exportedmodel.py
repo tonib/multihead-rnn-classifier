@@ -23,9 +23,14 @@ predictor = PredictionModel(data_definition)
 def input_to_json_string( input_row : dict ) -> str:
     """ Dataset rows contain numpy arrays that are not serializable to JSON.
     This converts all numpy arrays to python arrays, and returns the input
-    as a JSON object """
-    for sequence_column_name in data_definition.sequence_columns:
-        input_row[ sequence_column_name ] = input_row[ sequence_column_name ].tolist()
+    as a JSON object. Same with context columns (int64 scalars) """
+
+    for column_name in data_definition.sequence_columns:
+        input_row[ column_name ] = input_row[ column_name ].tolist()
+
+    for column_name in data_definition.context_columns:
+        input_row[ column_name ] = int( input_row[ column_name ] )
+
     return json.dumps(input_row)
 
 # Test eval data set:
