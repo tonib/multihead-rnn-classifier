@@ -1,6 +1,7 @@
 from prediction_model import PredictionModel
 from model_data_definition import ModelDataDefinition
 from data_directory import DataDirectory
+import json
 
 ####################################################
 # DEBUG PREDICTIONS ON EVALUATION DATA SET
@@ -19,13 +20,21 @@ eval_data = train_data.extract_evaluation_files( data_definition )
 print("Reading latest exported model")
 predictor = PredictionModel(data_definition)
 
+def input_to_json_string( input_row : dict ) -> str:
+    """ Dataset rows contain numpy arrays that are not serializable to JSON.
+    This converts all numpy arrays to python arrays, and returns the input
+    as a JSON object """
+    for sequence_column_name in data_definition.sequence_columns:
+        input_row[ sequence_column_name ] = input_row[ sequence_column_name ].tolist()
+    return json.dumps(input_row)
+
 # Test eval data set:
 n_succeed = 0
 n_total = 0
 for data_file in eval_data.get_files():
     for row in data_file.get_train_sequences():
         print("----------------------------------")
-        print("Input:", row[0])
+        print("Input:", input_to_json_string(row[0]) )
         print("Output:", row[1])
 
         real_output_idx = row[1]['outputTypeIdx']
