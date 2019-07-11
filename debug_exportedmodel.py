@@ -2,6 +2,7 @@ from prediction_model import PredictionModel
 from model_data_definition import ModelDataDefinition
 from data_directory import DataDirectory
 import json
+import os
 
 ####################################################
 # DEBUG PREDICTIONS ON EVALUATION DATA SET
@@ -20,7 +21,7 @@ eval_data = train_data.extract_evaluation_files( data_definition )
 print("Reading latest exported model")
 predictor = PredictionModel(data_definition)
 
-def input_to_json_string( input_row : dict ) -> str:
+def input_to_serializable( input_row : dict ):
     """ Dataset rows contain numpy arrays that are not serializable to JSON.
     This converts all numpy arrays to python arrays, and returns the input
     as a JSON object. Same with context columns (int64 scalars) """
@@ -31,34 +32,53 @@ def input_to_json_string( input_row : dict ) -> str:
     for column_name in data_definition.context_columns:
         input_row[ column_name ] = int( input_row[ column_name ] )
 
-    return json.dumps(input_row)
+def output_to_serializable( output_row : dict ):
+    """ Same as input_to_serializable, but for outputs """
+    for column_name in data_definition.output_columns:
+        output_row[ column_name ] = int( output_row[ column_name ] )
+
+# Column name for succeed ratios:
+succeed_column_name = 'outputTypeIdx'
 
 # Test eval data set:
-n_succeed = 0
-n_total = 0
+total_succeed = 0
+total = 0
 for data_file in eval_data.get_files():
-    for row in data_file.get_train_sequences():
-        print("----------------------------------")
-        print("Input:", input_to_json_string(row[0]) )
-        print("Output:", row[1])
+    file_debug = []
+    file_succeed = 0
+    file_total = 0
 
-        real_output_idx = row[1]['outputTypeIdx']
-        real_label = data_definition.column_definitions['outputTypeIdx'].labels[ real_output_idx ]
+    for row in data_file.get_train_sequences():
+        sequence = {}
+
+        input_to_serializable(row[0])
+        output_to_serializable(row[1])
+
+        sequence['input'] = row[0]
+        sequence['output'] = row[1]
+        
+        real_output_idx = row[1][succeed_column_name]
 
         prediction = predictor.predict(row[0], data_definition)
-        print( "Prediction:" , prediction )
-        predicted_idx = prediction['outputTypeIdx']['class_prediction']
-        predicted_label = data_definition.column_definitions['outputTypeIdx'].labels[ predicted_idx ]
+        sequence['prediction'] = prediction
+        predicted_idx = prediction[succeed_column_name]['class_prediction']
         prediction_ok = ( real_output_idx == predicted_idx )
 
-        print()
-        print( "Real label:", real_label , "real class:" , real_output_idx )        
-        print( "outputTypeIdx predicted label:" , predicted_label , "predicted class:" , predicted_idx , "Ok?:", prediction_ok)
+        file_debug.append( sequence )
 
         if prediction_ok:
-            n_succeed += 1
-        n_total += 1
+            file_succeed += 1
+        file_total += 1
 
-        print("----------------------------------")
+    if file_total > 0:
+        print(data_file.file_name, ":" , file_total, ", n. ok predictions:" , file_succeed , ", ratio:" , file_succeed/file_total )
 
-print("N. total:" , n_total, ", n. ok predictions:" , n_succeed , ", ratio:" , n_succeed/n_total )
+    total_succeed += file_succeed
+    total += file_total
+
+    debug_file_path = os.path.join( data_definition.data_directory , data_file.file_name + ".json" )
+    with open( debug_file_path , 'w') as outfile:  
+        json.dump(file_debug, outfile)
+
+if total > 0:
+    print("N. total:" , total, ", n. ok predictions:" , total_succeed , ", ratio:" , total_succeed/total )
