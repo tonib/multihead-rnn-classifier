@@ -6,6 +6,12 @@ TODO:
 - Allow to configure the padding value for each column?
 - Remove confusion matrix (unfinished and will not be used)
 - Model server: Autopad sequences
+- Generate a file with the last evaluation info: It will be used to ponderate probabilites based on accuracy
+- Generate .JSON debug files on a different directory: Otherwise it's a mess...
+- Upgrade to TF 1.14
+- Allow to configure the cell type (LSTM)
+- Allow to configure dropout and/or weight decay
+- DOCUMENTATION: Add prerequisites (tf, pandas,...)
 
 REMINDERS
 
@@ -40,7 +46,7 @@ requirements:
 Visual C++ 2015 Redistributable (Windows)
 CPU may requiere AVX (see https://github.com/tensorflow/tensorflow/issues/17386)
 pyton 3.6.7
-tensorflow 1.12
+tensorflow 1.14
 numpy 1.16.1
 pandas 0.24.2 # pip install pandas
 
@@ -52,7 +58,7 @@ pandas 0.24.2 # pip install pandas
 	- Mark "Add Python 3.6 to PATH"
 	- Click "install now"
 
-** Install tensorflow 1.12
+** Install tensorflow 1.14 Windows with virtualenv
     cd [PARENT_DIR]
 
 	REM Install virtualenv
@@ -70,9 +76,9 @@ pandas 0.24.2 # pip install pandas
 	REM Why?
     REM pip list
 
-	REM Install tensorflow 1.12
+	REM Install tensorflow 1.14
     REM pip install --upgrade tensorflow < NOT TO THE LATEST VERSION!
-	pip install tensorflow==1.12
+	pip install tensorflow==1.14
 
 	REM Test tf installation
     python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
@@ -80,11 +86,14 @@ pandas 0.24.2 # pip install pandas
     REM Install pandas
     pip install pandas==0.24.2
 
-* Install Tensorflow in Linux with virtualenv
+* Install Tensorflow 1.14 in Linux with virtualenv
     virtualenv --system-site-packages -p python3 ./venv
     source ./venv/bin/activate
     pip install --upgrade pip
     pip list
-    pip install --upgrade tensorflow
+    #pip install --upgrade tensorflow NOT TO THE LATEST VERSION
+    pip install tensorflow==1.14
+    # Test TF installation
     python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
+    pip install pandas==0.24.2
 

@@ -18,7 +18,7 @@ In this documentation I will use the term "token" for a "word" on a source code,
 As is defined by the RNNEstimator, the inputs are:
 * The "sequence": A list of tokens previous to the cursor position, up to a maximum number. The information to send to the model for each
   token in the sequence is an array. As example, it could be an array [ TOKENTYPE, VARIABLETYPE ], where TOKENTYPE could be "if", "+",
-  "variable", ... , and VARIABLETYPE "none", "char", "List<int>",...
+  "variable", ... , and VARIABLETYPE "none", "char", "List[int]",...
 * The "context" is an array with information about the current cursor edition position. It could be, as example, if the cursor is on a call
   ( "object.method( |" ), the expected parameter type on that position, and the file type we are editing (ex. ".java", ".cs"). This is, an
   array [ PARMTYPE , FILETYPE ]
