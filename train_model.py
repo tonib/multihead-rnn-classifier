@@ -210,17 +210,3 @@ class TrainModel:
                 return
 
         print("Max. epoch reached, stopping")
-
-    ###################################
-    # DEBUG / EVALUATION
-    ###################################
-
-    def confusion_matrix(self, eval_data : DataDirectory ,  column_name: str ):
-
-        predictions = list( self.estimator.predict( input_fn=lambda:self._get_tf_input_fn( eval_data , shuffle=False ) ) )
-        class_prediction = [ int( p[ (column_name, 'classes') ][0] ) for p in predictions ]
-        print( class_prediction[:10] )
-        real_label = eval_data.get_column_values(self.data_definition, column_name)
-        print( real_label[:10] )
-
-        #confusion_matrix = tf.confusion_matrix(labels, predictions)
