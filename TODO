@@ -1,4 +1,13 @@
 TODO:
+- Write own estimator model funcion implementation
+    * https://www.tensorflow.org/guide/custom_estimators
+    * https://github.com/GoogleCloudPlatform/tf-estimator-tutorials/blob/master/06_Sequence_%20Models/01%20-%20RNN%20with%20LSTM%20-%20Predicting%20the%20Next%20Values%20-%20Single%20Pattern.ipynb
+    * https://androidkt.com/stock-price-prediction/
+    * https://danijar.com/introduction-to-recurrent-networks-in-tensorflow/
+    * https://gist.github.com/planetA/b45aaa7ed92699a8b82fda80934a667d
+    * https://www.tensorflow.org/beta/tutorials/text/text_generation
+    * GRUBlockCellV2 for better performance? (see rnn.py)
+
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
   https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator
@@ -7,7 +16,6 @@ TODO:
 - Model server: Autopad sequences
 - Generate a file with the last evaluation info: It will be used to ponderate probabilites based on accuracy
 - Generate .JSON debug files on a different directory: Otherwise it's a mess...
-- Upgrade to TF 1.14
 - Allow to configure the cell type (LSTM)
 - Allow to configure dropout and/or weight decay
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
