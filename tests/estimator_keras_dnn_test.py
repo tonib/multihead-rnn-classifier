@@ -8,7 +8,7 @@ import tensorflow.keras.layers
 ##########################################################################################
 
 # Uncomment this to show warnings
-#tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 # Code taken from https://github.com/tensorflow/models/blob/master/samples/core/get_started/custom_estimator.py
 
@@ -59,7 +59,9 @@ def model_fn(
     # Use `input_layer` to apply the feature columns.
     # The functional use of DenseFeatures seems unsupported right now... (tf1.14)
     #net = tf.keras.layers.DenseFeatures(params['feature_columns'])
+    #print( params['feature_columns'] )
     net = tf.compat.v1.feature_column.input_layer(features, params['feature_columns'])
+    #print( net.shape )
 
     # Build and stack the hidden layers, sized according to the 'hidden_units' param.
     for units in params['hidden_units']:
