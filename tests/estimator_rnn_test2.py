@@ -5,9 +5,9 @@ import tensorflow.contrib.feature_column as contrib_feature_column
 import tensorflow.compat.v1.feature_column as tf_feature_column
 from typing import List
 
-############################################################
-# TEST TO CREATE A CUSTOM RNN ESTIMATOR
-############################################################
+########################################################################################################
+# TEST TO CREATE A CUSTOM RNN ESTIMATOR WITH MULTIPLE OUTPUTS (ONE FOR EACH CLASSIFIER)
+########################################################################################################
 
 # Simple sample text to learn: repetitions of "0123456789"
 text=""
@@ -53,7 +53,9 @@ def pad_sequence( text_sequence : str ) -> List[str]:
 # An input sequece is a list of characters ( ex. [ '0' , '1' , ... ] )
 # inputs['character'] will store a list of sequences
 inputs = { 'character': [] }
-# Outputs is a list of int's, to reduce complexity
+# Outputs is a list of expected outputs. Each expected output is an array of 3 positions: [ previous , predicted , next ]
+# where "predicted" if the next number in the sequence, "previous" is the previous one, and next is the next.
+# So, if the sequence is "3456", the output will be [ 6 , 7 , 8 ], for sequence "789", the output will be [ 9 , 0 , 1 ]
 outputs =  []
 
 def prepare_train_sequences_length(seq_length : int):
@@ -67,7 +69,9 @@ def prepare_train_sequences_length(seq_length : int):
         sequence = text[i : i + seq_length]
         sequence_output = text[i + seq_length : i + seq_length+1]
         inputs['character'].append( pad_sequence(sequence) )
-        outputs.append( int(sequence_output) )
+
+        predicted = int(sequence_output)
+        outputs.append( [ (predicted - 1 ) % 10 , predicted , ( predicted + 1 ) % 10 ] )
 
 
 # Prepare sequences of a range of lengths from 1 to 7 characters
@@ -96,78 +100,108 @@ def input_fn(n_repetitions = 1) -> tf.data.Dataset:
     
     return ds
 
+def model_output(rnn_layer, n_classes, output_name, output_labels, mode) -> dict:
+    """ Define each model output """
+
+    output = {}
+
+    # Output layer. Compute logits (1 per class)
+    output['logits'] = tf.keras.layers.Dense(n_classes, activation=None)(rnn_layer)
+
+    # Compute predictions.
+    output['predicted_classes'] = tf.argmax(output['logits'], 1)
+
+    if mode != tf.estimator.ModeKeys.PREDICT:
+        # mode == TRAIN or EVAL
+        # Compute loss
+        output['loss'] = tf.compat.v1.losses.sparse_softmax_cross_entropy(labels=output_labels, logits=output['logits'])
+        # The operation that will compute the predictions accuracy
+        output['accuracy_op'] = tf.compat.v1.metrics.accuracy(labels=output_labels,
+            predictions=output['predicted_classes'],
+            name='accuracy/' + output_name)
+
+    return output
+
+
 def model_fn(
-   features, # Doc says: "This is batch_features from input_fn". THEY ARE THE NET INPUTS
-   labels,   # Doc says: "This is batch_labels from input_fn". THEY ARE THE EXPECTED NET OUTPUTS. I guess they are not feeded in 
-             # prediction mode. TODO: Check it
+   features, # Doc says: "This is batch_features from input_fn". THEY ARE THE NET INPUTS, defined by the input_fn
+   labels,   # Doc says: "This is batch_labels from input_fn". THEY ARE THE EXPECTED NET OUTPUTS, defined by the input_fn. 
+             # I guess they are not feeded in prediction mode. TODO: Check it
    mode,     # An instance of tf.estimator.ModeKeys
    params):  # Additional configuration
     """ Function that defines the model """
     
-    
+    #print("*********** labels shape:", labels.shape )
+
     # The input layer
-    #input = tf.compat.v1.feature_column.input_layer(features, params['feature_columns'])
     sequence_input_layer = tf.keras.experimental.SequenceFeatures( params['feature_columns'] )
-    sequence_input, sequence_length = sequence_input_layer(features)
+    # TODO: Second returned value is "sequence_length". What is used for?
+    sequence_input, _ = sequence_input_layer(features)
 
 
     # Define a GRU layer
     rnn_layer = tf.keras.layers.GRU( params['hidden_units'] )(sequence_input)
 
-    # Output layer. Compute logits (1 per class)
-    logits = tf.keras.layers.Dense(params['n_classes'], activation=None)(rnn_layer)
+    # Create a classifier for each output to predict
+    # TODO: Get the number of classifiers from the labels shape
+    classifiers = []
+    for i in range(3):
+        # Output labels are only defined if we are training / evaluating:
+        if mode == tf.estimator.ModeKeys.PREDICT:
+            i_output_labels = None
+        else:
+            # Explanation for "labels[:, i]": First dimension is the batch, keep it as is. Second is the output for the i-th output
+            i_output_labels = labels[:, i]
+        classifiers.append( model_output(rnn_layer , 10 , 'output' + str(i) , i_output_labels , mode) )
 
-    # Compute predictions.
-    # I guess dimension 0 is the batch and axis 1 are the real logits, I guess this computes a vector with the max for each batch
-    # So logits = [ [0.1, 0.2] , [0.3 , 0.4] ] will become predicted_classes = [ 0.2 , 0.4 ]
-    predicted_classes = tf.argmax(logits, 1)
     if mode == tf.estimator.ModeKeys.PREDICT:
-        predictions = {
-            # Example says "There is", hehehe
-            # "predicted_classes[:, tf.newaxis]" I guess converts the logits for each batch to an array of arrays
-            # So [ 1 , 2 ] will become [ [1] , [2] ]. "There is"
-            'class_ids': predicted_classes[:, tf.newaxis],
-            # Ok
-            'probabilities': tf.nn.softmax(logits),
-            # Ok
-            'logits': logits,
-        }
+        predictions = {}
+        for i in range(3):
+            prefix = 'output' + str(i) + '/'
+            predictions[ prefix + 'class_id' ] = classifiers[i]['predicted_classes']
+            predictions[ prefix + 'probabilities' ] = tf.nn.softmax( classifiers[i]['logits'] )
+            predictions[ prefix + 'logits' ] = classifiers[i]['logits']
+
         return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
-    # If we still here, we are training or evaluating. We will need the loss, calculated against the predicted logits
-    print("**** labels shape:", labels.shape )
-    print("**** logits shape:", logits.shape )
-    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
-    print("**** loss shape:", loss.shape )
 
     # The operation that will compute the predictions accuracy
-    accuracy = tf.compat.v1.metrics.accuracy(labels=labels,
-                                predictions=predicted_classes,
-                                name='accuracy')
+    # accuracy = tf.compat.v1.metrics.accuracy(labels=labels,
+    #                             predictions=predicted_classes,
+    #                             name='accuracy')
 
-    # The object that we will return as metrics
-    metrics = { 'accuracy': accuracy }
+    # The object that we will return as metrics (TODO: For tensorflow?)
+    # TODO: Implement this
+    #metrics = { 'accuracy': accuracy }
+    metrics = {}
 
     # This is for Tensorboard...
     # tf.metrics.accuracy returns (values, update_ops). So accuracy[1] I guess is update_ops. Documentation says
     # "An operation that increments the total and count variables appropriately and whose value matches accuracy"
     # Sooo... I guess this is an operation that will accumulate accuracy across all batches feeded to the net
-    tf.compat.v1.summary.scalar('accuracy', accuracy[1])
+    # TODO: Implement this
+    #tf.compat.v1.summary.scalar('accuracy', accuracy[1])
+
+    # Compute total loss
+    # TODO: Compute mean total loss ???
+    total_loss = classifiers[0]['loss']
+    for i in range(1, 3):
+        total_loss = total_loss + classifiers[i]['loss']
 
     # If we are evaluating the model, we are done:
     if mode == tf.estimator.ModeKeys.EVAL:
         return tf.estimator.EstimatorSpec(
-            mode, loss=loss, eval_metric_ops=metrics)
+            mode, loss=total_loss, eval_metric_ops=metrics)
 
     # If we still here, we are training
     # Create the optimizer (AdagradOptimizer in this case)
     optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate=0.1)
     # Create the "optimize weigths" operacion, based on the given optimizer
     # TODO: What is "global_step"?
-    train_op = optimizer.minimize(loss, global_step=tf.compat.v1.train.get_global_step())
+    train_op = optimizer.minimize(total_loss, global_step=tf.compat.v1.train.get_global_step())
 
     # Done for training
-    return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
+    return tf.estimator.EstimatorSpec(mode, loss=total_loss, train_op=train_op)
 
 # The single character sequence 
 # character_column = contrib_feature_column.sequence_categorical_column_with_vocabulary_list( 'character' , vocabulary_list = vocabulary )
@@ -196,7 +230,7 @@ estimator = tf.estimator.Estimator(
         'n_classes': 10,
     })
 
-for _ in range(10):
+for _ in range(4):
     estimator.train(input_fn=input_fn)
 
 def predict( text : str ):
@@ -212,7 +246,9 @@ def predict( text : str ):
     print("Input sequence: " , text )
     for r in result:
         #print("Prediction: " , r)
-        print('Class output: ', r['class_ids'])
+        #print('Class output: ', r['class_ids'])
+        print('Class output: ', r['output0/class_id'] , r['output1/class_id'] , r['output2/class_id'] )
+
     print("-----")
 
 # Some predictions in the train set (memory)
