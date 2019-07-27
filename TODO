@@ -7,6 +7,8 @@ TODO:
     * https://gist.github.com/planetA/b45aaa7ed92699a8b82fda80934a667d
     * https://www.tensorflow.org/beta/tutorials/text/text_generation
     * GRUBlockCellV2 for better performance? (see rnn.py)
+    * https://www.tensorflow.org/beta/guide/keras/rnn (TF 2.0)
+    * https://www.tensorflow.org/beta/tutorials/keras/feature_columns (TF 2.0, feed feature columns as Keras input)
 
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:

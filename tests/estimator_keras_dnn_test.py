@@ -1,11 +1,14 @@
 import tensorflow as tf
+import tensorflow.compat.v2.feature_column as tf_feature_column
 import tensorflow.keras.layers
 
 ##########################################################################################
-# TEST TO TRY TO LEARN TO CREATE A CUSTOM ESTIMATOR
-# BECAUSE GOOD DOCUMENTATION IS A LOST ART THESE DAYS
-# (OH BILL GATES, I MISS YOU AND YOUR MSDN SO MUCH, RESCUE ME FROM PHYTON PROGRAMMERS!)
+# TEST TO TRY TO LEARN TO CREATE A CUSTOM ESTIMATOR FROM A KERAS MODEL 
+# AND REMOVE A BUNCH OF DEPRECATED MESSAGES
 ##########################################################################################
+
+# Uncomment this to show warnings
+#tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 # Code taken from https://github.com/tensorflow/models/blob/master/samples/core/get_started/custom_estimator.py
 
@@ -27,7 +30,7 @@ def input_fn(batch_size, repeat_times):
 
     dataset = tf.data.Dataset.from_tensors( ( xor_dataset_inputs , xor_dataset_outputs ) )
 
-    # TODO: Why this don't work if .batch() is used?
+    # TODO: Why thist don't work if .batch() is used?
     # Shuffle, repeat, and DO NOT BATCH the examples. Each ( xor_dataset_inputs , xor_dataset_outputs ) is a batch of shape (4,)
     if repeat_times:
         dataset = dataset.repeat(repeat_times)
@@ -54,14 +57,16 @@ def model_fn(
     print( "****************" , labels )
 
     # Use `input_layer` to apply the feature columns.
-    net = tf.feature_column.input_layer(features, params['feature_columns'])
+    # The functional use of DenseFeatures seems unsupported right now... (tf1.14)
+    #net = tf.keras.layers.DenseFeatures(params['feature_columns'])
+    net = tf.compat.v1.feature_column.input_layer(features, params['feature_columns'])
 
     # Build and stack the hidden layers, sized according to the 'hidden_units' param.
     for units in params['hidden_units']:
-        net = tf.layers.dense(net, units=units, activation=tf.nn.relu)
+        net = tf.keras.layers.Dense(units, activation='relu')(net)
 
-    # Compute logits (1 per class).
-    logits = tf.layers.dense(net, params['n_classes'], activation=None)
+    # Output layer. Compute logits (1 per class)
+    logits = tf.keras.layers.Dense(params['n_classes'], activation=None)(net)
 
     # Compute predictions.
     # I guess dimension 0 is the batch and axis 1 are the real logits, I guess this computes a vector with the max for each batch
@@ -83,10 +88,10 @@ def model_fn(
     # If we still here, we are training or evaluating. We will need the loss, calculated against the predicted logits
     # TODO: If there are only 2 classes, this stills valid?
     # TODO: WHY "sparse"? logits should be a dense vector... Maybe it refers to the single activated output for the class. Check it
-    loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
 
     # The operation that will compute the predictions accuracy
-    accuracy = tf.metrics.accuracy(labels=labels,
+    accuracy = tf.compat.v1.metrics.accuracy(labels=labels,
                                 predictions=predicted_classes,
                                 name='accuracy')
 
@@ -97,7 +102,7 @@ def model_fn(
     # tf.metrics.accuracy returns (values, update_ops). So accuracy[1] I guess is update_ops. Documentation says
     # "An operation that increments the total and count variables appropriately and whose value matches accuracy"
     # Sooo... I guess this is an operation that will accumulate accuracy across all batches feeded to the net
-    tf.summary.scalar('accuracy', accuracy[1])
+    tf.compat.v1.summary.scalar('accuracy', accuracy[1])
 
     # If we are evaluating the model, we are done:
     if mode == tf.estimator.ModeKeys.EVAL:
@@ -106,10 +111,10 @@ def model_fn(
 
     # If we still here, we are training
     # Create the optimizer (AdagradOptimizer in this case)
-    optimizer = tf.train.AdagradOptimizer(learning_rate=0.1)
+    optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate=0.1)
     # Create the "optimize weigths" operacion, based on the given optimizer
     # TODO: What is "global_step"?
-    train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
+    train_op = optimizer.minimize(loss, global_step=tf.compat.v1.train.get_global_step())
 
     # Done for training
     return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
@@ -117,8 +122,11 @@ def model_fn(
 
 # Feature columns describe how to use the input.
 feature_columns = []
-feature_columns.append( tf.feature_column.indicator_column( tf.feature_column.categorical_column_with_identity( key='x1', num_buckets=2) ) )
-feature_columns.append( tf.feature_column.indicator_column( tf.feature_column.categorical_column_with_identity( key='x2', num_buckets=2) ) )
+c = tf_feature_column.categorical_column_with_identity( key='x1', num_buckets=2)
+feature_columns.append( tf_feature_column.indicator_column( c ) )
+
+c = tf_feature_column.categorical_column_with_identity( key='x2', num_buckets=2)
+feature_columns.append( tf_feature_column.indicator_column( c ) )
 
 # Create the estimator
 estimator = tf.estimator.Estimator(
