@@ -113,12 +113,29 @@ def model_output(rnn_layer, n_classes, output_name, output_labels, mode) -> dict
 
     if mode != tf.estimator.ModeKeys.PREDICT:
         # mode == TRAIN or EVAL
+
         # Compute loss
         output['loss'] = tf.compat.v1.losses.sparse_softmax_cross_entropy(labels=output_labels, logits=output['logits'])
-        # The operation that will compute the predictions accuracy
-        output['accuracy_op'] = tf.compat.v1.metrics.accuracy(labels=output_labels,
+
+        # The operation that will compute the predictions accuracy for metrics
+        output['accuracy_metric'] = tf.compat.v1.metrics.accuracy(labels=output_labels,
             predictions=output['predicted_classes'],
-            name='accuracy/' + output_name)
+            name='acc_op_' + output_name)
+
+        # This is for Tensorboard...
+        # tf.metrics.accuracy returns (values, update_ops). So accuracy[1] I guess is update_ops. Documentation says
+        # "An operation that increments the total and count variables appropriately and whose value matches accuracy"
+        # Sooo... I guess this is an operation that will accumulate accuracy across all batches feeded to the net
+        # Documentation say this is for training
+        # tf.compat.v1.summary.scalar('accuracy/' + output_name, output['accuracy_metric'][1])
+        tf.compat.v1.summary.scalar('accuracy/' + output_name, output['accuracy_metric'][1])
+
+        # Metric operation for each output loss
+        # https://github.com/tensorflow/tensorflow/issues/14041
+        output['loss_metric'] = tf.metrics.mean(values=output['loss'], name='loss_metric_op_' + output_name)
+
+        # Tensorboard metric for each output loss (mean loss)
+        tf.compat.v1.summary.scalar('loss/' + output_name, output['loss_metric'][1])
 
     return output
 
@@ -144,15 +161,14 @@ def model_fn(
 
     # Create a classifier for each output to predict
     # TODO: Get the number of classifiers from the labels shape
+    i_output_labels = None
     classifiers = []
     for i in range(3):
         # Output labels are only defined if we are training / evaluating:
-        if mode == tf.estimator.ModeKeys.PREDICT:
-            i_output_labels = None
-        else:
+        if mode != tf.estimator.ModeKeys.PREDICT:
             # Explanation for "labels[:, i]": First dimension is the batch, keep it as is. Second is the output for the i-th output
             i_output_labels = labels[:, i]
-        classifiers.append( model_output(rnn_layer , 10 , 'output' + str(i) , i_output_labels , mode) )
+        classifiers.append( model_output(rnn_layer , 10 , 'output' + str(i), i_output_labels , mode) )
 
     if mode == tf.estimator.ModeKeys.PREDICT:
         predictions = {}
@@ -170,17 +186,14 @@ def model_fn(
     #                             predictions=predicted_classes,
     #                             name='accuracy')
 
-    # The object that we will return as metrics (TODO: For tensorflow?)
-    # TODO: Implement this
-    #metrics = { 'accuracy': accuracy }
+    # The object that we will return as metrics
+    # Documentation says this is only for training
     metrics = {}
+    for i in range(3):
+        name = 'output' + str(i)
+        metrics[ 'accuracy/' + name ] = classifiers[i]['accuracy_metric']
+        metrics[ 'loss/' + name ] = classifiers[i]['loss_metric']
 
-    # This is for Tensorboard...
-    # tf.metrics.accuracy returns (values, update_ops). So accuracy[1] I guess is update_ops. Documentation says
-    # "An operation that increments the total and count variables appropriately and whose value matches accuracy"
-    # Sooo... I guess this is an operation that will accumulate accuracy across all batches feeded to the net
-    # TODO: Implement this
-    #tf.compat.v1.summary.scalar('accuracy', accuracy[1])
 
     # Compute total loss
     # TODO: Compute mean total loss ???
@@ -228,10 +241,19 @@ estimator = tf.estimator.Estimator(
         'hidden_units': 7,
         # The model must choose between 2 classes.
         'n_classes': 10,
-    })
+    },
+    model_dir="model"
+    )
 
+eval_result = estimator.evaluate( input_fn=input_fn )
+print('\nEval result:', eval_result)
 for _ in range(4):
+    # Train
     estimator.train(input_fn=input_fn)
+    # Evaluate the model.
+    eval_result = estimator.evaluate( input_fn=input_fn )
+    print('\nEval result:', eval_result)
+
 
 def predict( text : str ):
     """

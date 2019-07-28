@@ -10,6 +10,11 @@ TODO:
     * https://www.tensorflow.org/beta/guide/keras/rnn (TF 2.0)
     * https://www.tensorflow.org/beta/tutorials/keras/feature_columns (TF 2.0, feed feature columns as Keras input)
 
+- Multiple outputs:
+    * IMPLEMENT context columns
+    * https://github.com/tensorflow/tensorflow/issues/15773
+    * https://stackoverflow.com/questions/38517124/how-to-minimize-two-loss-using-tensorflow
+
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
   https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator
@@ -106,3 +111,9 @@ pandas 0.24.2 # pip install pandas
     python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
     pip install pandas==0.24.2
 
+
+* Prediction format:
+Prediction: {'isCollection': {'class_prediction': 0, 'probabilities': [0.9971703886985779, 0.0028295705560594797]}, 'legthBucket': {'class_prediction': 0, 'probabilities': [0.38102802634239197, 0.3096150755882263, 0.013816392980515957, 0.1163591593503952, 0.006184279453009367, 0.0024974108673632145, 0.0019232947379350662, 0.01665205880999565, 0.005016367882490158, 0.0043900893069803715, 0.0362323597073555, 0.004558942746371031, 0.0015884715830907226, 0.029023174196481705, 0.014890970662236214, 0.04388183727860451, 0.008182627148926258, 0.004159428644925356]}, 'decimalsBucket': {'class_prediction': 0, 'probabilities': [0.9940299987792969, 3.4467918794689467e-06, 0.0036471218336373568, 0.0001381940091960132, 5.111771770316409e-0
+
+* Metrics format:
+{'accuracy/decimalsBucket': 0.9587786, 'accuracy/isCollection': 0.9969466, 'accuracy/legthBucket': 0.66431296, 'accuracy/outputTypeIdx': 0.64122134, 'accuracy_baseline/isCollection': 0.9969466, 'auc/isCollection': 0.9759284, 'auc_precision_recall/isCollection': 0.08735464, 'average_loss/decimalsBucket': 0.16012691, 'average_loss/isCollection': 0.0133258775, 'average_loss/legthBucket': 1.2138829, 'average_loss/outputTypeIdx': 1.2020633, 'label/mean/isCollection': 0.0030534351, 'loss': 165.4689, 'loss/decimalsBucket': 10.2325, 'loss/isCollection': 0.85155606, 'loss/legthBucket': 77.57008, 'loss/outputTypeIdx': 76.81478, 'precision/isCollection': 0.0, 'prediction/mean/isCollection': 0.0034022834, 'recall/isCollection': 0.0, 'global_step': 3108}

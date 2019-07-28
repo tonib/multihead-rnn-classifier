@@ -194,7 +194,9 @@ estimator = tf.estimator.Estimator(
         'hidden_units': 7,
         # The model must choose between 2 classes.
         'n_classes': 10,
-    })
+    },
+    model_dir="model"
+    )
 
 for _ in range(10):
     estimator.train(input_fn=input_fn)
