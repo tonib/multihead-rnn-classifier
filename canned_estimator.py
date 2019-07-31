@@ -1,8 +1,4 @@
 
-#################################################3
-# CANNED RNN ESTIMATOR DEFINITION
-#################################################3
-
 from tensorflow.contrib.estimator import RNNEstimator
 import tensorflow.contrib.feature_column as contrib_feature_column
 from tensorflow.python.estimator.canned import head as head_lib
@@ -12,10 +8,7 @@ from tensorflow.contrib.estimator import multi_head
 import tensorflow as tf
 
 class CannedEstimator:
-
-    ###################################
-    # MODEL DEFINITION
-    ###################################
+    """ Canned RNN estimator definition """
 
     def __init__(self, data_definition: ModelDataDefinition):
 
@@ -34,11 +27,6 @@ class CannedEstimator:
             optimizer=tf.train.AdamOptimizer,
             model_dir=model_dir
         )
-
-
-    ###################################
-    # MODEL DEFINITION
-    ###################################
     
     def _get_sequence_columns(self) -> list:
         """ Returns the model input features list definition (sequence) """

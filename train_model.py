@@ -1,9 +1,4 @@
-from tensorflow.contrib.estimator import RNNEstimator
 import tensorflow as tf
-import tensorflow.contrib.feature_column as contrib_feature_column
-import tensorflow.feature_column as feature_column
-from tensorflow.python.estimator.canned import head as head_lib
-from tensorflow.contrib.estimator import multi_head
 from model_data_definition import ModelDataDefinition
 from data_directory import DataDirectory
 from prediction_model import PredictionModel

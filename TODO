@@ -117,3 +117,17 @@ Prediction: {'isCollection': {'class_prediction': 0, 'probabilities': [0.9971703
 
 * Metrics format:
 {'accuracy/decimalsBucket': 0.9587786, 'accuracy/isCollection': 0.9969466, 'accuracy/legthBucket': 0.66431296, 'accuracy/outputTypeIdx': 0.64122134, 'accuracy_baseline/isCollection': 0.9969466, 'auc/isCollection': 0.9759284, 'auc_precision_recall/isCollection': 0.08735464, 'average_loss/decimalsBucket': 0.16012691, 'average_loss/isCollection': 0.0133258775, 'average_loss/legthBucket': 1.2138829, 'average_loss/outputTypeIdx': 1.2020633, 'label/mean/isCollection': 0.0030534351, 'loss': 165.4689, 'loss/decimalsBucket': 10.2325, 'loss/isCollection': 0.85155606, 'loss/legthBucket': 77.57008, 'loss/outputTypeIdx': 76.81478, 'precision/isCollection': 0.0, 'prediction/mean/isCollection': 0.0034022834, 'recall/isCollection': 0.0, 'global_step': 3108}
+
+
+***** CANNED ESTIMATOR RESULTS:
+
+Training epoch 7 ...
+Evaluating...
+W0730 08:13:36.281103 140613938464576 metrics_impl.py:804] Trapezoidal rule is known to produce incorrect PR-AUCs; please switch to "careful_interpolation" instead.
+W0730 08:13:36.294708 140613938464576 metrics_impl.py:804] Trapezoidal rule is known to produce incorrect PR-AUCs; please switch to "careful_interpolation" instead.
+Evaluation:  {'accuracy/decimalsBucket': 0.93960243, 'accuracy/isCollection': 0.99439347, 'accuracy/legthBucket': 0.6213048, 'accuracy/outputTypeIdx': 0.61671764, 'accuracy_baseline/isCollection': 0.99439347, 'auc/isCollection': 0.7680677, 'auc_precision_recall/isCollection': 0.103974804, 'average_loss/decimalsBucket': 0.22867776, 'average_loss/isCollection': 0.02924547, 'average_loss/legthBucket': 1.2887427, 'average_loss/outputTypeIdx': 1.257264, 'label/mean/isCollection': 0.005606524, 'loss': 177.46162, 'loss/decimalsBucket': 14.473089, 'loss/isCollection': 1.8509552, 'loss/legthBucket': 81.56494, 'loss/outputTypeIdx': 79.57265, 'precision/isCollection': 0.0, 'prediction/mean/isCollection': 0.0041788993, 'recall/isCollection': 0.0, 'global_step': 3255}
+Loss decrease: 4.427152872085571 %
+Epoch time: 51.57412242889404 s
+Train speed:  1269.3179177045497 sequences / s
+Total train time: 359.6732454299927 s
+
