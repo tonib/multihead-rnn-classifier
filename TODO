@@ -131,3 +131,12 @@ Epoch time: 51.57412242889404 s
 Train speed:  1269.3179177045497 sequences / s
 Total train time: 359.6732454299927 s
 
+***** CUSTOM ESTIMATOR RESULTS:
+
+Training epoch 7 ...
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.93960243, 'accuracy/isCollection': 0.99439347, 'accuracy/legthBucket': 0.6350663, 'accuracy/outputTypeIdx': 0.617737, 'loss': 0.6902402, 'loss/decimalsBucket': 0.22502607, 'loss/isCollection': 0.028760102, 'loss/legthBucket': 1.2510564, 'loss/outputTypeIdx': 1.2561178, 'global_step': 3255}
+Loss decrease: 2.7264101430773735 %
+Epoch time: 48.39720010757446 s
+Train speed:  1322.0499287005387 sequences / s
+Total train time: 341.314017534256 s

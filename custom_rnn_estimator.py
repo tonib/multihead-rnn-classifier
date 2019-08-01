@@ -150,11 +150,16 @@ class CustomRnnEstimator:
             classifier.add_metrics(metrics)
 
         # Compute total loss
+
+        # Version 1:
         # TODO: Compute mean total loss ???
         # TODO: This creates n ops. Seach a single "sum" op for all entries
-        total_loss = classifiers[0].loss
-        for i in range(1, len(classifiers)):
-            total_loss = total_loss + classifier.loss
+        # total_loss = classifiers[0].loss
+        # for i in range(1, len(classifiers)):
+        #     total_loss = total_loss + classifier.loss
+        # Version 2
+        classifier_losses = [ c.loss for c in classifiers ]
+        total_loss = tf.reduce_mean( classifier_losses )
 
         # If we are evaluating the model, we are done:
         if mode == tf.estimator.ModeKeys.EVAL:
@@ -164,7 +169,8 @@ class CustomRnnEstimator:
         # If we still here, we are training
         # TODO: Allow to configure what optimizer run
         # Create the optimizer (AdagradOptimizer in this case)
-        optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate=0.1)
+        #optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate=0.1)
+        optimizer = tf.train.AdamOptimizer()
 
         # Create the "optimize weigths" operacion, based on the given optimizer
         # TODO: What is "global_step"?
