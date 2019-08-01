@@ -79,9 +79,10 @@ class CustomRnnEstimator:
 
         # Create estimator
         self.estimator = tf.estimator.Estimator(
-            model_fn=lambda: self._model_fn,
+            model_fn=CustomRnnEstimator._model_fn,
             params={
                 'feature_columns': self._get_sequence_columns(),
+                'data_definition': self.data_definition
             },
             model_dir=model_dir
         )
@@ -96,8 +97,8 @@ class CustomRnnEstimator:
             sequence_columns.append( indicator_column )
         return sequence_columns
 
+    @staticmethod
     def _model_fn(
-        self,
         features, # Doc says: "This is batch_features from input_fn". THEY ARE THE NET INPUTS, defined by the input_fn
         labels,   # Doc says: "This is batch_labels from input_fn". THEY ARE THE EXPECTED NET OUTPUTS, defined by the input_fn. 
                     # I guess they are not feeded in prediction mode. TODO: Check it
@@ -105,28 +106,32 @@ class CustomRnnEstimator:
         params):  # Additional configuration
         """ Function that defines the model """
         
-        #print("*********** labels shape:", labels.shape )
+        data_definition = params['data_definition']
+
+        # print("*********** features:", features )
+        # print("*********** labels:", labels )
 
         # The input layer
         sequence_input_layer = tf.keras.experimental.SequenceFeatures( params['feature_columns'] )
         # TODO: Second returned value is "sequence_length". What is used for?
         sequence_input, _ = sequence_input_layer(features)
 
+        # print("*********** sequence_input:", sequence_input )
 
         # Define a GRU layer
-        rnn_layer = tf.keras.layers.GRU( self.data_definition.n_network_elements )(sequence_input)
+        rnn_layer = tf.keras.layers.GRU( data_definition.n_network_elements )(sequence_input)
 
         # Create a classifier for each output to predict
         # TODO: Get the number of classifiers from the labels shape
         i_output_labels = None
         classifiers = []
-        for i in range(len(self.data_definition.output_columns)):
-            output_column = self.data_definition.column_definitions[ self.data_definition.output_columns[i] ]
+        for i in range(len(data_definition.output_columns)):
+            output_column = data_definition.column_definitions[ data_definition.output_columns[i] ]
 
             # Output labels are only defined if we are training / evaluating:
             if mode != tf.estimator.ModeKeys.PREDICT:
-                # Explanation for "labels[:, i]": First dimension is the batch, keep it as is. Second is the output for the i-th output
-                i_output_labels = labels[:, i]
+                # Get expected outputs for this classifier
+                i_output_labels = labels[ output_column.name ]
             classifiers.append( _ClassifierHead(rnn_layer , output_column, mode, i_output_labels) )
 
         if mode == tf.estimator.ModeKeys.PREDICT:

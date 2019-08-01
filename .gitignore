@@ -7,6 +7,7 @@ exportedmodels
 
 # Data samples
 data
+data-original
 
 # Previous data samples
 data-old/**

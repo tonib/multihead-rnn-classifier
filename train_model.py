@@ -5,6 +5,7 @@ from prediction_model import PredictionModel
 from time import time
 from typing import Callable
 from canned_estimator import CannedEstimator
+from custom_rnn_estimator import CustomRnnEstimator
 
 class TrainModel:
     """ Model for training """
@@ -13,9 +14,12 @@ class TrainModel:
 
         self.data_definition = data_definition
 
-        # The estimator
-        canned_estimator = CannedEstimator(data_definition)
-        self.estimator = canned_estimator.estimator
+        # The estimator wrapper
+        #estimator_class = CannedEstimator(data_definition)
+        estimator_class = CustomRnnEstimator(data_definition)
+        
+        # The TF estimator
+        self.estimator = estimator_class.estimator
 
 
     ###################################
