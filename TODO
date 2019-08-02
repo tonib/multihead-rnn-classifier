@@ -46,7 +46,10 @@ Export model and predict / serve:
 
 
 * saved_model_cli:
-    saved_model_cli show --dir=exportedmodel/1550399753 --tag_set serve --signature_def predict
+    # Show prediction function signature for canned estimator
+    saved_model_cli show --dir=data/exportedmodels/1564680586 --tag_set serve --signature_def predict
+    # Show prediction function signature for custom estimator
+    saved_model_cli show --dir=data/exportedmodels/1564760074 --tag_set serve --signature_def serving_default
 
 tensorflow_model_server --port=9000 --model_base_path=exportedmodel/1545244360
 
