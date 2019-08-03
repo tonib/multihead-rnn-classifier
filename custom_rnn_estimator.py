@@ -5,7 +5,7 @@ import tensorflow as tf
 import tensorflow.compat.v1.feature_column as tf_feature_column
 import tensorflow.feature_column as feature_column
 
-# TODO: Implement context columns
+# TODO: Implement context columns (see rnn.py > _concatenate_context_input)
 
 class _ClassifierHead:
     """ Classification head for the model """
@@ -113,16 +113,19 @@ class CustomRnnEstimator:
 
         # The input layer
         sequence_input_layer = tf.keras.experimental.SequenceFeatures( params['feature_columns'] )
-        # TODO: Second returned value is "sequence_length". What is used for?
+        # TODO: Second returned value is "sequence_length". it should match data_definition.sequence_length
         sequence_input, _ = sequence_input_layer(features)
 
         # print("*********** sequence_input:", sequence_input )
+
+        # if len(data_definition.context_columns) > 0:
+            # Append the context columns to each sequence
+
 
         # Define a GRU layer
         rnn_layer = tf.keras.layers.GRU( data_definition.n_network_elements )(sequence_input)
 
         # Create a classifier for each output to predict
-        # TODO: Get the number of classifiers from the labels shape
         i_output_labels = None
         classifiers = []
         for i in range(len(data_definition.output_columns)):

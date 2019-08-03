@@ -15,8 +15,10 @@ class TrainModel:
         self.data_definition = data_definition
 
         # The estimator wrapper
-        #estimator_class = CannedEstimator(data_definition)
-        estimator_class = CustomRnnEstimator(data_definition)
+        if data_definition.use_custom_estimator:
+            estimator_class = CustomRnnEstimator(data_definition)
+        else:
+            estimator_class = CannedEstimator(data_definition)
         
         # The TF estimator
         self.estimator = estimator_class.estimator

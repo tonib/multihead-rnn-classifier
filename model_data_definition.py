@@ -6,6 +6,7 @@ import tensorflow as tf
 import argparse
 
 class ModelDataDefinition:
+    """ Definitions of model data, model settings and training """
 
     def __init__(self):
 
@@ -43,9 +44,12 @@ class ModelDataDefinition:
             # Output column names
             self.output_columns = json_metadata['OutputColumns']
 
+            # Switch to use our custom RNN estimator or the TF RNN canned estimator
+            self.use_custom_estimator = bool( ModelDataDefinition._read_setting( json_metadata , 'CustomEstimator' , False ) )
+
 
     @staticmethod
-    def _read_setting( json_metadata : dict , setting_name : str , default_value : object ) -> str:
+    def _read_setting( json_metadata : dict , setting_name : str , default_value : object ) -> object:
         if not setting_name in json_metadata:
             return default_value
         return json_metadata[setting_name]
@@ -113,5 +117,6 @@ class ModelDataDefinition:
         print("SequenceLength:", self.sequence_length)
         print("TrainableColumn:", self.trainable_column)
         print("NNetworkElements:", self.n_network_elements)
+        print("CustomEstimator:", self.use_custom_estimator)
         
         

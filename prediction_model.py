@@ -31,10 +31,13 @@ class PredictionModel:
         # TODO: Ok, the canned RNN estimator exports its prediction function with a 'predict' signature name
         # TODO: The custom RNN estimator exports its prediction as 'serving_default'
         # TODO: I did not found any way to change the exported signature name. So change this if the estimator is changed
-        # Canned estimator signature name:
-        #signature_key = 'predict'
-        # Custom estimator signature name:
-        signature_key = 'serving_default'
+        if data_definition.use_custom_estimator:
+            # Custom estimator signature name:
+            signature_key = 'serving_default'
+        else:
+            # Canned estimator signature name:
+            signature_key = 'predict'
+        
         self._predict_fn = tf.contrib.predictor.from_saved_model(latest_export , signature_def_key=signature_key)
 
     def predict(self, input : dict , data_definition : ModelDataDefinition ) -> object:
@@ -48,9 +51,12 @@ class PredictionModel:
             column_result = {}
 
             # For canned estimator
-            #column_result['class_prediction'] = int( prediction[ col_name + '/classes' ][0][0] )
-            # For custom estimator
-            column_result['class_prediction'] = int( prediction[ col_name + '/classes' ][0] )
+            if data_definition.use_custom_estimator:
+                # For custom estimator
+                column_result['class_prediction'] = int( prediction[ col_name + '/classes' ][0] )
+            else:
+                # For canned estimator
+                column_result['class_prediction'] = int( prediction[ col_name + '/classes' ][0][0] )
 
             column_result['probabilities'] = prediction[ col_name + '/probabilities' ][0].tolist()
             result[col_name] = column_result

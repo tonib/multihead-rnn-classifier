@@ -1,20 +1,5 @@
 TODO:
-- Write own estimator model funcion implementation
-    * https://www.tensorflow.org/guide/custom_estimators
-    * https://github.com/GoogleCloudPlatform/tf-estimator-tutorials/blob/master/06_Sequence_%20Models/01%20-%20RNN%20with%20LSTM%20-%20Predicting%20the%20Next%20Values%20-%20Single%20Pattern.ipynb
-    * https://androidkt.com/stock-price-prediction/
-    * https://danijar.com/introduction-to-recurrent-networks-in-tensorflow/
-    * https://gist.github.com/planetA/b45aaa7ed92699a8b82fda80934a667d
-    * https://www.tensorflow.org/beta/tutorials/text/text_generation
-    * GRUBlockCellV2 for better performance? (see rnn.py)
-    * https://www.tensorflow.org/beta/guide/keras/rnn (TF 2.0)
-    * https://www.tensorflow.org/beta/tutorials/keras/feature_columns (TF 2.0, feed feature columns as Keras input)
-
-- Multiple outputs:
-    * IMPLEMENT context columns
-    * https://github.com/tensorflow/tensorflow/issues/15773
-    * https://stackoverflow.com/questions/38517124/how-to-minimize-two-loss-using-tensorflow
-
+- Add command line option to do not print warnings
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
   https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator
