@@ -58,9 +58,15 @@ class ModelDataDefinition:
     def _read_cmd_line_arguments(self):
         parser = argparse.ArgumentParser(description='Train and predict sequeces')
         parser.add_argument('--datadir', type=str, default='data' , help='Directory path with data. Default="data"')
+        parser.add_argument('--notfwarnings', action='store_const' , const=True, help='Disable Tensowflow warning messages')
         args = parser.parse_args()
+
         self.data_directory = args.datadir
         print("Data directory:" , self.data_directory )
+
+        if args.notfwarnings:
+            print("TF warning messages disabled")
+            tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
     def get_exports_dir_path(self):
         """ The directory for exported models """

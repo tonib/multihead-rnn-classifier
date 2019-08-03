@@ -1,5 +1,4 @@
 TODO:
-- Add command line option to do not print warnings
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
   https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator

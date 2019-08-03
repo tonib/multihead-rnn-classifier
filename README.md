@@ -113,10 +113,11 @@ Generate your CSV files and your "data_info.json", in a same directory.
 Then train your model running:
 
 ```bash
-python train.py [--datadir=DIRECTORY]
+python train.py [--datadir=DIRECTORY] [--notfwarnings]
 ```
 
-Where "DIRECTORY" it the directory with the CSV files. Default directory is "data".
+Where "DIRECTORY" it the directory with the CSV files. Default directory is "data". "--notfwarnings" disables the buch of TF deprecation
+warnings.
 
 Train can be interrupted and continued later with the same command line.
 
@@ -125,7 +126,7 @@ Train can be interrupted and continued later with the same command line.
 To export the model to use in production:
 
 ```bash
-python export.py [--datadir=DIRECTORY]
+python export.py [--datadir=DIRECTORY] [--notfwarnings]
 ```
 
 ### Production predictions
@@ -133,11 +134,39 @@ python export.py [--datadir=DIRECTORY]
 To start the model server process, run:
 
 ```bash
-python model_server.py [--datadir=DIRECTORY]
+python model_server.py [--datadir=DIRECTORY] [--notfwarnings]
 ```
 
 This will run a process that will expect an standard input JSON text with the "sequence" and "context" input on a single text line.
 When this input is feed, the process with write to the standard output an JSON single text line with the output prediction.
+
+Example:
+```
+(venv) foo@bar:~/multihead-rnn-classifier$ python model_server.py --datadir=data --notfwarnings
+Data directory: data
+TF warning messages disabled
+Reading data structure info from  data/data_info.json
+# Reading latest exported model
+Using export from data/exportedmodels/1564821495
+2019-08-03 10:58:49.074870: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-08-03 10:58:49.079799: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 3397920000 Hz
+2019-08-03 10:58:49.080133: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x4a00580 executing computations on platform Host. Devices:
+2019-08-03 10:58:49.080159: I tensorflow/compiler/xla/service/service.cc:175]   StreamExecutor device (0): <undefined>, <undefined>
+2019-08-03 10:58:49.484199: W tensorflow/compiler/jit/mark_for_compilation_pass.cc:1412] (One-time warning): Not using XLA:CPU for cluster because envvar TF_XLA_FLAGS=--tf_xla_cpu_global_jit was not set.  If you want XLA:CPU, either set that envvar, or use experimental_jit_scope to enable XLA:CPU.  To confirm that XLA is active, pass --vmodule=xla_compilation_cache=1 (as a proper command-line flag, not via TF_XLA_FLAGS) or set the envvar XLA_FLAGS=--xla_hlo_profile.
+# Sample: {"wordType": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "keywordIdx": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "kbObjectTypeIdx": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "dataTypeIdx": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "isCollection": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "lengthBucket": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "decimalsBucket": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "textHash0": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "textHash1": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "textHash2": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "textHash3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "controlType": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "ctxParmType": 0, "ctxParmLength": 0, "ctxParmDecimals": 0, "ctxParmCollection": 0, "ctxParmAccess": 0, "ctxIsVariable": 0, "objectType": 0, "partType": 0}
+READY TO SERVE
+```
+
+Here you write the input JSON in the standard input, with a final end of line character. Example:
+```
+{"wordType": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "keywordIdx": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "kbObjectTypeIdx": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "dataTypeIdx": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "isCollection": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "lengthBucket": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "decimalsBucket": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "textHash0": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "textHash1": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "textHash2": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "textHash3": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "controlType": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "ctxParmType": 0, "ctxParmLength": 0, "ctxParmDecimals": 0, "ctxParmCollection": 0, "ctxParmAccess": 0, "ctxIsVariable": 0, "objectType": 0, "partType": 0}
+```
+
+Then the prediction is written to the standard output, with a final end of line character:
+```
+{"isCollection": {"class_prediction": 2, "probabilities": [0.0002461548720020801, 0.0005606021732091904, 0.9991932511329651]}, "lengthBucket": {"class_prediction": 18, "probabilities": [0.0010655540972948074, 6.278051841945853e-06, 2.040944127656985e-05, 2.1956082491669804e-05, 5.242620318313129e-05, 5.138143023941666e-06, 1.9032989939660183e-06, 9.466194569540676e-06, 5.238441644905834e-07, 2.4164110072888434e-05, 1.5395822629216127e-05, 7.907227882242296e-06, 1.785033077794651e-06, 5.4153206292539835e-05, 3.957937587983906e-05, 1.7479058442404494e-05, 4.2499825212871656e-05, 3.9709866541670635e-06, 0.9986094236373901]}, "decimalsBucket": {"class_prediction": 10, "probabilities": [0.00022998398344498128, 0.0006413692608475685, 2.260218707306194e-06, 6.701557140331715e-05, 0.0001081798764062114, 7.402428309433162e-05, 0.00013427966041490436, 0.00014097776147536933, 5.150819106347626e-06, 0.00044264504685997963, 0.9981541037559509]}, "outputTypeIdx": {"class_prediction": 0, "probabilities": [0.8450528979301453, 0.056459758430719376, 0.0007242700085043907,...] } }
+```
+
 
 ## Padding
 
