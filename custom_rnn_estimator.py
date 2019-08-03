@@ -239,10 +239,12 @@ class CustomRnnEstimator:
                 mode, loss=total_loss, eval_metric_ops=metrics)
 
         # If we still here, we are training
-        # TODO: Allow to configure what optimizer run
-        # Create the optimizer (AdagradOptimizer in this case)
-        #optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate=0.1)
-        optimizer = tf.train.AdamOptimizer()
+        # Create the optimizer (AdagradOptimizer in this case). Default value for learning rate for AdamOptimizer is 0.001
+        # ADAGRAD ALWAYS GIVE ME WORSE RESULTS THAN ADAM with lr=0.001 and 0.01
+        # AdaDelta noes not converge...
+        #optimizer = tf.compat.v1.train.AdagradOptimizer( learning_rate=data_definition.learning_rate )
+        #optimizer = tf.train.AdadeltaOptimizer(learning_rate=data_definition.learning_rate)
+        optimizer = tf.train.AdamOptimizer(learning_rate=data_definition.learning_rate)
 
         # Create the "optimize weigths" operacion, based on the given optimizer
         # TODO: What is "global_step"?

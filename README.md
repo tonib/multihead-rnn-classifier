@@ -74,6 +74,8 @@ The model is defined on a file called "data_info.json":
     "CustomEstimator": true,
 
     "PercentageEvaluation": 10.0,
+    "LearningRate": 0.001,
+
     "MaxEpochs":32,
     "MaxTrainSeconds":18000,
     "MinLossPercentage":0.1
@@ -93,9 +95,12 @@ Definitions:
 * If false, the canned [RNNEstimator](https://www.tensorflow.org/api_docs/python/tf/contrib/estimator/RNNEstimator) is used create the
   model. If true, a custom model is created.
 
-Other numbers are used to define when to stop train the model:
+Training settings:
 * "PercentageEvaluation" is the percentage of the CSV files that will be used to train to the model, but just to get an accuracy evaluation.
   It's a "100%" based number.
+* "LearningRate" is the learning rate for the ADAM optimizer. Default value is 0.001
+
+Other numbers are used to define when to stop train the model:
 * "MaxEpochs" is the number of epochs to train. Zero means train indefinitely.
 * "MaxTrainSeconds" is the number of seconds to train. Zero means train indefinitely. This number will be checked after ending a epoch train,
   so an entire epoch will not be interrupted.

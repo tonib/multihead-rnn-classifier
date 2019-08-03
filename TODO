@@ -9,7 +9,6 @@ TODO:
 - Generate .JSON debug files on a different directory: Otherwise it's a mess...
 - Allow to configure the cell type (LSTM)
 - Allow to configure dropout and/or weight decay
-- Allow to configure the optmizer (Adagrad is the default?)
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
 
 REMINDERS
@@ -118,7 +117,7 @@ Train speed:  893.4642030883039 sequences / s
 Total train time: 416.1845705509186 s
 
 
-***** CUSTOM ESTIMATOR RESULTS:
+***** CUSTOM ESTIMATOR RESULTS (WITH ADAM LR=0.001):
 
 Training epoch 7 ...
 Evaluating...
@@ -128,3 +127,35 @@ Epoch time: 60.139899015426636 s
 Train speed:  884.0166602083842 sequences / s
 Total train time: 417.6330919265747 s
 
+***** CUSTOM ESTIMATOR RESULTS (WITH ADAGRAD LR=0.001):
+
+Training epoch 7 ...
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.82542473, 'accuracy/isCollection': 0.7797305, 'accuracy/isControl': 0.6403046, 'accuracy/lengthBucket': 0.46104276, 'accuracy/outputTypeIdx': 0.27475104, 'accuracy/textHash0': 0.36965436, 'accuracy/textHash1': 0.36965436, 'accuracy/textHash2': 0.35969537, 'accuracy/textHash3': 0.6672525, 'loss': 1.7938948, 'loss/decimalsBucket': 0.81162935, 'loss/isCollection': 0.6265011, 'loss/isControl': 0.9564013, 'loss/lengthBucket': 2.101575, 'loss/outputTypeIdx': 4.129237, 'loss/textHash0': 2.3231707, 'loss/textHash1': 2.322795, 'loss/textHash2': 1.9142047, 'loss/textHash3': 0.95953906, 'global_step': 2562}
+Loss decrease: 2.2231029346585274 %
+Epoch time: 59.60072875022888 s
+Train speed:  888.1659150241711 sequences / s
+Total train time: 417.63799262046814 s
+
+***** CUSTOM ESTIMATOR RESULTS (WITH ADAGRAD LR=0.01):
+
+Training epoch 7 ...
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.8523726, 'accuracy/isCollection': 0.87697715, 'accuracy/isControl': 0.7510252, 'accuracy/lengthBucket': 0.53192735, 'accuracy/outputTypeIdx': 0.3274751, 'accuracy/textHash0': 0.45635617, 'accuracy/textHash1': 0.44229642, 'accuracy/textHash2': 0.589338, 'accuracy/textHash3': 0.7627416, 'loss': 1.365712, 'loss/decimalsBucket': 0.47252694, 'loss/isCollection': 0.33154684, 'loss/isControl': 0.5855228, 'loss/lengthBucket': 1.6641496, 'loss/outputTypeIdx': 2.766147, 'loss/textHash0': 2.0324504, 'loss/textHash1': 2.069033, 'loss/textHash2': 1.6362826, 'loss/textHash3': 0.73375016, 'global_step': 2562}
+Loss decrease: 4.390760511159897 %
+Epoch time: 61.27667689323425 s
+Train speed:  859.2366112232901 sequences / s
+Total train time: 432.45619797706604 s
+
+***** CUSTOM ESTIMATOR RESULTS (WITH ADADELTA LR=0.001):
+
+Training epoch 7 ...
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.0, 'accuracy/isCollection': 0.27006444, 'accuracy/isControl': 0.60046864, 'accuracy/lengthBucket': 0.005858231, 'accuracy/outputTypeIdx': 0.0029291154, 'accuracy/textHash0': 0.06033978, 'accuracy/textHash1': 0.025190393, 'accuracy/textHash2': 0.010544815, 'accuracy/textHash3': 0.33391917, 'loss': 2.682517, 'loss/decimalsBucket': 2.5561109, 'loss/isCollection': 1.1220706, 'loss/isControl': 1.0317847, 'loss/lengthBucket': 3.2260268, 'loss/outputTypeIdx': 5.0380974, 'loss/textHash0': 2.796789, 'loss/textHash1': 2.9921355, 'loss/textHash2': 2.8411822, 'loss/textHash3': 2.5384595, 'global_step': 2562}
+Loss decrease: 0.37268733140081167 %
+Epoch time: 59.67932605743408 s
+Train speed:  885.4324346721702 sequences / s
+Total train time: 414.78500533103943 s
+
+***** CANNED ESTIMATOR RESULTS (WITH ADADELTA LR=0.001):
+Does not converge in 7 epochs...

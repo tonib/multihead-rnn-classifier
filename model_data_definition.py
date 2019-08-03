@@ -27,7 +27,8 @@ class ModelDataDefinition:
             self.sequence_length = int( ModelDataDefinition._read_setting( json_metadata , 'SequenceLength' , '128' ) )
             self.trainable_column = ModelDataDefinition._read_setting( json_metadata , 'TrainableColumn' , None )
             self.n_network_elements = int( ModelDataDefinition._read_setting( json_metadata , 'NNetworkElements' , '64' ) )
-            
+            self.learning_rate = float( ModelDataDefinition._read_setting( json_metadata , 'LearningRate' , '0.001' ) )
+
             # Read columns definitions
             self.column_definitions = {}
             for json_column in json_metadata['ColumnDefinitions']:
@@ -124,5 +125,7 @@ class ModelDataDefinition:
         print("TrainableColumn:", self.trainable_column)
         print("NNetworkElements:", self.n_network_elements)
         print("CustomEstimator:", self.use_custom_estimator)
+        print("LearningRate:", self.learning_rate)
+        
         
         
