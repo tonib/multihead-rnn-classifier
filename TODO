@@ -10,6 +10,7 @@ TODO:
 - Generate .JSON debug files on a different directory: Otherwise it's a mess...
 - Allow to configure the cell type (LSTM)
 - Allow to configure dropout and/or weight decay
+- Allow to configure the optmizer (Adagrad is the default?)
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
 
 REMINDERS
@@ -111,20 +112,20 @@ Prediction: {'isCollection': {'class_prediction': 0, 'probabilities': [0.9971703
 
 Training epoch 7 ...
 Evaluating...
-W0730 08:13:36.281103 140613938464576 metrics_impl.py:804] Trapezoidal rule is known to produce incorrect PR-AUCs; please switch to "careful_interpolation" instead.
-W0730 08:13:36.294708 140613938464576 metrics_impl.py:804] Trapezoidal rule is known to produce incorrect PR-AUCs; please switch to "careful_interpolation" instead.
-Evaluation:  {'accuracy/decimalsBucket': 0.93960243, 'accuracy/isCollection': 0.99439347, 'accuracy/legthBucket': 0.6213048, 'accuracy/outputTypeIdx': 0.61671764, 'accuracy_baseline/isCollection': 0.99439347, 'auc/isCollection': 0.7680677, 'auc_precision_recall/isCollection': 0.103974804, 'average_loss/decimalsBucket': 0.22867776, 'average_loss/isCollection': 0.02924547, 'average_loss/legthBucket': 1.2887427, 'average_loss/outputTypeIdx': 1.257264, 'label/mean/isCollection': 0.005606524, 'loss': 177.46162, 'loss/decimalsBucket': 14.473089, 'loss/isCollection': 1.8509552, 'loss/legthBucket': 81.56494, 'loss/outputTypeIdx': 79.57265, 'precision/isCollection': 0.0, 'prediction/mean/isCollection': 0.0041788993, 'recall/isCollection': 0.0, 'global_step': 3255}
-Loss decrease: 4.427152872085571 %
-Epoch time: 51.57412242889404 s
-Train speed:  1269.3179177045497 sequences / s
-Total train time: 359.6732454299927 s
+Evaluation:  {'accuracy/decimalsBucket': 0.8922086, 'accuracy/isCollection': 0.90743995, 'accuracy/isControl': 0.8172232, 'accuracy/lengthBucket': 0.75454015, 'accuracy/outputTypeIdx': 0.62038666, 'accuracy/textHash0': 0.56004685, 'accuracy/textHash1': 0.50087875, 'accuracy/textHash2': 0.64674866, 'accuracy/textHash3': 0.8471002, 'average_loss/decimalsBucket': 0.34259295, 'average_loss/isCollection': 0.26767275, 'average_loss/isControl': 0.44271556, 'average_loss/lengthBucket': 0.92358184, 'average_loss/outputTypeIdx': 1.3751706, 'average_loss/textHash0': 1.5086322, 'average_loss/textHash1': 1.7459004, 'average_loss/textHash2': 1.4039731, 'average_loss/textHash3': 0.58956563, 'loss': 543.6987, 'loss/decimalsBucket': 21.659487, 'loss/isCollection': 16.922865, 'loss/isControl': 27.989462, 'loss/lengthBucket': 58.390896, 'loss/outputTypeIdx': 86.941345, 'loss/textHash0': 95.37908, 'loss/textHash1': 110.3797, 'loss/textHash2': 88.7623, 'loss/textHash3': 37.27365, 'global_step': 2562}
+Loss decrease: 2.837500162422657 %
+Epoch time: 60.147926807403564 s
+Train speed:  893.4642030883039 sequences / s
+Total train time: 416.1845705509186 s
+
 
 ***** CUSTOM ESTIMATOR RESULTS:
 
 Training epoch 7 ...
 Evaluating...
-Evaluation:  {'accuracy/decimalsBucket': 0.93960243, 'accuracy/isCollection': 0.99439347, 'accuracy/legthBucket': 0.6350663, 'accuracy/outputTypeIdx': 0.617737, 'loss': 0.6902402, 'loss/decimalsBucket': 0.22502607, 'loss/isCollection': 0.028760102, 'loss/legthBucket': 1.2510564, 'loss/outputTypeIdx': 1.2561178, 'global_step': 3255}
-Loss decrease: 2.7264101430773735 %
-Epoch time: 48.39720010757446 s
-Train speed:  1322.0499287005387 sequences / s
-Total train time: 341.314017534256 s
+Evaluation:  {'accuracy/decimalsBucket': 0.90978324, 'accuracy/isCollection': 0.923843, 'accuracy/isControl': 0.82132393, 'accuracy/lengthBucket': 0.7680141, 'accuracy/outputTypeIdx': 0.6385472, 'accuracy/textHash0': 0.55008787, 'accuracy/textHash1': 0.52899826, 'accuracy/textHash2': 0.65319276, 'accuracy/textHash3': 0.84827185, 'loss': 0.9055806, 'loss/decimalsBucket': 0.27407032, 'loss/isCollection': 0.1940389, 'loss/isControl': 0.40906608, 'loss/lengthBucket': 0.840173, 'loss/outputTypeIdx': 1.2997233, 'loss/textHash0': 1.5318633, 'loss/textHash1': 1.6802183, 'loss/textHash2': 1.3469537, 'loss/textHash3': 0.5741187, 'global_step': 2562}
+Loss decrease: 1.9855810329318047 %
+Epoch time: 60.139899015426636 s
+Train speed:  884.0166602083842 sequences / s
+Total train time: 417.6330919265747 s
+

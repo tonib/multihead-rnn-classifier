@@ -1,6 +1,5 @@
 
-This is a simple wrapper for Tensorflow [RNNEstimator](https://www.tensorflow.org/api_docs/python/tf/contrib/estimator/RNNEstimator), to
-create models to make predictions for programming source code edition.
+This is a RNN classifer, to create models to make predictions for programming source code edition.
 It can:
 
 * Generate a prediction model for the next word  from a set of CSV files
@@ -72,8 +71,9 @@ The model is defined on a file called "data_info.json":
     "TrainableColumn":"trainable", 
     "NNetworkElements" : 64,
     "SequenceLength":128,
-    "PercentageEvaluation": 10.0,
+    "CustomEstimator": true,
 
+    "PercentageEvaluation": 10.0,
     "MaxEpochs":32,
     "MaxTrainSeconds":18000,
     "MinLossPercentage":0.1
@@ -90,10 +90,12 @@ Definitions:
 * "ContextColumns" are column names that will be feed as "context".
 * "NNetworkElements" is the number of cells on the "recurrent" layer.
 * "SequenceLength" is the number of tokens that are feeded to the model for prediction/training.
-* "PercentageEvaluation" is the percentage of the CSV files that will be used to train to the model, but just to get an accuracy evaluation.
-  It's a "100%" based number.
+* If false, the canned [RNNEstimator](https://www.tensorflow.org/api_docs/python/tf/contrib/estimator/RNNEstimator) is used create the
+  model. If true, a custom model is created.
 
 Other numbers are used to define when to stop train the model:
+* "PercentageEvaluation" is the percentage of the CSV files that will be used to train to the model, but just to get an accuracy evaluation.
+  It's a "100%" based number.
 * "MaxEpochs" is the number of epochs to train. Zero means train indefinitely.
 * "MaxTrainSeconds" is the number of seconds to train. Zero means train indefinitely. This number will be checked after ending a epoch train,
   so an entire epoch will not be interrupted.
@@ -149,3 +151,7 @@ In this case, sequences must be padded. For training, padding elements are autom
 This is important, because in prediction time the inputs are NOT automatically padded. You should send the sequence padded up to the
 sequence length. The padding elements MUST to be all "sequence" and "context" zeros.
 
+### Licensing
+
+The function custom_rnn_estimator.py > CustomRnnEstimator._concatenate_context_input contains code of the Tensorflow
+source code. Tensorflow is under [Apache license](http://www.apache.org/licenses/LICENSE-2.0).

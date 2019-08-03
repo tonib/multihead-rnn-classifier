@@ -81,14 +81,15 @@ class CustomRnnEstimator:
         self.estimator = tf.estimator.Estimator(
             model_fn=CustomRnnEstimator._model_fn,
             params={
-                'feature_columns': self._get_sequence_columns(),
+                'sequence_columns': self._get_sequence_columns(),
+                'context_columns' : self._get_context_columns(),
                 'data_definition': self.data_definition
             },
             model_dir=model_dir
         )
         
     def _get_sequence_columns(self) -> list:
-        """ Returns the model input features list definition (sequence) """
+        """ Returns the model input features list definition for sequence columns """
         sequence_columns = []
         for col_name in self.data_definition.sequence_columns:
             def_column = self.data_definition.column_definitions[ col_name ]
@@ -97,6 +98,70 @@ class CustomRnnEstimator:
             sequence_columns.append( indicator_column )
         return sequence_columns
 
+    def _get_context_columns(self) -> list:
+        """ Returns the model input features list definition for context columns """
+        context_columns = []
+        for col_name in self.data_definition.context_columns:
+            def_column = self.data_definition.column_definitions[ col_name ]
+            column = tf_feature_column.categorical_column_with_identity( col_name , len(def_column.labels) )
+            indicator_column = feature_column.indicator_column( column )
+            context_columns.append( indicator_column )
+        return context_columns
+
+    ##############################################################################################
+    # This function has been copied (and modified) from Tensorflow source code
+    # tensorflow_estimator/contrib/estimator/python/estimator/rnn.py > _concatenate_context_input
+    # Tensorflow is under Apache license (http://www.apache.org/licenses/LICENSE-2.0)
+    ##############################################################################################
+    @staticmethod
+    def _concatenate_context_input(sequence_input, context_input):
+        """Replicates `context_input` across all timesteps of `sequence_input`.
+
+        Expands dimension 1 of `context_input` then tiles it `sequence_length` times.
+        This value is appended to `sequence_input` on dimension 2 and the result is
+        returned.
+
+        Args:
+            sequence_input: A `Tensor` of dtype `float32` and shape `[batch_size,
+            padded_length, d0]`.
+            context_input: A `Tensor` of dtype `float32` and shape `[batch_size, d1]`.
+
+        Returns:
+            A `Tensor` of dtype `float32` and shape `[batch_size, padded_length,
+            d0 + d1]`.
+
+        Raises:
+            ValueError: If `sequence_input` does not have rank 3 or `context_input` does
+            not have rank 2.
+        """
+        seq_rank_check = tf.debugging.assert_rank(
+            sequence_input,
+            3,
+            message='sequence_input must have rank 3',
+            data=[tf.shape(sequence_input)])
+        seq_type_check = tf.debugging.assert_type(
+            sequence_input,
+            tf.float32,
+            message='sequence_input must have dtype float32; got {}.'.format(
+                sequence_input.dtype))
+        ctx_rank_check = tf.debugging.assert_rank(
+            context_input,
+            2,
+            message='context_input must have rank 2',
+            data=[tf.shape(context_input)])
+        ctx_type_check = tf.debugging.assert_type(
+            context_input,
+            tf.float32,
+            message='context_input must have dtype float32; got {}.'.format(
+                context_input.dtype))
+        with tf.control_dependencies(
+            [seq_rank_check, seq_type_check, ctx_rank_check, ctx_type_check]):
+            padded_length = tf.shape(sequence_input)[1]
+            tiled_context_input = tf.tile(
+                tf.expand_dims(context_input, 1),
+                tf.concat([[1], [padded_length], [1]], 0))
+        return tf.concat([sequence_input, tiled_context_input], 2)
+        
     @staticmethod
     def _model_fn(
         features, # Doc says: "This is batch_features from input_fn". THEY ARE THE NET INPUTS, defined by the input_fn
@@ -111,19 +176,23 @@ class CustomRnnEstimator:
         # print("*********** features:", features )
         # print("*********** labels:", labels )
 
-        # The input layer
-        sequence_input_layer = tf.keras.experimental.SequenceFeatures( params['feature_columns'] )
+        # The input layer for sequence inputs
+        sequence_input_layer = tf.keras.experimental.SequenceFeatures( params['sequence_columns'] )
         # TODO: Second returned value is "sequence_length". it should match data_definition.sequence_length
-        sequence_input, _ = sequence_input_layer(features)
+        sequence_input_tensor, _ = sequence_input_layer(features)
 
-        # print("*********** sequence_input:", sequence_input )
+        #print("*********** sequence_input_tensor:", sequence_input_tensor )
 
-        # if len(data_definition.context_columns) > 0:
-            # Append the context columns to each sequence
-
+        if len(data_definition.context_columns) > 0:
+            # Append the context columns to each sequence timestep
+            context_input_layer = tf.keras.layers.DenseFeatures( params['context_columns'] )
+            context_input_tensor = context_input_layer( features )
+            #print("*********** context_input_tensor:", context_input_tensor )
+            sequence_input_tensor = CustomRnnEstimator._concatenate_context_input(sequence_input_tensor, context_input_tensor)
+            #print("*********** Final sequence_input_tensor:", sequence_input_tensor )
 
         # Define a GRU layer
-        rnn_layer = tf.keras.layers.GRU( data_definition.n_network_elements )(sequence_input)
+        rnn_layer = tf.keras.layers.GRU( data_definition.n_network_elements )(sequence_input_tensor)
 
         # Create a classifier for each output to predict
         i_output_labels = None

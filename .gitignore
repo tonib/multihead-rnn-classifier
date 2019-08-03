@@ -8,6 +8,7 @@ exportedmodels
 # Data samples
 data
 data-original
+trashcan
 
 # Previous data samples
 data-old/**
