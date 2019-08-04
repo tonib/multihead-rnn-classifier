@@ -72,10 +72,11 @@ The model is defined on a file called "data_info.json":
     "NNetworkElements" : 64,
     "SequenceLength":128,
     "CustomEstimator": true,
-    "Dropout": 0.2,
+    "CellType": "gru",
 
     "PercentageEvaluation": 10.0,
     "LearningRate": 0.001,
+    "Dropout": 0.2,
 
     "MaxEpochs":32,
     "MaxTrainSeconds":18000,
@@ -95,13 +96,14 @@ Definitions:
 * "SequenceLength" is the number of tokens that are feeded to the model for prediction/training.
 * "CustomEstimator": If false, the canned [RNNEstimator](https://www.tensorflow.org/api_docs/python/tf/contrib/estimator/RNNEstimator) is 
   used to create the model. If true, a custom model is created. Default value is false.
-* "Dropout": If > 0, a Dropout layer will be added after the RNN layer. Values is the fraction on RNN outputs that will be dropped.
-  Default value is 0.
+* "CellType" is the RNN cell type to use. it can be 'gru' or 'lstm'. Default value is 'gru'. If CustomEstimator = false, this parameter is ignored
 
 Training settings:
 * "PercentageEvaluation" is the percentage of the CSV files that will be used to train to the model, but just to get an accuracy evaluation.
   It's a "100%" based number.
 * "LearningRate" is the learning rate for the ADAM optimizer. Default value is 0.001
+* "Dropout": If > 0, a Dropout layer will be added after the RNN layer. Values is the fraction on RNN outputs that will be dropped.
+  Default value is 0. If CustomEstimator = false, this parameter is ignored
 
 Other numbers are used to define when to stop train the model:
 * "MaxEpochs" is the number of epochs to train. Zero means train indefinitely.

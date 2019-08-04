@@ -1,4 +1,5 @@
 TODO:
+- Option to fix the seed to make model comparisons (https://stackoverflow.com/questions/51072735/using-tf-set-random-seed-with-tf-estimator-estimator)
 - Print evaluation time
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
@@ -8,8 +9,7 @@ TODO:
 - Model server: Autopad sequences
 - Generate a file with the last evaluation info: It will be used to ponderate probabilites based on accuracy
 - Generate .JSON debug files on a different directory: Otherwise it's a mess...
-- Allow to configure the cell type (LSTM)
-- Allow to configure dropout and/or weight decay
+- Allow to configure weight decay?
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
 
 REMINDERS
@@ -190,4 +190,13 @@ Loss decrease: -0.675475038588047 %
 Epoch time: 53.78201389312744 s
 Train speed:  978.7492047605747 sequences / s
 Total train time: 2265.917642593384 s
+
+***** LSTM
+Training epoch 7 ...
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.8958223, 'accuracy/isCollection': 0.90111053, 'accuracy/isControl': 0.78688526, 'accuracy/lengthBucket': 0.7503966, 'accuracy/outputTypeIdx': 0.46589106, 'accuracy/textHash0': 0.47435218, 'accuracy/textHash1': 0.5156002, 'accuracy/textHash2': 0.69804335, 'accuracy/textHash3': 0.8291909, 'loss': 1.2573891, 'loss/decimalsBucket': 0.48740742, 'loss/isCollection': 0.38421234, 'loss/isControl': 0.7827207, 'loss/lengthBucket': 1.2866995, 'loss/outputTypeIdx': 2.2613883, 'loss/textHash0': 1.9677442, 'loss/textHash1': 2.0415328, 'loss/textHash2': 1.4332529, 'loss/textHash3': 0.67154276, 'global_step': 2541}
+Loss decrease: -10.175096988677979 %
+Epoch time: 55.70764088630676 s
+Train speed:  946.3386247127988 sequences / s
+Total train time: 397.102126121521 s
 

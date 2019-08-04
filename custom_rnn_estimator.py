@@ -4,6 +4,7 @@ from column_info import ColumnInfo
 import tensorflow as tf
 import tensorflow.compat.v1.feature_column as tf_feature_column
 import tensorflow.feature_column as feature_column
+from typing import List
 
 # TODO: Implement context columns (see rnn.py > _concatenate_context_input)
 
@@ -32,6 +33,7 @@ class _ClassifierHead:
 
             # Compute loss
             # This computes really the logits (see sparse_softmax_cross_entropy documentation)
+            # TODO: There is a specific loss function for binary classification?
             self.loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(labels=output_labels, logits=self.logits)
 
             # The operation that will compute the predictions accuracy for metrics for Tensorboard
@@ -162,7 +164,7 @@ class CustomRnnEstimator:
                 tf.expand_dims(context_input, 1),
                 tf.concat([[1], [padded_length], [1]], 0))
         return tf.concat([sequence_input, tiled_context_input], 2)
-        
+
     @staticmethod
     def _model_fn(
         features, # Doc says: "This is batch_features from input_fn". THEY ARE THE NET INPUTS, defined by the input_fn
@@ -193,7 +195,12 @@ class CustomRnnEstimator:
             #print("*********** Final sequence_input_tensor:", sequence_input_tensor )
 
         # Define a GRU layer
-        rnn_layer = tf.keras.layers.GRU( data_definition.n_network_elements )(sequence_input_tensor)
+        if data_definition.cell_type == 'lstm':
+            rnn_layer = tf.keras.layers.LSTM( data_definition.n_network_elements )(sequence_input_tensor)
+        elif data_definition.cell_type == 'gru':
+            rnn_layer = tf.keras.layers.GRU( data_definition.n_network_elements )(sequence_input_tensor)
+        else:
+            raise Exception('Unknown CellType: ' + data_definition.cell_type)
 
         #print("*********** rnn_layer:", rnn_layer )
 
