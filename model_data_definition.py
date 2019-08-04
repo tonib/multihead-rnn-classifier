@@ -28,6 +28,7 @@ class ModelDataDefinition:
             self.trainable_column = ModelDataDefinition._read_setting( json_metadata , 'TrainableColumn' , None )
             self.n_network_elements = int( ModelDataDefinition._read_setting( json_metadata , 'NNetworkElements' , '64' ) )
             self.learning_rate = float( ModelDataDefinition._read_setting( json_metadata , 'LearningRate' , '0.001' ) )
+            self.dropout = float( ModelDataDefinition._read_setting( json_metadata , 'Dropout' , '0' ) )
 
             # Read columns definitions
             self.column_definitions = {}
@@ -126,6 +127,6 @@ class ModelDataDefinition:
         print("NNetworkElements:", self.n_network_elements)
         print("CustomEstimator:", self.use_custom_estimator)
         print("LearningRate:", self.learning_rate)
-        
+        print("Dropout:", self.dropout)
         
         

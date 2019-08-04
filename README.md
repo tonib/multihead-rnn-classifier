@@ -72,6 +72,7 @@ The model is defined on a file called "data_info.json":
     "NNetworkElements" : 64,
     "SequenceLength":128,
     "CustomEstimator": true,
+    "Dropout": 0.2,
 
     "PercentageEvaluation": 10.0,
     "LearningRate": 0.001,
@@ -92,8 +93,10 @@ Definitions:
 * "ContextColumns" are column names that will be feed as "context".
 * "NNetworkElements" is the number of cells on the "recurrent" layer.
 * "SequenceLength" is the number of tokens that are feeded to the model for prediction/training.
-* If false, the canned [RNNEstimator](https://www.tensorflow.org/api_docs/python/tf/contrib/estimator/RNNEstimator) is used create the
-  model. If true, a custom model is created.
+* "CustomEstimator": If false, the canned [RNNEstimator](https://www.tensorflow.org/api_docs/python/tf/contrib/estimator/RNNEstimator) is 
+  used to create the model. If true, a custom model is created. Default value is false.
+* "Dropout": If > 0, a Dropout layer will be added after the RNN layer. Values is the fraction on RNN outputs that will be dropped.
+  Default value is 0.
 
 Training settings:
 * "PercentageEvaluation" is the percentage of the CSV files that will be used to train to the model, but just to get an accuracy evaluation.

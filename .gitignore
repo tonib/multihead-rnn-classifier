@@ -8,6 +8,7 @@ exportedmodels
 # Data samples
 data
 data-original
+data-noreg
 trashcan
 
 # Previous data samples

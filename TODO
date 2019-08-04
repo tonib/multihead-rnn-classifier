@@ -1,4 +1,5 @@
 TODO:
+- Print evaluation time
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
   https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator
@@ -159,3 +160,34 @@ Total train time: 414.78500533103943 s
 
 ***** CANNED ESTIMATOR RESULTS (WITH ADADELTA LR=0.001):
 Does not converge in 7 epochs...
+
+
+***** CANNED WITHOUT REGULARIZATION:
+2 X 14 epochs
+
+Training epoch 14 ...
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.9452355, 'accuracy/isCollection': 0.9611172, 'accuracy/isControl': 0.8926616, 'accuracy/lengthBucket': 0.80394304, 'accuracy/outputTypeIdx': 0.67360353, 'accuracy/textHash0': 0.63910186, 'accuracy/textHash1': 0.6516977, 'accuracy/textHash2': 0.7968237, 'accuracy/textHash3': 0.91675794, 'loss': 0.7449024, 'loss/decimalsBucket': 0.22228292, 'loss/isCollection': 0.16516204, 'loss/isControl': 0.34762415, 'loss/lengthBucket': 0.7754909, 'loss/outputTypeIdx': 1.1429765, 'loss/textHash0': 1.387189, 'loss/textHash1': 1.3443204, 'loss/textHash2': 0.9116318, 'loss/textHash3': 0.40744302, 'global_step': 10192}
+Loss decrease: -0.06194728775881231 %
+Epoch time: 56.27888107299805 s
+Train speed:  938.3999039017369 sequences / s
+Total train time: 781.4033198356628 s
+
+***** CANNED WITH DROPOUT=0.2:
+
+Training epoch 28 ...
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.95071197, 'accuracy/isCollection': 0.96385545, 'accuracy/isControl': 0.8921139, 'accuracy/lengthBucket': 0.8066813, 'accuracy/outputTypeIdx': 0.6719606, 'accuracy/textHash0': 0.6385542, 'accuracy/textHash1': 0.6555312, 'accuracy/textHash2': 0.79299015, 'accuracy/textHash3': 0.9118291, 'loss': 0.763899, 'loss/decimalsBucket': 0.22207701, 'loss/isCollection': 0.16671908, 'loss/isControl': 0.36492106, 'loss/lengthBucket': 0.8005293, 'loss/outputTypeIdx': 1.2252389, 'loss/textHash0': 1.3597565, 'loss/textHash1': 1.3479313, 'loss/textHash2': 0.93950206, 'loss/textHash3': 0.4484174, 'global_step': 10192}
+Loss decrease: -2.657121606171131 %
+Epoch time: 53.85472869873047 s
+Train speed:  978.4682507230793 sequences / s
+Total train time: 1511.6734700202942 s
+
+Training epoch 42 ...
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.9501643, 'accuracy/isCollection': 0.9600219, 'accuracy/isControl': 0.8959474, 'accuracy/lengthBucket': 0.80996716, 'accuracy/outputTypeIdx': 0.67688936, 'accuracy/textHash0': 0.64348304, 'accuracy/textHash1': 0.6686747, 'accuracy/textHash2': 0.7935378, 'accuracy/textHash3': 0.9140197, 'loss': 0.8200377, 'loss/decimalsBucket': 0.2757146, 'loss/isCollection': 0.21188809, 'loss/isControl': 0.39395055, 'loss/lengthBucket': 0.88494647, 'loss/outputTypeIdx': 1.3175423, 'loss/textHash0': 1.4297101, 'loss/textHash1': 1.3801568, 'loss/textHash2': 1.0037055, 'loss/textHash3': 0.4827256, 'global_step': 15288}
+Loss decrease: -0.675475038588047 %
+Epoch time: 53.78201389312744 s
+Train speed:  978.7492047605747 sequences / s
+Total train time: 2265.917642593384 s
+

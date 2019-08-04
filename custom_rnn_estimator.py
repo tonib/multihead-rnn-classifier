@@ -21,7 +21,7 @@ class _ClassifierHead:
         # The model output column definition
         self.output_column = output_column
 
-        # Output layer. Compute logits (1 per class)
+        # Output layer. Compute logits (UNSCALED -> activation=None) (1 per class)
         self.logits = tf.keras.layers.Dense( len(output_column.labels), activation=None)(rnn_layer)
 
         # Compute predictions.
@@ -31,6 +31,7 @@ class _ClassifierHead:
             # mode == TRAIN or EVAL
 
             # Compute loss
+            # This computes really the logits (see sparse_softmax_cross_entropy documentation)
             self.loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(labels=output_labels, logits=self.logits)
 
             # The operation that will compute the predictions accuracy for metrics for Tensorboard
@@ -193,6 +194,15 @@ class CustomRnnEstimator:
 
         # Define a GRU layer
         rnn_layer = tf.keras.layers.GRU( data_definition.n_network_elements )(sequence_input_tensor)
+
+        #print("*********** rnn_layer:", rnn_layer )
+
+        if data_definition.dropout > 0:
+            # Add dropout layer. Apply dropout only in training
+            dropout_layer = tf.keras.layers.Dropout(data_definition.dropout)
+            training = ( mode == tf.estimator.ModeKeys.TRAIN )
+            #print("*********** (Dropout) training:", training )
+            rnn_layer = dropout_layer(rnn_layer , training)
 
         # Create a classifier for each output to predict
         i_output_labels = None
