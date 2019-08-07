@@ -101,7 +101,7 @@ Definitions:
 Training settings:
 * "PercentageEvaluation" is the percentage of the CSV files that will be used to train to the model, but just to get an accuracy evaluation.
   It's a "100%" based number.
-* "LearningRate" is the learning rate for the ADAM optimizer. Default value is 0.001
+* "LearningRate" is the learning rate for the ADAM optimizer. Default value is 0.001. If CustomEstimator = false, this parameter is ignored
 * "Dropout": If > 0, a Dropout layer will be added after the RNN layer. Values is the fraction on RNN outputs that will be dropped.
   Default value is 0. If CustomEstimator = false, this parameter is ignored
 

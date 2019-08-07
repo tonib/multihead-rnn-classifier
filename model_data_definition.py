@@ -127,9 +127,11 @@ class ModelDataDefinition:
         print("TrainableColumn:", self.trainable_column)
         print("NNetworkElements:", self.n_network_elements)
         print("CustomEstimator:", self.use_custom_estimator)
-        print("LearningRate:", self.learning_rate)
-        print("Dropout:", self.dropout)
-        print("CellType:", self.cell_type)
+        
+        if self.use_custom_estimator:
+            print("LearningRate:", self.learning_rate)
+            print("Dropout:", self.dropout)
+            print("CellType:", self.cell_type)
         
         
         
