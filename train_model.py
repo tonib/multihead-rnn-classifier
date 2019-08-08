@@ -109,8 +109,11 @@ class TrainModel:
     def evaluate(self, eval_data : DataDirectory ) -> object:
         """ Evaluate model over evaluation data set """
         print("Evaluating...")
+        eval_start = time()
         result = self.estimator.evaluate( input_fn=lambda:self._get_tf_input_fn( eval_data , False ) )
+        eval_time = time() - eval_start
         print("Evaluation: ", result)
+        print("Evaluation time:" , eval_time , "s")
         return result
 
     def train_model(self, train_data : DataDirectory , eval_data : DataDirectory ):

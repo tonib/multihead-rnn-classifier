@@ -1,6 +1,6 @@
 TODO:
+- Remove warning messages...
 - Option to fix the seed to make model comparisons (https://stackoverflow.com/questions/51072735/using-tf-set-random-seed-with-tf-estimator-estimator)
-- Print evaluation time
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
 - More on performance:
   https://stackoverflow.com/questions/47086599/parallelising-tf-data-dataset-from-generator
