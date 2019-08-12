@@ -1,3 +1,5 @@
+import os
+import json
 import tensorflow as tf
 from model_data_definition import ModelDataDefinition
 from data_directory import DataDirectory
@@ -114,6 +116,18 @@ class TrainModel:
         eval_time = time() - eval_start
         print("Evaluation: ", result)
         print("Evaluation time:" , eval_time , "s")
+
+        # Write evaluation results to a file in data model
+        # "result" contains numpy values, they are not serializable to JSON. Save an "unpacked" prediction version
+        serializable_result = {}
+        for key in result.keys():
+            serializable_result[key] = float(result[key])
+
+        # Save evaluation the JSON 
+        evaluation_file_path = os.path.join( self.data_definition.data_directory , 'evaluation.json' )
+        with open( evaluation_file_path , 'w' , encoding='utf-8' )  as file:
+            file.write( json.dumps(serializable_result) )
+
         return result
 
     def train_model(self, train_data : DataDirectory , eval_data : DataDirectory ):

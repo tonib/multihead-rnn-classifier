@@ -50,7 +50,6 @@ class PredictionModel:
         for col_name in data_definition.output_columns:
             column_result = {}
 
-            # For canned estimator
             if data_definition.use_custom_estimator:
                 # For custom estimator
                 column_result['class_prediction'] = int( prediction[ col_name + '/classes' ][0] )
