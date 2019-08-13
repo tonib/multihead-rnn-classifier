@@ -11,15 +11,18 @@ import os
 # Read data definition
 data_definition = ModelDataDefinition()
 
-# Read data
-train_data = DataDirectory()
-train_data.read_data_files( data_definition )
-
-# Extract evaluation files
-eval_data = train_data.extract_evaluation_files( data_definition )
+# Read test data set
+test_data = DataDirectory()
+test_data.read_test_files( data_definition )
 
 print("Reading latest exported model")
 predictor = PredictionModel(data_definition)
+
+# Create debug directory if it does not exists
+debug_dir_path = data_definition.get_debug_dir_path()
+if not os.path.isdir(debug_dir_path):
+    print("Creating directory", debug_dir_path)
+    os.mkdir(debug_dir_path)
 
 def input_to_serializable( input_row : dict ):
     """ Dataset rows contain numpy arrays that are not serializable to JSON.
@@ -43,7 +46,7 @@ succeed_column_name = 'outputTypeIdx'
 # Test eval data set:
 total_succeed = 0
 total = 0
-for data_file in eval_data.get_files():
+for data_file in test_data.get_files():
     file_debug = []
     file_succeed = 0
     file_total = 0
@@ -76,7 +79,7 @@ for data_file in eval_data.get_files():
     total_succeed += file_succeed
     total += file_total
 
-    debug_file_path = os.path.join( data_definition.data_directory , data_file.file_name + ".json" )
+    debug_file_path = os.path.join( debug_dir_path , data_file.file_name + ".json" )
     with open( debug_file_path , 'w') as outfile:  
         json.dump(file_debug, outfile)
 

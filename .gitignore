@@ -1,18 +1,17 @@
 # Python cached bytecode ?
 **/__pycache__
 
-# Model
+# Data samples and debug dir
 model
 exportedmodels
-
-# Data samples
 data
+debug
+
+# Other data directories (debug)
 data-original
 data-noreg
 trashcan
-
-# Previous data samples
-data-old/**
+data-old
 
 # VS Code stuff
 .vscode

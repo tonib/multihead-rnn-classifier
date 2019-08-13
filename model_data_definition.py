@@ -83,6 +83,14 @@ class ModelDataDefinition:
         """The path to the file with the validation set"""
         return os.path.join( self.data_directory , 'validationSet.txt' )
 
+    def get_test_set_path(self):
+        """The path to the file with the test set"""
+        return os.path.join( self.data_directory , 'testSet.txt' )
+
+    def get_debug_dir_path(self):
+        """ Path to the debug directory """
+        return os.path.join( self.data_directory , 'debug' )
+
     def get_evaluation_json_path(self):
         """ Path to the file with the evaluation results """
         return os.path.join( self.data_directory , 'evaluation.json' )

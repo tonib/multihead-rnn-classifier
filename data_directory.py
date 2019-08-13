@@ -15,9 +15,20 @@ class DataDirectory:
 
     def read_data_files(self, data_definition : ModelDataDefinition):
         """ Read all CSV files on data directory """
-
         dir_file_names = os.listdir(data_definition.data_directory)
         self._read_data_files_list(dir_file_names, data_definition)
+
+
+    def read_test_files(self, data_definition : ModelDataDefinition):
+        """ Read CSV files from the test set """
+        names_file_path = data_definition.get_test_set_path()
+        print("Reading file names from", names_file_path)
+        file_names_list = self._get_files_list_from_text_file(names_file_path)
+        if not file_names_list:
+            print(names_file_path, "not found or empty")
+            return
+        self._read_data_files_list(file_names_list, data_definition)
+
 
     def _read_data_files_list(self, file_names_list: List[str],  data_definition : ModelDataDefinition):
         """ Read CSV files list content from data directory """
