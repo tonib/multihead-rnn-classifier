@@ -11,6 +11,7 @@ TODO:
 - Generate .JSON debug files on a different directory: Otherwise it's a mess...
 - Allow to configure weight decay?
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
+- Configure MKL ???
 
 REMINDERS
 
@@ -78,6 +79,9 @@ pandas 0.24.2 # pip install pandas
 	REM Why?
     REM pip list
 
+    REM Only for TF 1.14. It show warnings if numpy=1.17.0 is installed
+    pip install numpy==1.16.4
+
 	REM Install tensorflow 1.14
     REM pip install --upgrade tensorflow < NOT TO THE LATEST VERSION!
 	pip install tensorflow==1.14
@@ -93,6 +97,8 @@ pandas 0.24.2 # pip install pandas
     source ./venv/bin/activate
     pip install --upgrade pip
     pip list
+    # Only for TF 1.14. It show warnings if numpy=1.17.0 is installed
+    pip install numpy==1.16.4
     #pip install --upgrade tensorflow NOT TO THE LATEST VERSION
     pip install tensorflow==1.14
     # Test TF installation
