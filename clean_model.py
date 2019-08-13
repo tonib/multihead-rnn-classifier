@@ -13,12 +13,16 @@ def delete_dir(dir_path: str):
     else:
         print(dir_path, "does not exists")
 
+def delete_file(file_path: str):
+    if os.path.isfile(file_path):
+        print("Deleting", file_path)
+        os.remove(file_path)
+    else:
+        print(file_path, "does not exists")
+
+
 delete_dir( data_definition.get_current_model_dir_path() )
 delete_dir( data_definition.get_exports_dir_path() )
 
-eval_path = data_definition.get_validation_set_path()
-if os.path.isfile(eval_path):
-    print("Deleting", eval_path)
-    os.remove(eval_path)
-else:
-    print(eval_path, "does not exists")
+delete_file( data_definition.get_validation_set_path() )
+delete_file( data_definition.get_evaluation_json_path() )

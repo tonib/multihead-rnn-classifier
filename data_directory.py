@@ -14,16 +14,24 @@ class DataDirectory:
         self._files = []
 
     def read_data_files(self, data_definition : ModelDataDefinition):
+        """ Read all CSV files on data directory """
+
+        dir_file_names = os.listdir(data_definition.data_directory)
+        self._read_data_files_list(dir_file_names, data_definition)
+
+    def _read_data_files_list(self, file_names_list: List[str],  data_definition : ModelDataDefinition):
+        """ Read CSV files list content from data directory """
 
         print("Reading data files from", data_definition.data_directory)
-        for file_name in os.listdir(data_definition.data_directory):
+        for file_name in file_names_list:
             if not file_name.lower().endswith(".csv"):
                 continue
             #print( file_name )
             self._files.append( DataFile( data_definition , file_name ) )
-        
+
         # Sort by file name to get reproducible results
         self._files.sort(key=lambda f: f.file_name)
+
 
     def get_shuffled_files(self) -> List[DataFile]:
         shuffled_files = self._files.copy()
@@ -42,26 +50,35 @@ class DataDirectory:
             for row in data_file.get_train_sequences():
                 yield row
 
+    
+    def _get_files_list_from_text_file(self, file_path: str) -> List[str]:
+        """ Reads a list of CSV file names from a text file """
+        if not os.path.isfile( file_path ):
+            return None
+
+        # Read file lines, each line is a file name
+        with open(file_path) as f:
+            return f.read().splitlines()
 
     def _extract_stored_evaluation_files(self, data_definition : ModelDataDefinition) -> object:
         """ Try to read the file with the validation set, and return the set """
+
         # Files used for validation are stored at dirmodel/validationSet.txt
         eval_path = data_definition.get_validation_set_path()
-        if not os.path.isfile( eval_path ):
+        files_list = self._get_files_list_from_text_file(eval_path)
+        if not files_list:
             return None
 
         print("Reading evaluation file names from", eval_path)
         new_data_dir = DataDirectory()
-        with open(eval_path) as f:
-            # Read file lines, each line is a file name
-            for file_name in f.read().splitlines():
-                #print(file_name)
-                data_file = self.get_file(file_name)
-                if data_file == None:
-                    print(file_name , "not found, eval file ignored")
-                    return None
-                self._files.remove(data_file)
-                new_data_dir._files.append(data_file)
+        for file_name in files_list:
+            #print(file_name)
+            data_file = self.get_file(file_name)
+            if data_file == None:
+                print(file_name , "not found, eval file ignored")
+                return None
+            self._files.remove(data_file)
+            new_data_dir._files.append(data_file)
 
         return new_data_dir
 
@@ -79,7 +96,7 @@ class DataDirectory:
             n_files_to_extract = 1
 
         new_data_dir = DataDirectory()
-        for i in range(n_files_to_extract):
+        for _ in range(n_files_to_extract):
             file = random.choice( self._files )
             self._files.remove(file)
             new_data_dir._files.append(file)

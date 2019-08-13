@@ -83,6 +83,10 @@ class ModelDataDefinition:
         """The path to the file with the validation set"""
         return os.path.join( self.data_directory , 'validationSet.txt' )
 
+    def get_evaluation_json_path(self):
+        """ Path to the file with the evaluation results """
+        return os.path.join( self.data_directory , 'evaluation.json' )
+
     def get_empty_element(self) :
         """ Input entry with all zeros """
         element = {}

@@ -124,7 +124,7 @@ class TrainModel:
             serializable_result[key] = float(result[key])
 
         # Save evaluation the JSON 
-        evaluation_file_path = os.path.join( self.data_definition.data_directory , 'evaluation.json' )
+        evaluation_file_path = self.data_definition.get_evaluation_json_path()
         with open( evaluation_file_path , 'w' , encoding='utf-8' )  as file:
             file.write( json.dumps(serializable_result) )
 
