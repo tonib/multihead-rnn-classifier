@@ -34,7 +34,8 @@ class ModelDataDefinition:
             # Read columns definitions
             self.column_definitions = {}
             for json_column in json_metadata['ColumnDefinitions']:
-                self.column_definitions[ json_column['Name'] ] = ColumnInfo( json_column['Name'] , json_column['Labels'] )
+                embeddable_dimension = int( ModelDataDefinition._read_setting(json_column, 'EmbeddableDimension', '0' ) )
+                self.column_definitions[ json_column['Name'] ] = ColumnInfo( json_column['Name'] , json_column['Labels'] , embeddable_dimension )
 
             # Sequence column names
             self.sequence_columns = json_metadata['SequenceColumns']
@@ -124,7 +125,11 @@ class ModelDataDefinition:
         print(title)
         for col_name in column_names:
             column = self.column_definitions[ col_name ]
-            print("   ", column.name, ",", len(column.labels), "labels")
+            if column.embeddable_dimension > 0:
+                txt_embedding = ", Embeddable (dim = " + str(column.embeddable_dimension) + ")"
+            else:
+                txt_embedding = ""
+            print("   ", column.name, ":", len(column.labels), "labels", txt_embedding )
 
     def print_summary(self):
         """ Print definitions summary """
