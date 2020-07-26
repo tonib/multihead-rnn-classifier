@@ -8,10 +8,10 @@ TODO:
 - Allow to configure the padding value for each column?
 - Model server: Autopad sequences
 - Generate a file with the last evaluation info: It will be used to ponderate probabilites based on accuracy
-- Generate .JSON debug files on a different directory: Otherwise it's a mess...
 - Allow to configure weight decay?
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
 - Configure MKL ???
+- Slow performance in Windows with custom estimator (dropout?)
 
 REMINDERS
 
@@ -93,7 +93,15 @@ pandas 0.24.2 # pip install pandas
     pip install pandas==0.24.2
 
 * Install Tensorflow 1.14 in Linux with virtualenv
+    # This is required for me in Ubuntu 20 (https://stackoverflow.com/questions/61541281/python-3-7-venv-broken-after-upgrade-to-ubuntu-20-04)
+    # sudo add-apt-repository ppa:deadsnakes/ppa
+    # sudo apt-get update
+    # sudo apt-get install python3.7
+    # sudo apt-get install python3.7-venv
+
+    # In Ubuntu 20 use: virtualenv --python=/usr/bin/python3.7 ./venv
     virtualenv --system-site-packages -p python3 ./venv
+
     source ./venv/bin/activate
     pip install --upgrade pip
     pip list

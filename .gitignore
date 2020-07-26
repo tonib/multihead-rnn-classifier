@@ -15,6 +15,7 @@ data-old
 
 # VS Code stuff
 .vscode
+workspace.code-workspace
 
 # Visual studio 2017 stuff
 .vs
