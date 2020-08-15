@@ -1,8 +1,12 @@
 TODO:
+- Add option to use XLA
+- ClassifierHead > tf_feature_column.embedding_column(), parm trainable should be false in inference time?
 - Check how VS code can find TF definitions
 - Check how VS code can use the venv
 - Install and use a linter
 - Add documentation about embedding
+- Each column should have it's own padding value
+- Inference time: Support padding automatically
 - Remove warning messages...
 - Option to fix the seed to make model comparisons (https://stackoverflow.com/questions/51072735/using-tf-set-random-seed-with-tf-estimator-estimator)
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
@@ -117,6 +121,44 @@ pandas 0.24.2 # pip install pandas
     python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
     pip install pandas==0.24.2
 
+* Install TF 1.14 with GPU support in Ubuntu 20.04 with venv
+
+    # Install TF, and pandas
+    sudo apt install python3-dev python3-pip python3-venv
+    python3 -m venv --system-site-packages ./venv
+    source ./venv/bin/activate
+    pip install --upgrade pip
+    pip list
+    # Only for TF 1.14. It show warnings if numpy=1.17.0 is installed
+    pip install numpy==1.16.4
+    pip install tensorflow-gpu==1.14
+    pip install pandas==0.24.2
+
+    # Add NVIDIA package repositories. This is the repository for Ubuntu 18.04, but it works for 20.04 (repo for 20.04 contains only
+    # CUDA v11)
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-repo-ubuntu1804_10.1.243-1_amd64.deb
+    sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
+    sudo dpkg -i cuda-repo-ubuntu1804_10.1.243-1_amd64.deb
+    sudo apt-get update
+    wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
+    sudo apt install ./nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
+    sudo apt-get update
+
+    # Install NVIDIA driver
+    # I KEPT nvidia-driver-440 and it worked
+    # sudo apt-get install --no-install-recommends nvidia-driver-450
+    # Reboot. Check that GPUs are visible using the command: nvidia-smi
+
+    # Install development and runtime libraries (CUDA 10.0)
+    sudo apt-get install -y --no-install-recommends \
+    cuda-10-0 \
+    libcudnn7=7.6.4.38-1+cuda10.0  \
+    libcudnn7-dev=7.6.4.38-1+cuda10.0;
+
+    sudo apt-get install -y --no-install-recommends \
+        libnvinfer6=6.0.1-1+cuda10.0 \
+        libnvinfer-dev=6.0.1-1+cuda10.0 \
+        libnvinfer-plugin6=6.0.1-1+cuda10.0;
 
 * Prediction format:
 Prediction: {'isCollection': {'class_prediction': 0, 'probabilities': [0.9971703886985779, 0.0028295705560594797]}, 'legthBucket': {'class_prediction': 0, 'probabilities': [0.38102802634239197, 0.3096150755882263, 0.013816392980515957, 0.1163591593503952, 0.006184279453009367, 0.0024974108673632145, 0.0019232947379350662, 0.01665205880999565, 0.005016367882490158, 0.0043900893069803715, 0.0362323597073555, 0.004558942746371031, 0.0015884715830907226, 0.029023174196481705, 0.014890970662236214, 0.04388183727860451, 0.008182627148926258, 0.004159428644925356]}, 'decimalsBucket': {'class_prediction': 0, 'probabilities': [0.9940299987792969, 3.4467918794689467e-06, 0.0036471218336373568, 0.0001381940091960132, 5.111771770316409e-0
@@ -124,6 +166,32 @@ Prediction: {'isCollection': {'class_prediction': 0, 'probabilities': [0.9971703
 * Metrics format:
 {'accuracy/decimalsBucket': 0.9587786, 'accuracy/isCollection': 0.9969466, 'accuracy/legthBucket': 0.66431296, 'accuracy/outputTypeIdx': 0.64122134, 'accuracy_baseline/isCollection': 0.9969466, 'auc/isCollection': 0.9759284, 'auc_precision_recall/isCollection': 0.08735464, 'average_loss/decimalsBucket': 0.16012691, 'average_loss/isCollection': 0.0133258775, 'average_loss/legthBucket': 1.2138829, 'average_loss/outputTypeIdx': 1.2020633, 'label/mean/isCollection': 0.0030534351, 'loss': 165.4689, 'loss/decimalsBucket': 10.2325, 'loss/isCollection': 0.85155606, 'loss/legthBucket': 77.57008, 'loss/outputTypeIdx': 76.81478, 'precision/isCollection': 0.0, 'prediction/mean/isCollection': 0.0034022834, 'recall/isCollection': 0.0, 'global_step': 3108}
 
+***** CUSTOM ESTIMATOR, WITH EMBEDDING DIM. 10, AFTER 14 EPOCHS:
+
+Training epoch 7 ...
+2020-07-26 14:01:11.847154: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:111] Filling up shuffle buffer (this may take a while): 4921 of 5000
+2020-07-26 14:01:11.984224: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:162] Shuffle buffer filled.
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.9193122, 'accuracy/isCollection': 0.92724866, 'accuracy/isControl': 0.8452381, 'accuracy/lengthBucket': 0.7255291, 'accuracy/outputTypeIdx': 0.45304233, 'accuracy/textHash0': 0.5734127, 'accuracy/textHash1': 0.5839947, 'accuracy/textHash2': 0.8095238, 'accuracy/textHash3': 0.8955026, 'loss': 0.926258, 'loss/decimalsBucket': 0.26557323, 'loss/isCollection': 0.20280845, 'loss/isControl': 0.4019108, 'loss/lengthBucket': 1.0370004, 'loss/outputTypeIdx': 2.193466, 'loss/textHash0': 1.463703, 'loss/textHash1': 1.4772863, 'loss/textHash2': 0.88384956, 'loss/textHash3': 0.41072297, 'global_step': 2583}
+Evaluation time: 6.750043153762817 s
+Loss decrease: 3.671252354979515 %
+Epoch time: 64.20589995384216 s
+Train speed:  827.1796161216843 sequences / s
+Total train time: 454.7265121936798 s
+Prediction performance: 3.5602307319641113 ms
+
+***** CUSTOM ESTIMATOR, WITH NO EMBEDDING
+
+Training epoch 7 ...
+2020-07-26 13:49:01.218848: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:111] Filling up shuffle buffer (this may take a while): 4770 of 5000
+2020-07-26 13:49:01.623044: I tensorflow/core/kernels/data/shuffle_dataset_op.cc:162] Shuffle buffer filled.
+Evaluating...
+Evaluation:  {'accuracy/decimalsBucket': 0.9232804, 'accuracy/isCollection': 0.92724866, 'accuracy/isControl': 0.8234127, 'accuracy/lengthBucket': 0.7248677, 'accuracy/outputTypeIdx': 0.48280424, 'accuracy/textHash0': 0.58267194, 'accuracy/textHash1': 0.5906085, 'accuracy/textHash2': 0.80224866, 'accuracy/textHash3': 0.8935185, 'loss': 0.9449695, 'loss/decimalsBucket': 0.2846151, 'loss/isCollection': 0.21228914, 'loss/isControl': 0.41285062, 'loss/lengthBucket': 1.0846995, 'loss/outputTypeIdx': 2.1391752, 'loss/textHash0': 1.5357685, 'loss/textHash1': 1.5327793, 'loss/textHash2': 0.8813905, 'loss/textHash3': 0.4211564, 'global_step': 2583}
+Evaluation time: 4.95462703704834 s
+Loss decrease: 2.922206185758114 %
+Epoch time: 57.187389612197876 s
+Train speed:  909.8939413408656 sequences / s
+Total train time: 387.0955402851105 s
 
 ***** CANNED ESTIMATOR RESULTS:
 

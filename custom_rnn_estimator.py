@@ -96,11 +96,16 @@ class CustomRnnEstimator:
         sequence_columns = []
         for col_name in self.data_definition.sequence_columns:
             def_column = self.data_definition.column_definitions[ col_name ]
-            # See https://www.tensorflow.org/api_docs/python/tf/feature_column/sequence_categorical_column_with_vocabulary_list
-            # for embeddings
+
             column = tf_feature_column.sequence_categorical_column_with_identity( col_name , len(def_column.labels) )
-            indicator_column = feature_column.indicator_column( column )
+            if def_column.embeddable_dimension > 0:
+                # Embeddable column:
+                indicator_column = tf_feature_column.embedding_column( column , dimension=def_column.embeddable_dimension )
+            else:
+                # Non embeddable column
+                indicator_column = feature_column.indicator_column( column )
             sequence_columns.append( indicator_column )
+
         return sequence_columns
 
     def _get_context_columns(self) -> list:

@@ -1,4 +1,5 @@
 from typing import List
+import tensorflow as tf
 
 class ColumnInfo:
     """ Info about a CSV column """

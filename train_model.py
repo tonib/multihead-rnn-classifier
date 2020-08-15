@@ -39,7 +39,7 @@ class TrainModel:
 
 
     def _serving_input_receiver_fn(self):
-        """ Function to define the model signature """
+        """ Function to define the model input signature """
         inputs_signature = {}
         # Sequence columns
         for col_name in self.data_definition.sequence_columns:

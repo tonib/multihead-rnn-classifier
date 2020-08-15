@@ -6,6 +6,7 @@ model
 exportedmodels
 data
 debug
+logs
 
 # Other data directories (debug)
 data-original
