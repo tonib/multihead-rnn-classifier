@@ -1,4 +1,5 @@
 TODO:
+- Allow to configure the batch size
 - Add option to use XLA
 - ClassifierHead > tf_feature_column.embedding_column(), parm trainable should be false in inference time?
 - Check how VS code can find TF definitions
@@ -159,6 +160,9 @@ pandas 0.24.2 # pip install pandas
         libnvinfer6=6.0.1-1+cuda10.0 \
         libnvinfer-dev=6.0.1-1+cuda10.0 \
         libnvinfer-plugin6=6.0.1-1+cuda10.0;
+
+* Train without GPU:
+    CUDA_VISIBLE_DEVICES=-1 python train.py
 
 * Prediction format:
 Prediction: {'isCollection': {'class_prediction': 0, 'probabilities': [0.9971703886985779, 0.0028295705560594797]}, 'legthBucket': {'class_prediction': 0, 'probabilities': [0.38102802634239197, 0.3096150755882263, 0.013816392980515957, 0.1163591593503952, 0.006184279453009367, 0.0024974108673632145, 0.0019232947379350662, 0.01665205880999565, 0.005016367882490158, 0.0043900893069803715, 0.0362323597073555, 0.004558942746371031, 0.0015884715830907226, 0.029023174196481705, 0.014890970662236214, 0.04388183727860451, 0.008182627148926258, 0.004159428644925356]}, 'decimalsBucket': {'class_prediction': 0, 'probabilities': [0.9940299987792969, 3.4467918794689467e-06, 0.0036471218336373568, 0.0001381940091960132, 5.111771770316409e-0

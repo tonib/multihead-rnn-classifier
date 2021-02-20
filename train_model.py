@@ -69,8 +69,11 @@ class TrainModel:
         )
         if shuffle:
             ds = ds.shuffle(5000)
-        ds = ds.batch(64)
-        ds = ds.prefetch(64)
+
+        batch_size = 64
+        
+        ds = ds.batch(batch_size)
+        ds = ds.prefetch(batch_size * 8)
         return ds
 
 
