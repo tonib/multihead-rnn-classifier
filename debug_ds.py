@@ -1,6 +1,5 @@
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
-from train_model import TrainModel
 
 # Read data definition
 data_definition = ModelDataDefinition()

@@ -7,7 +7,7 @@ from model_data_definition import ModelDataDefinition
 import tensorflow as tf
 
 class DataDirectory:
-    """ Train / evaluation data """
+    """ Train / evaluation / test data """
 
     def __init__(self):
         # Array of DataFile
@@ -31,7 +31,7 @@ class DataDirectory:
 
 
     def _read_data_files_list(self, file_names_list: List[str],  data_definition : ModelDataDefinition):
-        """ Read CSV files list content from data directory """
+        """ Read CSV file names list content from data directory """
 
         print("Reading data files from", data_definition.data_directory)
         for file_name in file_names_list:
@@ -93,7 +93,7 @@ class DataDirectory:
 
         return new_data_dir
 
-    def extract_evaluation_files(self, data_definition : ModelDataDefinition) -> object:
+    def extract_evaluation_files(self, data_definition : ModelDataDefinition) -> 'DataDirectory':
         """ Extract randomly a percentage of files to other DataDirectory """
 
         # Try to read the stored evaluation files
