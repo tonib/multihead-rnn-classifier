@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.data import Dataset
 
-sequence_length = 8 # This length includes the EOS symbol, so the real length is -1
+sequence_length = 14 # This length includes the EOS symbol, so the real length is -1
 sequence_feature_names = [ "sequence" ]
 context_feature_names = [ "context" ]
 output_features_names = [ "output" , "sequence"]
@@ -14,11 +14,13 @@ ds = Dataset.from_tensor_slices(data)
 # final sequences with length < sequence_length will be feeded, and they must to be filtered... ¯\_(ツ)_/¯
 ds = ds.window(sequence_length, shift=1, drop_remainder=False)
 
+@tf.function
 def flat_map_window(window_elements_dict):
+    result = {}
     for key in window_elements_dict:
         # See https://github.com/tensorflow/tensorflow/issues/23581#issuecomment-529702702
-        window_elements_dict[key] = tf.data.experimental.get_single_element( window_elements_dict[key].batch(sequence_length + 1) )
-    return window_elements_dict
+        result[key] = tf.data.experimental.get_single_element( window_elements_dict[key].batch(sequence_length + 1) )
+    return result
 
 ds = ds.map(flat_map_window)
 
@@ -57,6 +59,7 @@ def expand_first_sequence(window_elements_dict):
     
     return (input_dict, output_dict)
 
+@tf.function
 def process_full_sequence(window_elements_dict):
     """ Maps full window sequences to input/outputs """
     # Inputs
