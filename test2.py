@@ -13,7 +13,7 @@ feature_column_names = sequence_feature_names + context_feature_names + output_f
 feature_column_names = list(dict.fromkeys(feature_column_names))
 
 # CSV files to train
-file_paths = ["data/AlbaranNet.csv"]
+file_paths = ["data/TCalles.csv", "data/TArtAlEAcc.csv", "data/AlbaranNet.csv"]
 csv_separator = ";"
 
 # Tricky things: To get right sequences we must separate CSV contents, and seems not supporte by TF CSV hight level helpers
@@ -28,26 +28,28 @@ with open(file_paths[0]) as f:
     feature_column_indices = [ csv_column_names_to_indices[feature_column_name] for feature_column_name in feature_column_names ]
 
 # Column types: All int32
-default_csv_values = tf.zeros( len(feature_column_names) , tf.int32 )
+#default_csv_values = tf.zeros( len(feature_column_names) , tf.int32 )
+default_csv_values = [ tf.int32 ] * len(feature_column_names)
+print(default_csv_values)
 
 @tf.function
 def load_csv(file_path):
-    return  tf.data.experimental.CsvDataset(
+    csv_ds = tf.data.experimental.CsvDataset(
         file_path, default_csv_values, 
         header=True,
         field_delim=";",
         use_quote_delim=False,
         select_cols=feature_column_indices
     )
-    
+    full_csv_data = tf.data.experimental.get_single_element( csv_ds.batch(1000000 ) )
 
-ds = tf.data.experimental.CsvDataset(
-        file_paths, default_csv_values, 
-        header=True,
-        field_delim=";",
-        use_quote_delim=False,
-        select_cols=feature_column_indices
-    )
+    full_csv_dict = {}
+    for feature_column_name, csv_column_values in zip(feature_column_names, full_csv_data):
+        full_csv_dict[feature_column_name] = csv_column_values
+    return full_csv_dict
 
-for example in ds.take(10):
+ds = Dataset.list_files(file_paths)
+ds = ds.map(load_csv)
+
+for example in ds.take(50):
     print(example)
