@@ -1,7 +1,7 @@
 import os
 import json
 from column_info import ColumnInfo
-from typing import List
+from typing import List, Set
 import tensorflow as tf
 import argparse
 
@@ -114,7 +114,7 @@ class ModelDataDefinition:
             result[key] = [ input[key] ]
         return result
 
-    def get_column_names(self) -> set:
+    def get_column_names(self) -> Set[str]:
         """ Set with all used column names """
         all_columns = self.sequence_columns + self.output_columns + self.context_columns
         if self.trainable_column:
