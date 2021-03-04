@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 if TYPE_CHECKING:
     from model_data_definition import ModelDataDefinition
     from data_directory import DataDirectory
@@ -7,6 +7,12 @@ if TYPE_CHECKING:
 import tensorflow as tf
 
 class ClassifierDataset:
+
+    # Padding value
+    PADDING_VALUE = 0
+
+    # End of string (EOS) value
+    EOS_VALUE = -1
 
     # CSV files separator character
     CSV_SEPARATOR = ";"
@@ -26,6 +32,7 @@ class ClassifierDataset:
 
     @tf.function
     def _flat_map_window(self, window_elements_dict):
+        """ Get real window values. I don't really understand this step, but it's required """
         result = {}
         for key in window_elements_dict:
             # See https://github.com/tensorflow/tensorflow/issues/23581#issuecomment-529702702
@@ -37,12 +44,93 @@ class ClassifierDataset:
     def _map_csv_file_to_sequences(self, csv_columns_dict: dict) -> tf.data.Dataset:
         """ Map a full csv file to windows of sequence_length elements """
         windows_ds = tf.data.Dataset.from_tensor_slices(csv_columns_dict)
-        # We NEED drop_remainder=False, but it's tricky. If the entire original sequence is smaller than sequence_length, if
-        # drop_remainder=True, the entire sequence will be dropped, and we don't what that. But, if drop_remainder=False,
+        # We NEED drop_remainder=False, but it's tricky. If the entire csv is smaller than sequence_length, if
+        # drop_remainder=True, the entire csv sequence will be dropped, and we don't what that. But, if drop_remainder=False,
         # final sequences with length < sequence_length will be feeded, and they must to be filtered... ¯\_(ツ)_/¯
-        windows_ds = windows_ds.window(self._data_definition.sequence_length, shift=1, drop_remainder=True)
+        windows_ds = windows_ds.window(self._data_definition.sequence_length, shift=1, drop_remainder=False)
         windows_ds = windows_ds.map(self._flat_map_window)
-        return windows_ds
+
+        # TODO: windows_ds should be cached here?: windows_ds.take(1) / windows_ds.skip(1)
+
+        # Separate the first window from later windows. First window will generate multiple sequences
+        first_window_ds = windows_ds.take(1)
+        # TODO: Should we call flat_map(self.expand_first_window) directly here ???
+        first_window_ds = first_window_ds.map(self.expand_first_window)
+        first_window_ds = first_window_ds.flat_map( 
+            lambda input, output: tf.data.Dataset.zip( (tf.data.Dataset.from_tensor_slices(input), tf.data.Dataset.from_tensor_slices(output)) ) 
+        )
+
+        later_windows_ds = windows_ds.skip(1)
+        # Avoid final sequences with length < sequence_length
+        later_windows_ds = later_windows_ds.filter( 
+            lambda x: tf.shape( x[self._data_definition.sequence_columns[0]] )[0] == self._data_definition.sequence_length )
+        later_windows_ds = later_windows_ds.map(self.process_full_window)
+
+        return first_window_ds.concatenate( later_windows_ds )
+
+    @tf.function
+    def expand_first_window(self, window_elements_dict: dict):
+        """ Maps the first sequence to a dataset with initial incomplete subsequences. 
+            Zero will be used for padding.
+            Ex (padding element = 0, eos =-1, sequence_length = 3): 
+            [1, 2, 3] -> { "in":[ [-1, 0, 0], [1, -1, 0], [1, 2, -1] ], "out": [ 1, 2 , 3 ] ] } """
+
+        # Inputs
+        input_dict = {}
+        for key in self._data_definition.sequence_columns:
+            inputs = window_elements_dict[key] # [1, 2, 3]
+            elements_length = tf.shape(inputs)[0]
+            inputs = tf.reshape(inputs, (1, -1)) # [1, 2, 3] -> [[1, 2, 3]]
+            inputs = tf.repeat(inputs, repeats=elements_length, axis=0) # [[1, 2, 3]] -> [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+            # Keep lower subdiagonals: [[1, 2, 3], [1, 2, 3], [1, 2, 3]] -> [[1, 0, 0], [1, 2, 0], [1, 2, 3]]
+            inputs = tf.linalg.band_part( inputs , elements_length , 0 )
+            # Assign EOS: [[1, 0, 0], [1, 2, 0], [1, 2, 3]] -> [[-1, 0, 0], [1, -1, 0], [1, 2, -1]]
+            eos_vector = tf.repeat( ClassifierDataset.EOS_VALUE, elements_length)
+            inputs = tf.linalg.set_diag(inputs, eos_vector)
+
+            if elements_length < self._data_definition.sequence_length:
+                # Pad right up to sequence length. This can happens if the full CSV size is lower than sequence_length
+                zeros = tf.zeros( [ elements_length , self._data_definition.sequence_length - elements_length] , dtype=inputs.dtype )
+                inputs = tf.concat( [inputs, zeros], axis=1 )
+            input_dict[key] = inputs
+
+        for key in self._data_definition.context_columns:
+            input_dict[key] = window_elements_dict[key]
+        
+        # Debug columns:
+        input_dict['_file_path'] = window_elements_dict['_file_path']
+        input_dict['_file_row'] = window_elements_dict['_file_row']
+
+        # Outputs
+        output_dict = {}
+        for key in self._data_definition.output_columns:
+            output_dict[key] = window_elements_dict[key]
+        
+        return (input_dict, output_dict)
+        
+    @tf.function
+    def process_full_window(self, window_elements_dict) -> Tuple:
+        """ Maps full window sequences to (input,output) tuples """
+        # Inputs
+        input_dict = {}
+        for key in self._data_definition.sequence_columns:
+            inputs = window_elements_dict[key] # [1, 2, 3] -> [1, 2, -1]
+            # inputs[-1] = eos, hard way:
+            inputs = tf.tensor_scatter_nd_update( inputs , [[self._data_definition.sequence_length-1]] , [ClassifierDataset.EOS_VALUE] )
+            input_dict[key] = inputs
+        for key in self._data_definition.context_columns:
+            input_dict[key] = window_elements_dict[key][-1]
+
+        # Debug columns:
+        input_dict['_file_path'] = window_elements_dict['_file_path'][-1]
+        input_dict['_file_row'] = window_elements_dict['_file_row'][-1]
+
+        # Outputs
+        output_dict = {}
+        for key in self._data_definition.output_columns:
+            output_dict[key] = window_elements_dict[key][-1]
+
+        return (input_dict, output_dict)
 
     @tf.function
     def _load_csv(self, file_path: str) -> tf.data.Dataset:
@@ -59,12 +147,13 @@ class ClassifierDataset:
 
         full_csv_dict = {}
         for feature_column_name, csv_column_values in zip(self._feature_column_names, csv_ds):
-            full_csv_dict[feature_column_name] = csv_column_values
+            # Increase the value in 2 because values 0 and 1 are "keyword" values for padding and EOS
+            full_csv_dict[feature_column_name] = csv_column_values + 2
 
         # For debugging and mental health, add file path and row numbers
         n_csv_file_elements = tf.shape( full_csv_dict[feature_column_name] )[0]
         full_csv_dict['_file_path'] = tf.repeat( file_path , n_csv_file_elements )
-        full_csv_dict['_file_rows'] = tf.range(0, n_csv_file_elements)
+        full_csv_dict['_file_row'] = tf.range(0, n_csv_file_elements)
         
         return full_csv_dict
 

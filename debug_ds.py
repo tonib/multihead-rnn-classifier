@@ -15,7 +15,7 @@ ds = ClassifierDataset(all_data, data_definition, shuffle=False)
 print("Testing data set")
 
 def print_some():
-    for row in ds.dataset.take(3):
+    for row in ds.dataset.take(50):
         print(row)
 
 def traverse_all():
@@ -30,4 +30,5 @@ def traverse_all():
     n_elements = n_batches * BATCH_SIZE
     print("Total:", n_elements, "Time (s):", elapsed_time, "Elements/s:", n_elements / elapsed_time)
 
+#print_some()
 traverse_all()
