@@ -17,11 +17,36 @@ class ClassifierDataset:
         self._data_definition = data_definition
         self._get_csv_files_structure()
 
-        self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle)
+        # Get entire CSV files in pipeline, as a dictionary, key=CSV column name, value=values in that column
+        self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
         self.dataset = self.dataset.map(self._load_csv)
 
+        # Map full CSV files to sequences
+        self.dataset = self.dataset.flat_map( self._map_csv_file_to_sequences )
+
     @tf.function
-    def _load_csv(self, file_path: str):
+    def _flat_map_window(self, window_elements_dict):
+        result = {}
+        for key in window_elements_dict:
+            # See https://github.com/tensorflow/tensorflow/issues/23581#issuecomment-529702702
+            # TODO: + 1 can be removed? Probably yes
+            result[key] = tf.data.experimental.get_single_element( window_elements_dict[key].batch(self._data_definition.sequence_length + 1) )
+        return result
+
+    @tf.function
+    def _map_csv_file_to_sequences(self, csv_columns_dict: dict) -> tf.data.Dataset:
+        """ Map a full csv file to windows of sequence_length elements """
+        windows_ds = tf.data.Dataset.from_tensor_slices(csv_columns_dict)
+        # We NEED drop_remainder=False, but it's tricky. If the entire original sequence is smaller than sequence_length, if
+        # drop_remainder=True, the entire sequence will be dropped, and we don't what that. But, if drop_remainder=False,
+        # final sequences with length < sequence_length will be feeded, and they must to be filtered... ¯\_(ツ)_/¯
+        windows_ds = windows_ds.window(self._data_definition.sequence_length, shift=1, drop_remainder=True)
+        windows_ds = windows_ds.map(self._flat_map_window)
+        return windows_ds
+
+    @tf.function
+    def _load_csv(self, file_path: str) -> tf.data.Dataset:
+        """ Load full CSV file content and return it to the pipeline as dict with keys=column names, values=column values """
         csv_ds = tf.data.experimental.CsvDataset(
             file_path, self._default_csv_values, 
             header=True,
@@ -29,11 +54,18 @@ class ClassifierDataset:
             use_quote_delim=False,
             select_cols=self._feature_column_indices
         )
-        full_csv_data = tf.data.experimental.get_single_element( csv_ds.batch(1000000 ) )
+        # Load the entire file
+        csv_ds = tf.data.experimental.get_single_element( csv_ds.batch(1000000 ) )
 
         full_csv_dict = {}
-        for feature_column_name, csv_column_values in zip(self._feature_column_names, full_csv_data):
+        for feature_column_name, csv_column_values in zip(self._feature_column_names, csv_ds):
             full_csv_dict[feature_column_name] = csv_column_values
+
+        # For debugging and mental health, add file path and row numbers
+        n_csv_file_elements = tf.shape( full_csv_dict[feature_column_name] )[0]
+        full_csv_dict['_file_path'] = tf.repeat( file_path , n_csv_file_elements )
+        full_csv_dict['_file_rows'] = tf.range(0, n_csv_file_elements)
+        
         return full_csv_dict
 
     def _get_csv_files_structure(self):
