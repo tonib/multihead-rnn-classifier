@@ -25,6 +25,9 @@ class ClassifierDataset:
     # Key in dataset dictionary for file path
     FILE_KEY = '_file_path'
 
+    # Key in dataset dictionary for row column
+    ROW_KEY = '_file_row'
+
     def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool):
 
         self._csv_files = csv_files
@@ -57,8 +60,6 @@ class ClassifierDataset:
         # final sequences with length < sequence_length will be feeded, and they must to be filtered... ¯\_(ツ)_/¯
         windows_ds = windows_ds.window(self._data_definition.sequence_length, shift=1, drop_remainder=False)
         windows_ds = windows_ds.map(self._flat_map_window)
-
-        # TODO: windows_ds should be cached here?: windows_ds.take(1) / windows_ds.skip(1)
 
         # Separate the first window from later windows. First window will generate multiple sequences
         first_window_ds = windows_ds.take(1)
@@ -111,7 +112,7 @@ class ClassifierDataset:
         
         # Debug columns:
         input_dict[ClassifierDataset.FILE_KEY] = window_elements_dict[ClassifierDataset.FILE_KEY]
-        input_dict['_file_row'] = window_elements_dict['_file_row']
+        input_dict[ClassifierDataset.ROW_KEY] = window_elements_dict[ClassifierDataset.ROW_KEY]
 
         # Outputs
         output_dict = {}
@@ -139,7 +140,7 @@ class ClassifierDataset:
 
         # Debug columns:
         input_dict[ClassifierDataset.FILE_KEY] = window_elements_dict[ClassifierDataset.FILE_KEY][-1]
-        input_dict['_file_row'] = window_elements_dict['_file_row'][-1]
+        input_dict[ClassifierDataset.ROW_KEY] = window_elements_dict[ClassifierDataset.ROW_KEY][-1]
 
         # Outputs
         output_dict = {}
@@ -169,7 +170,7 @@ class ClassifierDataset:
         n_csv_file_elements = tf.shape( full_csv_dict[feature_column_name] )[0]
         full_csv_dict[ClassifierDataset.FILE_KEY] = tf.repeat( file_path , n_csv_file_elements )
         # +2 to start with 1 based index, and skip titles row
-        full_csv_dict['_file_row'] = tf.range(2, n_csv_file_elements + 2)
+        full_csv_dict[ClassifierDataset.ROW_KEY] = tf.range(2, n_csv_file_elements + 2)
         
         return full_csv_dict
 
