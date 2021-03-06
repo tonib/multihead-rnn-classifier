@@ -11,7 +11,7 @@ data_definition = ModelDataDefinition()
 # Read all CSV paths
 all_data = DataDirectory.read_all(data_definition)
 
-ds = ClassifierDataset(all_data, data_definition, shuffle=False)
+ds = ClassifierDataset(all_data, data_definition, shuffle=False, debug_columns=False)
 
 # Test entire eval dataset
 print("Testing data set")
@@ -28,7 +28,7 @@ def pretty(title, row):
     print(title, json.dumps(pretty_dict, sort_keys=True) )
 
 def print_some(print_pretty):
-    for row in ds.dataset.take(3000):
+    for row in ds.dataset.take(100):
         if print_pretty:
             pretty("Input:", row[0])
             pretty("Output:", row[1])
@@ -48,6 +48,6 @@ def traverse_all():
     n_elements = n_batches * BATCH_SIZE
     print("Total:", n_elements, "Time (s):", elapsed_time, "Elements/s:", n_elements / elapsed_time)
 
-print_some(True)
+#print_some(True)
 #print_some(False)
-#traverse_all()
+traverse_all()

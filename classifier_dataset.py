@@ -28,11 +28,17 @@ class ClassifierDataset:
     # Key in dataset dictionary for row column
     ROW_KEY = '_file_row'
 
-    def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool):
+    def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, debug_columns: bool=False):
 
         self._csv_files = csv_files
         self._data_definition = data_definition
         self._get_csv_files_structure()
+        self.debug_columns = debug_columns
+        
+        self.context_columns = list(data_definition.context_columns)
+        if debug_columns:
+            self.context_columns.append(ClassifierDataset.FILE_KEY)
+            self.context_columns.append(ClassifierDataset.ROW_KEY)
 
         # Get entire CSV files in pipeline, as a dictionary, key=CSV column name, value=values in that column
         self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
@@ -103,13 +109,9 @@ class ClassifierDataset:
                 inputs = tf.concat( [inputs, zeros], axis=1 )
             input_dict[key] = inputs
 
-        for key in self._data_definition.context_columns:
+        for key in self.context_columns:
             input_dict[key] = window_elements_dict[key]
         
-        # Debug columns:
-        input_dict[ClassifierDataset.FILE_KEY] = window_elements_dict[ClassifierDataset.FILE_KEY]
-        input_dict[ClassifierDataset.ROW_KEY] = window_elements_dict[ClassifierDataset.ROW_KEY]
-
         # Outputs
         output_dict = {}
         for key in self._data_definition.output_columns:
@@ -131,12 +133,8 @@ class ClassifierDataset:
             # inputs[-1] = eos, hard way # [1, 2, 3] -> [1, 2, EOS]
             inputs = tf.tensor_scatter_nd_update( inputs , [[self._data_definition.sequence_length-1]] , [ClassifierDataset.EOS_VALUE] )
             input_dict[key] = inputs
-        for key in self._data_definition.context_columns:
+        for key in self.context_columns:
             input_dict[key] = window_elements_dict[key][-1]
-
-        # Debug columns:
-        input_dict[ClassifierDataset.FILE_KEY] = window_elements_dict[ClassifierDataset.FILE_KEY][-1]
-        input_dict[ClassifierDataset.ROW_KEY] = window_elements_dict[ClassifierDataset.ROW_KEY][-1]
 
         # Outputs
         output_dict = {}
@@ -156,17 +154,18 @@ class ClassifierDataset:
             select_cols=self._feature_column_indices
         )
         # Load the entire file
-        csv_ds = tf.data.experimental.get_single_element( csv_ds.batch(1000000 ) )
+        csv_ds = tf.data.experimental.get_single_element( csv_ds.batch(1000000) )
 
         full_csv_dict = {}
         for feature_column_name, csv_column_values in zip(self._feature_column_names, csv_ds):
             full_csv_dict[feature_column_name] = csv_column_values
 
-        # For debugging and mental health, add file path and row numbers
-        n_csv_file_elements = tf.shape( full_csv_dict[feature_column_name] )[0]
-        full_csv_dict[ClassifierDataset.FILE_KEY] = tf.repeat( file_path , n_csv_file_elements )
-        # +2 to start with 1 based index, and skip titles row
-        full_csv_dict[ClassifierDataset.ROW_KEY] = tf.range(2, n_csv_file_elements + 2)
+        if self.debug_columns:
+            # For debugging and mental health, add file path and row numbers
+            n_csv_file_elements = tf.shape( full_csv_dict[feature_column_name] )[0]
+            full_csv_dict[ClassifierDataset.FILE_KEY] = tf.repeat( file_path , n_csv_file_elements )
+            # +2 to start with 1 based index, and skip titles row
+            full_csv_dict[ClassifierDataset.ROW_KEY] = tf.range(2, n_csv_file_elements + 2)
         
         return full_csv_dict
 
