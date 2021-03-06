@@ -6,16 +6,24 @@ if TYPE_CHECKING:
 
 import tensorflow as tf
 
+# TODO: Filter non trainable sequences
+
 class ClassifierDataset:
 
     # Padding value
     PADDING_VALUE = 0
 
     # End of string (EOS) value
-    EOS_VALUE = -1
+    EOS_VALUE = 1
+
+    # Values 0 and 1 are "keywords"
+    N_KEYWORD_VALUES = 2
 
     # CSV files separator character
     CSV_SEPARATOR = ";"
+
+    # Key in dataset dictionary for file path
+    FILE_KEY = '_file_path'
 
     def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool):
 
@@ -79,6 +87,10 @@ class ClassifierDataset:
         input_dict = {}
         for key in self._data_definition.sequence_columns:
             inputs = window_elements_dict[key] # [1, 2, 3]
+
+            # Increase the value in 2 because input values 0 and 1 are "keyword" values for padding and EOS
+            inputs += ClassifierDataset.N_KEYWORD_VALUES
+
             elements_length = tf.shape(inputs)[0]
             inputs = tf.reshape(inputs, (1, -1)) # [1, 2, 3] -> [[1, 2, 3]]
             inputs = tf.repeat(inputs, repeats=elements_length, axis=0) # [[1, 2, 3]] -> [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
@@ -98,7 +110,7 @@ class ClassifierDataset:
             input_dict[key] = window_elements_dict[key]
         
         # Debug columns:
-        input_dict['_file_path'] = window_elements_dict['_file_path']
+        input_dict[ClassifierDataset.FILE_KEY] = window_elements_dict[ClassifierDataset.FILE_KEY]
         input_dict['_file_row'] = window_elements_dict['_file_row']
 
         # Outputs
@@ -114,15 +126,19 @@ class ClassifierDataset:
         # Inputs
         input_dict = {}
         for key in self._data_definition.sequence_columns:
-            inputs = window_elements_dict[key] # [1, 2, 3] -> [1, 2, -1]
-            # inputs[-1] = eos, hard way:
+            inputs = window_elements_dict[key]
+
+            # Increase the value in 2 because input values 0 and 1 are "keyword" values for padding and EOS
+            inputs += ClassifierDataset.N_KEYWORD_VALUES
+
+            # inputs[-1] = eos, hard way # [1, 2, 3] -> [1, 2, EOS]
             inputs = tf.tensor_scatter_nd_update( inputs , [[self._data_definition.sequence_length-1]] , [ClassifierDataset.EOS_VALUE] )
             input_dict[key] = inputs
         for key in self._data_definition.context_columns:
             input_dict[key] = window_elements_dict[key][-1]
 
         # Debug columns:
-        input_dict['_file_path'] = window_elements_dict['_file_path'][-1]
+        input_dict[ClassifierDataset.FILE_KEY] = window_elements_dict[ClassifierDataset.FILE_KEY][-1]
         input_dict['_file_row'] = window_elements_dict['_file_row'][-1]
 
         # Outputs
@@ -147,13 +163,13 @@ class ClassifierDataset:
 
         full_csv_dict = {}
         for feature_column_name, csv_column_values in zip(self._feature_column_names, csv_ds):
-            # Increase the value in 2 because values 0 and 1 are "keyword" values for padding and EOS
-            full_csv_dict[feature_column_name] = csv_column_values + 2
+            full_csv_dict[feature_column_name] = csv_column_values
 
         # For debugging and mental health, add file path and row numbers
         n_csv_file_elements = tf.shape( full_csv_dict[feature_column_name] )[0]
-        full_csv_dict['_file_path'] = tf.repeat( file_path , n_csv_file_elements )
-        full_csv_dict['_file_row'] = tf.range(0, n_csv_file_elements)
+        full_csv_dict[ClassifierDataset.FILE_KEY] = tf.repeat( file_path , n_csv_file_elements )
+        # +2 to start with 1 based index, and skip titles row
+        full_csv_dict['_file_row'] = tf.range(2, n_csv_file_elements + 2)
         
         return full_csv_dict
 
@@ -161,8 +177,8 @@ class ClassifierDataset:
 
         self._feature_column_names = list( self._data_definition.get_column_names() )
 
-        # Tricky things: To get right sequences we must separate CSV contents, and seems not supporte by TF CSV hight level helpers
-        # Soooo, guess the the CSV structure:
+        # Tricky things: To get right sequences we must separate CSV contents, and seems not supported by TF CSV high level helpers
+        # So, guess the the CSV structure (all files MUST share the same structure):
         with open(self._csv_files.file_paths[0]) as f:
             first_line = f.readline()
             csv_column_names = first_line.split(ClassifierDataset.CSV_SEPARATOR)
