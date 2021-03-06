@@ -58,13 +58,12 @@ class ClassifierDataset:
         return result
 
     @tf.function
-    def _map_csv_file_to_sequences(self, csv_columns_dict: dict) -> tf.data.Dataset:
+    def _map_csv_file_to_sequences(self, csv_columns_dict) -> tf.data.Dataset:
         """ Map a full csv file to windows of sequence_length elements """
-        windows_ds = tf.data.Dataset.from_tensor_slices(csv_columns_dict)
         # We NEED drop_remainder=False, but it's tricky. If the entire csv is smaller than sequence_length, if
         # drop_remainder=True, the entire csv sequence will be dropped, and we don't what that. But, if drop_remainder=False,
         # final sequences with length < sequence_length will be feeded, and they must to be filtered... ¯\_(ツ)_/¯
-        windows_ds = windows_ds.window(self._data_definition.sequence_length, shift=1, drop_remainder=False)
+        windows_ds = csv_columns_dict.window(self._data_definition.sequence_length, shift=1, drop_remainder=False)
         windows_ds = windows_ds.map(self._flat_map_window)
 
         # Separate the first window from later windows. First window will generate multiple sequences
@@ -167,7 +166,7 @@ class ClassifierDataset:
             # +2 to start with 1 based index, and skip titles row
             full_csv_dict[ClassifierDataset.ROW_KEY] = tf.range(2, n_csv_file_elements + 2)
         
-        return full_csv_dict
+        return tf.data.Dataset.from_tensor_slices(full_csv_dict)
 
     def _get_csv_files_structure(self):
 
