@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 import tensorflow as tf
 
-# TODO: Filter non trainable sequences
+# TODO: Parallelize operations (performance)
 
 class ClassifierDataset:
 
@@ -39,6 +39,8 @@ class ClassifierDataset:
         if debug_columns:
             self.context_columns.append(ClassifierDataset.FILE_KEY)
             self.context_columns.append(ClassifierDataset.ROW_KEY)
+        if data_definition.trainable_column:
+            self.context_columns.append(data_definition.trainable_column)
 
         # Get entire CSV files in pipeline, as a dictionary, key=CSV column name, value=values in that column
         self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
@@ -69,14 +71,21 @@ class ClassifierDataset:
         # Separate the first window from later windows. First window will generate multiple sequences
         first_window_ds = windows_ds.take(1)
         first_window_ds = first_window_ds.flat_map(self.expand_first_window)
+        # Remove non trainable sequences
+        if self._data_definition.trainable_column:
+            first_window_ds = first_window_ds.filter( lambda input_dict, output_dict: input_dict[self._data_definition.trainable_column] == 1 )
 
         later_windows_ds = windows_ds.skip(1)
         # Avoid final sequences with length < sequence_length
         later_windows_ds = later_windows_ds.filter( 
             lambda x: tf.shape( x[self._data_definition.sequence_columns[0]] )[0] == self._data_definition.sequence_length )
+        # Discard now non trainable sequences, to avoid process them
+        if self._data_definition.trainable_column:
+            later_windows_ds = later_windows_ds.filter( lambda window_dict: window_dict[self._data_definition.trainable_column][-1] == 1 )
         later_windows_ds = later_windows_ds.map(self.process_full_window)
 
         return first_window_ds.concatenate( later_windows_ds )
+        
 
     @tf.function
     def expand_first_window(self, window_elements_dict: dict):
@@ -152,7 +161,7 @@ class ClassifierDataset:
             use_quote_delim=False,
             select_cols=self._feature_column_indices
         )
-        # Load the entire file
+        # Load the entire file. TODO: Check if this is really needed
         csv_ds = tf.data.experimental.get_single_element( csv_ds.batch(1000000) )
 
         full_csv_dict = {}
