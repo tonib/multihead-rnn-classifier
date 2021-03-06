@@ -63,11 +63,7 @@ class ClassifierDataset:
 
         # Separate the first window from later windows. First window will generate multiple sequences
         first_window_ds = windows_ds.take(1)
-        # TODO: Should we call flat_map(self.expand_first_window) directly here ???
-        first_window_ds = first_window_ds.map(self.expand_first_window)
-        first_window_ds = first_window_ds.flat_map( 
-            lambda input, output: tf.data.Dataset.zip( (tf.data.Dataset.from_tensor_slices(input), tf.data.Dataset.from_tensor_slices(output)) ) 
-        )
+        first_window_ds = first_window_ds.flat_map(self.expand_first_window)
 
         later_windows_ds = windows_ds.skip(1)
         # Avoid final sequences with length < sequence_length
@@ -119,7 +115,7 @@ class ClassifierDataset:
         for key in self._data_definition.output_columns:
             output_dict[key] = window_elements_dict[key]
         
-        return (input_dict, output_dict)
+        return tf.data.Dataset.from_tensor_slices( (input_dict, output_dict) )
         
     @tf.function
     def process_full_window(self, window_elements_dict) -> Tuple:
