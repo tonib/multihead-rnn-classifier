@@ -11,7 +11,7 @@ data_definition = ModelDataDefinition()
 # Read all CSV paths
 all_data = DataDirectory.read_all(data_definition)
 
-ds = ClassifierDataset(all_data, data_definition, shuffle=False, debug_columns=True)
+ds = ClassifierDataset(all_data, data_definition, shuffle=False, debug_columns=False)
 
 # Test entire eval dataset
 print("Testing data set")
@@ -48,6 +48,6 @@ def traverse_all():
     n_elements = n_batches * BATCH_SIZE
     print("Total:", n_elements, "Time (s):", elapsed_time, "Elements/s:", n_elements / elapsed_time)
 
-print_some(True)
+#print_some(True)
 #print_some(False)
-#traverse_all()
+traverse_all()

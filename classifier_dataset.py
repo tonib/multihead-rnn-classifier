@@ -10,7 +10,7 @@ import tensorflow as tf
 
 class ClassifierDataset:
 
-    # Padding value
+    # Padding value. MUST TO BE ZERO (implementation details)
     PADDING_VALUE = 0
 
     # End of string (EOS) value
@@ -161,7 +161,7 @@ class ClassifierDataset:
             use_quote_delim=False,
             select_cols=self._feature_column_indices
         )
-        # Load the entire file. TODO: Check if this is really needed
+        # Load the entire file
         csv_ds = tf.data.experimental.get_single_element( csv_ds.batch(1000000) )
 
         full_csv_dict = {}
