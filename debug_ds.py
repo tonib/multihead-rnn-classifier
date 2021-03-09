@@ -17,15 +17,18 @@ ds = ClassifierDataset(all_data, data_definition, shuffle=False, debug_columns=F
 print("Testing data set")
 
 def pretty(title, row):
-    pretty_dict = {}
-    for key in row:
-        pretty_dict[key] = row[key].numpy()
-        if key == ClassifierDataset.FILE_KEY:
-            pretty_dict[key] = pretty_dict[key].decode('UTF-8')
-        else:
-            pretty_dict[key] = pretty_dict[key].tolist()
-        
-    print(title, json.dumps(pretty_dict, sort_keys=True) )
+    if isinstance(row, dict):
+        serializable_row = {}
+        for key in row:
+            serializable_row[key] = row[key].numpy()
+            if key == ClassifierDataset.FILE_KEY:
+                serializable_row[key] = serializable_row[key].decode('UTF-8')
+            else:
+                serializable_row[key] = serializable_row[key].tolist()
+    else:
+        serializable_row = row.numpy().tolist()
+    
+    print(title, json.dumps(serializable_row, sort_keys=True) )
 
 def print_some(print_pretty):
     for row in ds.dataset.take(1000):
@@ -48,6 +51,6 @@ def traverse_all():
     n_elements = n_batches * BATCH_SIZE
     print("Total:", n_elements, "Time (s):", elapsed_time, "Elements/s:", n_elements / elapsed_time)
 
-#print_some(True)
+print_some(True)
 #print_some(False)
-traverse_all()
+#traverse_all()

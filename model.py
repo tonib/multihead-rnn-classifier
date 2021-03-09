@@ -55,4 +55,8 @@ def generate_model(data_definition: ModelDataDefinition):
     if data_definition.dropout > 0.0:
         model = tf.keras.layers.Dropout(data_definition.dropout, name="dropout")(model)
 
+    # Currently, only one classifier. TODO: Add all
+    output_column_definition: ColumnInfo = data_definition.column_definitions[ data_definition.output_columns[0] ]
+    model = tf.keras.layers.Dense( len(output_column_definition.labels) , name=output_column_definition.name + "_output" , activation=None )( model )
+
     return tf.keras.Model(inputs=raw_inputs, outputs=model)

@@ -28,7 +28,7 @@ class ClassifierDataset:
     # Key in dataset dictionary for row column
     ROW_KEY = '_file_row'
 
-    def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, debug_columns: bool=False):
+    def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, batch_size=0, debug_columns: bool=False):
 
         self._csv_files = csv_files
         self._data_definition = data_definition
@@ -49,6 +49,12 @@ class ClassifierDataset:
         # Map full CSV files to sequences
         self.dataset = self.dataset.flat_map( self._map_csv_file_to_sequences )
 
+        # TODO: Currently only one output is trainable. Remove this
+        self.dataset = self.dataset.map(lambda input, output: (input, output[self._data_definition.output_columns[0]]) )
+
+        if batch_size > 0:
+            self.dataset = self.dataset.batch(batch_size)
+        
     @tf.function
     def _flat_map_window(self, window_elements_dict):
         """ Get real window values. I don't really understand this step, but it's required """
@@ -194,3 +200,11 @@ class ClassifierDataset:
 
         # Column types: All int32
         self._default_csv_values = [ tf.int32 ] * len( self._feature_column_names )
+
+    def n_batches_in_dataset(self) -> int:
+        """ Returns the number of batches in the given dataset """
+        n_eval_batches = 0
+        for _ in self.dataset:
+            n_eval_batches += 1
+        return n_eval_batches
+        

@@ -1,7 +1,7 @@
 import os
 import json
 from column_info import ColumnInfo
-from typing import List, Set
+from typing import List, Set, Dict
 import tensorflow as tf
 import argparse
 
@@ -32,7 +32,7 @@ class ModelDataDefinition:
             self.cell_type = ModelDataDefinition._read_setting( json_metadata , 'CellType' , 'gru' )
 
             # Read columns definitions
-            self.column_definitions = {}
+            self.column_definitions: Dict[str, ColumnInfo] = {}
             for json_column in json_metadata['ColumnDefinitions']:
                 embeddable_dimension = int( ModelDataDefinition._read_setting(json_column, 'EmbeddableDimension', '0' ) )
                 self.column_definitions[ json_column['Name'] ] = ColumnInfo( json_column['Name'] , json_column['Labels'] , embeddable_dimension )
