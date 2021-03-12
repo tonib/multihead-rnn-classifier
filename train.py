@@ -33,9 +33,14 @@ print("Getting n. batches in evaluation dataset - Done:", n_eval_batches)
 # Create model
 model = generate_model(data_definition)
 
+# Losses for each output (sum of all will be minimized)
+losses = {}
+for output_column_name in data_definition.output_columns:
+    losses[output_column_name] = loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=data_definition.learning_rate),
-    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    loss = losses,
     metrics=['accuracy']
 )
 model.summary()
@@ -43,4 +48,6 @@ model.summary()
 model.fit(train_dataset.dataset, 
         epochs=data_definition.max_epochs,
         validation_data=eval_dataset.dataset,
-        validation_steps=n_eval_batches)
+        validation_steps=n_eval_batches,
+        verbose=2
+)

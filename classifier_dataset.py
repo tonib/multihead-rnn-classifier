@@ -49,9 +49,6 @@ class ClassifierDataset:
         # Map full CSV files to sequences
         self.dataset = self.dataset.flat_map( self._map_csv_file_to_sequences )
 
-        # TODO: Currently only one output is trainable. Remove this
-        self.dataset = self.dataset.map(lambda input, output: (input, output[self._data_definition.output_columns[0]]) )
-
         if batch_size > 0:
             self.dataset = self.dataset.batch(batch_size)
         
@@ -88,6 +85,7 @@ class ClassifierDataset:
         # Discard now non trainable sequences, to avoid process them
         if self._data_definition.trainable_column:
             later_windows_ds = later_windows_ds.filter( lambda window_dict: window_dict[self._data_definition.trainable_column][-1] == 1 )
+        # TODO: Performance of this could be better applying the operation over a sequences batch, instead of sequence by sequence
         later_windows_ds = later_windows_ds.map(self.process_full_window)
 
         return first_window_ds.concatenate( later_windows_ds )
