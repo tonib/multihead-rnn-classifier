@@ -34,7 +34,8 @@ class ClassifierDataset:
         self._data_definition = data_definition
         self._get_csv_files_structure()
         self.debug_columns = debug_columns
-        
+        self.shuffle = shuffle
+
         self.context_columns = list(data_definition.context_columns)
         if debug_columns:
             self.context_columns.append(ClassifierDataset.FILE_KEY)
@@ -44,7 +45,7 @@ class ClassifierDataset:
 
         # Get entire CSV files in pipeline, as a dictionary, key=CSV column name, value=values in that column
         self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
-        self.dataset = self.dataset.map(self._load_csv, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        self.dataset = self.dataset.map(self._load_csv, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
 
         # Map full CSV files to sequences
         self.dataset = self.dataset.flat_map( self._map_csv_file_to_sequences )
@@ -83,7 +84,8 @@ class ClassifierDataset:
         if self._data_definition.trainable_column:
             later_windows_ds = later_windows_ds.filter( lambda window_dict: window_dict[self._data_definition.trainable_column][-1] == 1 )
         # TODO: Performance of this could be better applying the operation over a sequences batch, instead of sequence by sequence
-        later_windows_ds = later_windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        later_windows_ds = later_windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, 
+            deterministic=not self.shuffle)
 
         return first_window_ds.concatenate( later_windows_ds )
         

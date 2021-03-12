@@ -19,9 +19,11 @@ print("N. evaluation files:", len(eval_files.file_paths))
 # Get sequences datasets
 batch_size = 64
 train_dataset = ClassifierDataset(train_files, data_definition, shuffle=True)
+#train_dataset.dataset = train_dataset.dataset.prefetch(4096).shuffle(4096).batch(batch_size).cache()
 train_dataset.dataset = train_dataset.dataset.prefetch(4096).shuffle(4096).batch(batch_size)
 
 eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=False)
+#eval_dataset.dataset = eval_dataset.dataset.batch(128).cache()
 eval_dataset.dataset = eval_dataset.dataset.batch(128)
 
 # We need the batches number in evaluation dataset, so here is:

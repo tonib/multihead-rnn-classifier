@@ -1,5 +1,6 @@
 TODO:
-- Allow to configure the batch size
+- Allow to cache datasets, in memory and in file (data_info configurable): HUGE performance increase
+- Allow to configure the batch size (data_info configurable)
 - Add option to use XLA
 - ClassifierHead > tf_feature_column.embedding_column(), parm trainable should be false in inference time?
 - Check how VS code can find TF definitions
@@ -26,7 +27,7 @@ REMINDERS
 
 git push -u origin master
 
-To run without GPU support, set environment variable CUDA_VISIBLE_DEVICES=-1
+To run without GPU support, export CUDA_VISIBLE_DEVICES=-1
 TF c++ log to warning level: export TF_CPP_MIN_LOG_LEVEL=1
 
 tensorboard --logdir data/model

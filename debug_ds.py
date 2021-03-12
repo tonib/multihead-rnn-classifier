@@ -11,7 +11,7 @@ data_definition = ModelDataDefinition()
 # Read all CSV paths
 all_data = DataDirectory.read_all(data_definition)
 
-ds = ClassifierDataset(all_data, data_definition, shuffle=False, debug_columns=False)
+ds = ClassifierDataset(all_data, data_definition, shuffle=False, debug_columns=True)
 
 # Test entire eval dataset
 print("Testing data set")
