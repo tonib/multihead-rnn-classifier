@@ -28,7 +28,7 @@ class ClassifierDataset:
     # Key in dataset dictionary for row column
     ROW_KEY = '_file_row'
 
-    def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, batch_size=0, debug_columns: bool=False):
+    def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, debug_columns: bool=False):
 
         self._csv_files = csv_files
         self._data_definition = data_definition
@@ -44,13 +44,10 @@ class ClassifierDataset:
 
         # Get entire CSV files in pipeline, as a dictionary, key=CSV column name, value=values in that column
         self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
-        self.dataset = self.dataset.map(self._load_csv)
+        self.dataset = self.dataset.map(self._load_csv, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
         # Map full CSV files to sequences
         self.dataset = self.dataset.flat_map( self._map_csv_file_to_sequences )
-
-        if batch_size > 0:
-            self.dataset = self.dataset.batch(batch_size)
         
     @tf.function
     def _flat_map_window(self, window_elements_dict):
@@ -86,7 +83,7 @@ class ClassifierDataset:
         if self._data_definition.trainable_column:
             later_windows_ds = later_windows_ds.filter( lambda window_dict: window_dict[self._data_definition.trainable_column][-1] == 1 )
         # TODO: Performance of this could be better applying the operation over a sequences batch, instead of sequence by sequence
-        later_windows_ds = later_windows_ds.map(self.process_full_window)
+        later_windows_ds = later_windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
         return first_window_ds.concatenate( later_windows_ds )
         

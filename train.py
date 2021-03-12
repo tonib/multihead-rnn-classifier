@@ -17,13 +17,12 @@ print("N. train files:", len(train_files.file_paths))
 print("N. evaluation files:", len(eval_files.file_paths))
 
 # Get sequences datasets
-batch_size = 32
-train_dataset = ClassifierDataset(train_files, data_definition, shuffle=True, batch_size=32)
-eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=False, batch_size=128)
+batch_size = 64
+train_dataset = ClassifierDataset(train_files, data_definition, shuffle=True)
+train_dataset.dataset = train_dataset.dataset.prefetch(4096).shuffle(4096).batch(batch_size)
 
-# Additional datasets configuration. TODO: Prefetch, shuffle, etc
-# train_dataset.dataset = train_dataset.dataset.cache()
-# eval_dataset.dataset = eval_dataset.dataset.cache()
+eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=False)
+eval_dataset.dataset = eval_dataset.dataset.batch(128)
 
 # We need the batches number in evaluation dataset, so here is:
 print("Getting n. batches in evaluation dataset")
