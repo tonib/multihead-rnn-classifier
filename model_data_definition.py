@@ -8,6 +8,9 @@ import argparse
 class ModelDataDefinition:
     """ Definitions of model data, model settings and training """
 
+    # Directory for model train checkpoints
+    CHECKPOINTS_DIR = 'model/checkpoints'
+
     def __init__(self):
 
         self._read_cmd_line_arguments()

@@ -41,7 +41,7 @@ for output_column_name in data_definition.output_columns:
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir='model/tensorboard_logs')
 
 # Save checkpoints, each epoch
-checkpoint_path_prefix = 'model/checkpoints/checkpoint-'
+checkpoint_path_prefix = ModelDataDefinition.CHECKPOINTS_DIR + '/checkpoint-'
 checkpoints_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_path_prefix + '{epoch:04d}.ckpt',
     save_weights_only=True,
@@ -56,7 +56,7 @@ model.compile(
 model.summary()
 
 # Restore latest checkpoint
-latest_cp = tf.train.latest_checkpoint( 'model/checkpoints' )
+latest_cp = tf.train.latest_checkpoint( ModelDataDefinition.CHECKPOINTS_DIR )
 if latest_cp != None:
     # Get epoch number from checkpoint path
     l = len(checkpoint_path_prefix)
