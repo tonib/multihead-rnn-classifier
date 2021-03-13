@@ -30,7 +30,7 @@ git push -u origin master
 To run without GPU support, export CUDA_VISIBLE_DEVICES=-1
 TF c++ log to warning level: export TF_CPP_MIN_LOG_LEVEL=1
 
-tensorboard --logdir data/model
+tensorboard --logdir model/tensorboard_logs
 http://localhost:6006
 
 Estimator inference performance / Serving model / Use of Predictor:
