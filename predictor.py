@@ -1,6 +1,7 @@
 from model_data_definition import ModelDataDefinition
 from classifier_dataset import ClassifierDataset
 import tensorflow as tf
+import json
 
 class Predictor:
 
@@ -66,3 +67,7 @@ class Predictor:
         for key in output:
             output[key] = output[key].numpy().tolist()
         return output
+
+    def predict_json(self, input_json: str) -> str:
+        input = json.loads(input_json)
+        return json.dumps( self.predict(input) )

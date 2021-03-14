@@ -107,7 +107,7 @@ class ModelDataDefinition:
         """ Input entry with all zeros """
         element = {}
         for column_name in self.sequence_columns:
-            element[column_name] = [0] * self.sequence_length
+            element[column_name] = []
         for column_name in self.context_columns:
             element[column_name] = 0
         return element
