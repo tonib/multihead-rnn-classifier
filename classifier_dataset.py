@@ -48,6 +48,8 @@ class ClassifierDataset:
         self.dataset = self.dataset.map(self._load_csv, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
 
         # Map full CSV files to sequences
+        # TODO: I suspect this is not the best: map(_load_csv) could be a map_flat, and return sequences inside it. This would allow
+        # TODO: interleave CSV sequences...
         self.dataset = self.dataset.flat_map( self._map_csv_file_to_sequences )
         
         # TODO: Remove trainable column from results, better cache size
