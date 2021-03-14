@@ -11,6 +11,9 @@ class ModelDataDefinition:
     # Directory for model train checkpoints
     CHECKPOINTS_DIR = 'model/checkpoints'
 
+    # Exported model directory
+    EXPORTED_MODEL_DIR = 'model/exported_model'
+
     def __init__(self):
 
         self._read_cmd_line_arguments()

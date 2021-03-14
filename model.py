@@ -7,6 +7,23 @@ if TYPE_CHECKING:
 import tensorflow as tf
 from model_data_definition import ModelDataDefinition
 
+class MaskedOneHotEncoding(tf.keras.layers.Layer):
+    """ Compute masked one hot encoding from an integer input. Mask value is 0. Input mask is ignored. """
+    def __init__(self, input_n_labels: int, name=None):
+        """
+            Arguments: 
+                input_n_labels: Number of labels expected in input, including the padding value (zero). Ex. {0, 1, 2} -> n.labels = 3
+        """
+        super().__init__(name=name)
+        self.input_n_labels = input_n_labels
+
+    def call(self, inputs):
+        # -1 is to optimize the output size. As zero is reserved for padding, only 1+ values will be used as real inputs
+        return tf.one_hot(inputs - 1, self.input_n_labels - 1)
+
+    def compute_mask(self, inputs, mask=None):
+        return tf.cast( inputs , tf.bool )
+
 def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequence: bool) -> Tuple:
 
     column_info: ColumnInfo  = data_definition.column_definitions[column_name]
@@ -20,10 +37,7 @@ def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequen
         processed_input = tf.keras.layers.Embedding(n_labels, column_info.embeddable_dimension, mask_zero=True, 
             name="embedding_" + column_name)(input)
     else:
-        processed_input = tf.keras.layers.Lambda(
-            lambda x: tf.one_hot(x, n_labels), 
-            mask=lambda inputs, mask: tf.cast( inputs , tf.bool ), # This expects zero for padding element
-            name='one_hot_' + column_name)(input)
+        processed_input = MaskedOneHotEncoding(n_labels, name='one_hot_' + column_name)(input)
     return input, processed_input
 
 def _get_inputs(data_definition: ModelDataDefinition, column_names: List[str], are_sequences: bool) -> Tuple[List, List]:

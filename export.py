@@ -16,6 +16,5 @@ model = generate_model(data_definition)
 model.load_weights(latest_cp)
 
 # Save full model
-export_path = "model/exported_model"
-model.save( export_path, include_optimizer=False )
-print("Model exported to " + export_path)
+model.save( ModelDataDefinition.EXPORTED_MODEL_DIR, include_optimizer=False )
+print("Model exported to " + ModelDataDefinition.EXPORTED_MODEL_DIR)
