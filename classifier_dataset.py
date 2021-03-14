@@ -50,6 +50,8 @@ class ClassifierDataset:
         # Map full CSV files to sequences
         self.dataset = self.dataset.flat_map( self._map_csv_file_to_sequences )
         
+        # TODO: Remove trainable column from results, better cache size
+        
     @tf.function
     def _flat_map_window(self, window_elements_dict):
         """ Get real window values. I don't really understand this step, but it's required """

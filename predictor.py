@@ -47,3 +47,22 @@ class Predictor:
 
         return postprocessed
         
+    @tf.function
+    def _predict_tf(self, input: dict) -> dict:
+        input = self._preprocess_input(input)
+        batched_logits = self.model(input)
+
+        # Model returned values are logits. Convert to probabilities and unbatch result
+        output = {}
+        for key in batched_logits:
+            output[key] = tf.nn.softmax(batched_logits[key][0])
+        return output
+
+    def predict(self, input: dict) -> dict:
+        for key in input:
+            input[key] = tf.constant(input[key], dtype=tf.int32)
+        output = self._predict_tf(input)
+        # Convert tensors to python values
+        for key in output:
+            output[key] = output[key].numpy().tolist()
+        return output

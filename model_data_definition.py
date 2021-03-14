@@ -25,6 +25,7 @@ class ModelDataDefinition:
             json_text = file.read()
             json_metadata = json.loads(json_text)
 
+            # TODO: Remove unused parameters
             # Read settings
             self.max_train_seconds = int( ModelDataDefinition._read_setting( json_metadata , 'MaxTrainSeconds' , '0' ) )
             self.min_loss_percentage = float( ModelDataDefinition._read_setting( json_metadata , 'MinLossPercentage' , '0' ) )

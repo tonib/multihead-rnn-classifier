@@ -31,7 +31,7 @@ def pretty(title, row):
     print(title, json.dumps(serializable_row, sort_keys=True) )
 
 def print_some(print_pretty):
-    for row in ds.dataset.take(1000):
+    for row in ds.dataset.take(100):
         if print_pretty:
             pretty("Input:", row[0])
             pretty("Output:", row[1])
