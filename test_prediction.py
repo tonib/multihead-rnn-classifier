@@ -23,9 +23,13 @@ for i in range(n_repetitions):
     #data_definition.input_sequence_to_tf_predict_format(input) # About 0.01 ms
     #predictor.predict(input, data_definition) # About 6.7 ms
 
-    # House computer:
+    # My house computer (Linux):
     # seq_len = 16, rnn size = 64 -> With GPU: 1.7 ms / With CPU: 0.85 ms
     # seq_len= 64, rnn_size = 256 -> With GPU: 2.95 ms / With CPU: 3.1 ms
+
+    # Work computer (Windows 10): 
+    # seq_len= 64, rnn_size = 256 -> With CPU: 10.7 ms
+    
     predictor.predict_json(json_test) 
 end = time()
 print("Total time:" , end - start , "s")

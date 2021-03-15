@@ -29,4 +29,4 @@ while True:
         # Return exception info
         error_info = {}
         error_info['error'] = str(e) + '\n' + traceback.format_exc()
-        print( sys.stdout.write( json.dumps(error_info) , flush=True ) )
+        print( json.dumps(error_info) , flush=True )

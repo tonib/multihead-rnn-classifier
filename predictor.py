@@ -64,8 +64,9 @@ class Predictor:
             input[key] = tf.constant(input[key], dtype=tf.int32)
         output = self._predict_tf(input)
         # Convert tensors to python values
+        # The "probabilities" property is needed to keep backward compatibility with v1
         for key in output:
-            output[key] = output[key].numpy().tolist()
+            output[key] = { "probabilities": output[key].numpy().tolist() }
         return output
 
     def predict_json(self, input_json: str) -> str:
