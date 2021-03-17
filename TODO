@@ -15,8 +15,7 @@ TODO:
         File "/home/toni/proyectos/tensorflow/venv-tf-2.3/lib/python3.8/site-packages/tensorflow/python/keras/layers/merge.py", line 493, in build
             raise ValueError('A `Concatenate` layer should be called '
         ValueError: A `Concatenate` layer should be called on a list of at least 2 inputs
-
-- Allow to cache datasets, in memory and in file (data_info configurable): HUGE performance increase
+- Allow to export a given epoch checkpoint (the best)
 - Allow to configure the batch size (data_info configurable)
 - Add option to use XLA
 - ClassifierHead > tf_feature_column.embedding_column(), parm trainable should be false in inference time?

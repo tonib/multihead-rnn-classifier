@@ -1,5 +1,6 @@
 from model_data_definition import ModelDataDefinition
 from classifier_dataset import ClassifierDataset
+from model import MaskedOneHotEncoding
 import tensorflow as tf
 import json
 
@@ -13,7 +14,9 @@ class Predictor:
         # TODO: This print warnings, see why..
         # W tensorflow/core/common_runtime/graph_constructor.cc:808] Node 'cond/while' has 13 outputs but the _output_shapes attribute specifies shapes for 44 outputs. Output shapes may be inaccurate
         print("Loading model from " + ModelDataDefinition.EXPORTED_MODEL_DIR)
-        self.model: tf.keras.Model = tf.keras.models.load_model( ModelDataDefinition.EXPORTED_MODEL_DIR, compile=False )
+        self.model: tf.keras.Model = tf.keras.models.load_model( ModelDataDefinition.EXPORTED_MODEL_DIR, 
+            custom_objects={'MaskedOneHotEncoding': MaskedOneHotEncoding},
+            compile=False )
 
     @tf.function
     def _preprocess_input(self, input: dict):
@@ -59,7 +62,7 @@ class Predictor:
             output[key] = tf.nn.softmax(batched_logits[key][0])
         return output
 
-    def predict(self, input: dict) -> dict:
+    def predict(self, input: dict, debug=False) -> dict:
         for key in input:
             input[key] = tf.constant(input[key], dtype=tf.int32)
         output = self._predict_tf(input)
@@ -67,8 +70,14 @@ class Predictor:
         # The "probabilities" property is needed to keep backward compatibility with v1
         for key in output:
             output[key] = { "probabilities": output[key].numpy().tolist() }
+            if debug:
+                labels_probs = {}
+                for i, label in enumerate(self.data_definition.column_definitions[key].labels):
+                    labels_probs[label] = output[key]["probabilities"][i]
+                output[key]["labels_probabilities"] = labels_probs
+
         return output
 
-    def predict_json(self, input_json: str) -> str:
+    def predict_json(self, input_json: str, debug=False) -> str:
         input = json.loads(input_json)
-        return json.dumps( self.predict(input) )
+        return json.dumps( self.predict(input, debug) )

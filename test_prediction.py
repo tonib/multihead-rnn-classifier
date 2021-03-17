@@ -25,7 +25,7 @@ for i in range(n_repetitions):
 
     # My house computer (Linux):
     # seq_len = 16, rnn size = 64 -> With GPU: 1.7 ms / With CPU: 0.85 ms
-    # seq_len= 64, rnn_size = 256 -> With GPU: 2.95 ms / With CPU: 3.1 ms
+    # seq_len= 64, rnn_size = 256 -> With GPU: 2.12 ms / With CPU: 3.36 ms
 
     # Work computer (Windows 10): 
     # seq_len= 64, rnn_size = 256 -> With CPU: 10.7 ms

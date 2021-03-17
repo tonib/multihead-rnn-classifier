@@ -9,22 +9,27 @@ from model_data_definition import ModelDataDefinition
 
 class MaskedOneHotEncoding(tf.keras.layers.Layer):
     """ Compute masked one hot encoding from an integer input. Mask value is 0. Input mask is ignored. """
-    def __init__(self, input_n_labels: int, name=None):
+    def __init__(self, input_n_labels: int, **kwargs):
         """
             Arguments: 
                 input_n_labels: Number of labels expected in input, including the padding value (zero). Ex. {0, 1, 2} -> n.labels = 3
         """
-        super().__init__(name=name)
+        super().__init__(**kwargs)
         self.input_n_labels = input_n_labels
 
     def call(self, inputs):
         # -1 is to optimize the output size. As zero is reserved for padding, only 1+ values will be used as real inputs
         return tf.one_hot(inputs - 1, self.input_n_labels - 1)
 
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({"input_n_labels": self.input_n_labels})
+        return config
+
     def compute_mask(self, inputs, mask=None):
         return tf.cast( inputs , tf.bool )
 
-def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequence: bool) -> Tuple:
+def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequence: bool, model_inputs: dict) -> Tuple:
 
     column_info: ColumnInfo  = data_definition.column_definitions[column_name]
     shape = [None] if is_sequence else ()
@@ -38,21 +43,18 @@ def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequen
             name="embedding_" + column_name)(input)
     else:
         processed_input = MaskedOneHotEncoding(n_labels, name='one_hot_' + column_name)(input)
-    return input, processed_input
 
-def _get_inputs(data_definition: ModelDataDefinition, column_names: List[str], are_sequences: bool) -> Tuple[List, List]:
-    inputs = [_get_input(data_definition, column_name, are_sequences) for column_name in column_names]
-    # This are tuples
-    raw_inputs, processed_inputs = list(zip(*inputs))    
-    # Return lists
-    return list(raw_inputs), list(processed_inputs)
+    # This is the dict of Keras model inputs
+    model_inputs[column_name] = input
+
+    return processed_input
 
 def generate_model(data_definition: ModelDataDefinition):
 
     # Define sequence inputs
-    raw_sequence_inputs, sequence_inputs = _get_inputs(data_definition, data_definition.sequence_columns, True)
-    raw_context_inputs, context_inputs = _get_inputs(data_definition, data_definition.context_columns, False)
-    raw_inputs = raw_sequence_inputs + raw_context_inputs
+    model_inputs = {}
+    sequence_inputs = [_get_input(data_definition, column_name, True, model_inputs) for column_name in data_definition.sequence_columns]
+    context_inputs = [_get_input(data_definition, column_name, False, model_inputs) for column_name in data_definition.context_columns]
 
     # Merge context to each sequence timestep
     context_inputs = tf.keras.layers.Concatenate(name="concatenated_context")( context_inputs )
@@ -69,15 +71,11 @@ def generate_model(data_definition: ModelDataDefinition):
     if data_definition.dropout > 0.0:
         model = tf.keras.layers.Dropout(data_definition.dropout, name="dropout")(model)
 
-    # Currently, only one classifier. TODO: Add all
-    # output_column_definition: ColumnInfo = data_definition.column_definitions[ data_definition.output_columns[0] ]
-    # model = tf.keras.layers.Dense( len(output_column_definition.labels) , name=output_column_definition.name + "_output" , activation=None )( model )
-
     # Create a classifier for each output
     outputs = {}
     for output_column_name in data_definition.output_columns:
         output_column: ColumnInfo = data_definition.column_definitions[ output_column_name ]
-        classifier = tf.keras.layers.Dense( len(output_column.labels) , name=output_column.name + "_out" , activation=None )( model )
+        classifier = tf.keras.layers.Dense( len(output_column.labels) , name=output_column.name + "_classifier" , activation=None )( model )
         outputs[output_column_name] = classifier
 
-    return tf.keras.Model(inputs=raw_inputs, outputs=outputs)
+    return tf.keras.Model(inputs=model_inputs, outputs=outputs)

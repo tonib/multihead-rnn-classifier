@@ -74,5 +74,9 @@ class DataDirectory:
 
         # Substract evaluation dataset from full dataset
         train_set = full_set.substract( eval_set )
+        if len(eval_set.file_paths) == 0:
+            # Dataset too small
+            print("Warning: Evaluation dataset was empty: Using train dataset as evaluation dataset")
+            eval_set = train_set
         
         return train_set, eval_set

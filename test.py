@@ -1,20 +1,81 @@
 from predictor import Predictor
 from model_data_definition import ModelDataDefinition
-from model import MaskedOneHotEncoding
+from classifier_dataset import ClassifierDataset
+from data_directory import DataDirectory
 import tensorflow as tf
+import numpy as np
 
 data_definition = ModelDataDefinition()
 predictor = Predictor(data_definition)
 
-"""
-Input: {"_file_path": "data/AlbaranNet.csv", "_file_row": 214, "controlType": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1], "ctxIsVariable": 0, "ctxParmAccess": 0, "ctxParmCollection": 2, "ctxParmDecimals": 10, "ctxParmLength": 18, "ctxParmType": 0, "dataTypeIdx": [5, 5, 2, 5, 2, 5, 2, 2, 5, 5, 2, 5, 2, 5, 2, 1], "decimalsBucket": [2, 2, 12, 2, 12, 2, 12, 12, 2, 2, 12, 2, 12, 2, 12, 1], "isCollection": [2, 2, 4, 2, 4, 2, 4, 4, 2, 2, 4, 2, 4, 2, 4, 1], "kbObjectTypeIdx": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1], "keywordIdx": [2, 2, 6, 2, 19, 2, 8, 2, 2, 2, 6, 2, 19, 2, 8, 1], "lengthBucket": [2, 15, 20, 2, 20, 2, 20, 20, 2, 15, 20, 2, 20, 2, 20, 1], "objectType": 4, "partType": 0, "textHash0": [2, 8, 2, 2, 2, 2, 2, 2, 2, 8, 2, 2, 2, 2, 2, 1], "textHash1": [2, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 1], "textHash2": [2, 18, 2, 2, 2, 2, 2, 2, 2, 18, 2, 2, 2, 2, 2, 1], "textHash3": [2, 18, 2, 2, 2, 2, 2, 2, 2, 18, 2, 2, 2, 2, 2, 1], "trainable": 1, "wordType": [4, 10, 3, 4, 3, 4, 3, 3, 4, 10, 3, 4, 3, 4, 3, 1]}
-Output: {"decimalsBucket": 10, "isCollection": 2, "isControl": 2, "lengthBucket": 18, "outputTypeIdx": 0, "textHash0": 0, "textHash1": 0, "textHash2": 0, "textHash3": 0}
-"""
+l = predictor.model.get_layer('one_hot_ctxParmType')
 
-input = {}
-for col_name in data_definition.sequence_columns:
-    input[col_name] = []
-for col_name in data_definition.context_columns:
-    input[col_name] = 0
+# print(l)
+# print(l.input_n_labels)
+# print(l(tf.constant[2]))
+# exit()
 
-print(predictor.predict(input))
+def print_label_prob(output, label):
+    label_idx = data_definition.column_definitions['outputTypeIdx'].labels.index(label)
+    print(label, ".", output[label_idx])
+
+all_data = DataDirectory.read_all(data_definition)
+ds = ClassifierDataset(all_data, data_definition, shuffle=False, debug_columns=True)
+for x in ds.dataset.batch(1).take(1):
+    #print(x)
+    input = x[0]
+    output = x[1]
+    #print(output['outputTypeIdx'])
+    output = predictor.model(input)['outputTypeIdx'][0]
+    output = tf.nn.softmax(output)
+
+    print_label_prob(output, "_if")
+    print_label_prob(output, "_endif")
+    print_label_prob(output, "_for")
+    print_label_prob(output, "_endfor")
+    print()
+    
+    sorted_label_indices = np.argsort( -output.numpy() )
+    labels = data_definition.column_definitions['outputTypeIdx'].labels
+    for idx in sorted_label_indices[:10]:
+        print( labels[idx], output[idx] )
+
+    # if_idx = data_definition.column_definitions['outputTypeIdx'].labels.index("_if")
+    # print( output[23] )
+
+    exit()
+
+    # print( predictor._predict_tf(input) )
+    # print( predictor._predict_tf(input)['outputTypeIdx'][23] )
+
+    #   dtype=int32)>, 'ctxParmType': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 'ctxParmExtTypeHash': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 
+    #   'ctxParmLength': <tf.Tensor: shape=(), dtype=int32, numpy=18>, 'ctxParmDecimals': <tf.Tensor: shape=(), dtype=int32, numpy=10>, 
+    #   'ctxParmCollection': <tf.Tensor: shape=(), dtype=int32, numpy=2>, 'ctxParmAccess': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 
+    #   'ctxIsVariable': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 'objectType': <tf.Tensor: shape=(), dtype=int32, numpy=2>, 
+    #   'partType': <tf.Tensor: shape=(), dtype=int32, numpy=2>, 
+    #   '_file_path': <tf.Tensor: shape=(), dtype=string, numpy=b'data/PUAlcRdiNro.csv'>, 
+    #   '_file_row': <tf.Tensor: shape=(), dtype=int32, numpy=2>, 
+    #   'trainable': <tf.Tensor: shape=(), dtype=int32, numpy=1>}, 
+    #   {'isCollection': <tf.Tensor: shape=(), dtype=int32, numpy=2>, 
+    #   'lengthBucket': <tf.Tensor: shape=(), dtype=int32, numpy=18>, 
+    #   'decimalsBucket': <tf.Tensor: shape=(), dtype=int32, numpy=10>, 
+    #   'outputTypeIdx': <tf.Tensor: shape=(), dtype=int32, numpy=23>, 
+    #   'outputExtTypeHash': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 
+    #   'textHash0': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 
+    #   'textHash1': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 
+    #   'textHash2': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 
+    #   'textHash3': <tf.Tensor: shape=(), dtype=int32, numpy=0>, 
+    #   'isControl': <tf.Tensor: shape=(), dtype=int32, numpy=2>})
+
+# input = {"wordType": [], "keywordIdx": [], "kbObjectTypeIdx": [], "dataTypeIdx": [], "dataTypeExtTypeHash": [], 
+# "isCollection": [], "lengthBucket": [], "decimalsBucket": [], "textHash0": [], "textHash1": [], "textHash2": [], 
+# "textHash3": [], "controlType": [], 
+
+# "ctxParmType": 0, "ctxParmExtTypeHash": 0, "ctxParmLength": 18, 
+# "ctxParmDecimals": 10, "ctxParmCollection": 2, "ctxParmAccess": 2, "ctxIsVariable": 0, "objectType": 2, "partType": 2}
+
+# print( predictor.predict(input)['outputTypeIdx']['probabilities'][23])
+
+# print( predictor._preprocess_input(input) )
+
+
