@@ -9,7 +9,7 @@ import traceback
 # Read data definition
 data_definition = ModelDataDefinition()
 
-print("# Reading latest exported model", flush=True)
+print("# Reading exported model", flush=True)
 predictor = Predictor(data_definition)
 
 print("# Sample:", json.dumps( data_definition.get_empty_element() ) , flush=True)

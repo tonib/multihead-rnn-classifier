@@ -28,7 +28,7 @@ for i in range(n_repetitions):
     # seq_len= 64, rnn_size = 256 -> With GPU: 2.76 ms / With CPU: 4.24 ms
 
     # Work computer (Windows 10): 
-    # seq_len= 64, rnn_size = 256 -> With CPU: 10.7 ms
+    # seq_len= 64, rnn_size = 256 -> With CPU: 13-14 ms
     
     predictor.predict_json(json_test) 
 end = time()

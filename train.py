@@ -3,6 +3,7 @@ from model_data_definition import ModelDataDefinition
 from classifier_dataset import ClassifierDataset
 from model import generate_model
 import tensorflow as tf
+import os
 
 # Read data definition
 data_definition = ModelDataDefinition()
@@ -13,6 +14,11 @@ print()
 train_files, eval_files = DataDirectory.get_train_and_validation_sets(data_definition)
 print("N. train files:", len(train_files.file_paths))
 print("N. evaluation files:", len(eval_files.file_paths))
+
+# Cache files for datasets will be created in dir. data/cache. If it does not exists, train will fail
+if not os.path.exists('data/cache'):
+    print("Creating directory data/cache")
+    os.mkdir('data/cache')
 
 # Get sequences datasets
 batch_size = 64
