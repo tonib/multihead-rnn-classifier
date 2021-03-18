@@ -1,14 +1,20 @@
+from predictor import Predictor
+from model_data_definition import ModelDataDefinition
+from classifier_dataset import ClassifierDataset
+from data_directory import DataDirectory
 import tensorflow as tf
+import numpy as np
 
-input_a = tf.keras.Input(name='a', dtype=tf.int32, shape=())
-input_b = tf.keras.Input(name='b', dtype=tf.int32, shape=())
+data_definition = ModelDataDefinition()
+predictor = Predictor(data_definition)
 
-outputs = { 'e': input_a , 'd': input_b}
+for l in range(0, 3): # range(0, data_definition.sequence_length):
+    input = {}
+    for seq_column_name in data_definition.sequence_columns:
+        input[seq_column_name] = tf.zeros(l, dtype=tf.int32)
+    for ctx_column_name in data_definition.context_columns:
+        input[ctx_column_name] = tf.constant(0, dtype=tf.int32)
 
-model = tf.keras.Model(inputs=[input_b, input_a], outputs=outputs)
+    print( predictor.predict(input) )
 
-i = { 'a': tf.constant(1) , 'b': tf.constant(2) }
-print(model(i))
-
-i = { 'b': tf.constant(2) , 'a': tf.constant(1) }
-print(model(i))
+print( predictor._predict_tf_function.pretty_printed_concrete_signatures() )

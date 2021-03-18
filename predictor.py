@@ -18,7 +18,18 @@ class Predictor:
             custom_objects={'MaskedOneHotEncoding': MaskedOneHotEncoding},
             compile=False )
 
-    @tf.function
+        # self._predict_tf CANNOT be decorated with tf.function, because inputs can have 
+        # different shapes (dict with keys specified by self.data_definition, with different sequence lengths). If you decorate it with @tf.function, 
+        # a different graph will be generated for each different sequence length feeded to the funcion. 
+        # So, declare the AutoGraph here, with the right signature:
+        signature = {}
+        for seq_column_name in self.data_definition.sequence_columns:
+            signature[seq_column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32)
+        for txt_column_name in self.data_definition.context_columns:
+            signature[txt_column_name] = tf.TensorSpec(shape=(), dtype=tf.int32)
+        self._predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
+
+
     def _preprocess_input(self, input: dict):
         postprocessed = {}
         # Be sure sequence inputs match data_definition.sequence_length - 1
@@ -50,8 +61,8 @@ class Predictor:
             postprocessed[ctx_column_name] = tf.expand_dims( input[ctx_column_name] , axis=0 )
 
         return postprocessed
-        
-    @tf.function
+    
+    # @tf.function < NO (__init__ comments)
     def _predict_tf(self, input: dict) -> dict:
         input = self._preprocess_input(input)
         batched_logits = self.model(input)
@@ -65,7 +76,10 @@ class Predictor:
     def predict(self, input: dict, debug=False) -> dict:
         for key in input:
             input[key] = tf.constant(input[key], dtype=tf.int32)
-        output = self._predict_tf(input)
+
+        # Call the TF graph prediction function
+        output = self._predict_tf_function(input)
+
         # Convert tensors to python values
         # The "probabilities" property is needed to keep backward compatibility with v1
         for key in output:
