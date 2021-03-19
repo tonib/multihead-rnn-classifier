@@ -64,7 +64,7 @@ class DataDirectory:
         full_set = DataDirectory.read_all(data_definition)
 
         # Load evaluation dataset
-        eval_set_path = data_definition.get_validation_set_path()
+        eval_set_path = data_definition.get_data_dir_path( 'validationSet.txt' )
         eval_set = DataDirectory.load_from_file( eval_set_path )
         if eval_set == None:
             # If it don't exists, create it

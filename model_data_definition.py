@@ -14,6 +14,9 @@ class ModelDataDefinition:
     # Exported model directory
     EXPORTED_MODEL_DIR = 'model/exported_model'
 
+    # Tensorboard logs
+    TBOARD_LOGS_DIR = 'model/tensorboard_logs'
+
     def __init__(self):
 
         self._read_cmd_line_arguments()
@@ -69,39 +72,26 @@ class ModelDataDefinition:
     def _read_cmd_line_arguments(self):
         parser = argparse.ArgumentParser(description='Train and predict sequeces')
         parser.add_argument('--datadir', type=str, default='data' , help='Directory path with data. Default="data"')
-        parser.add_argument('--notfwarnings', action='store_const' , const=True, help='Disable Tensowflow warning messages')
         args = parser.parse_args()
 
         self.data_directory = args.datadir
         print("Data directory:" , self.data_directory )
 
-        if args.notfwarnings:
-            print("TF warning messages disabled")
-            tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+    def get_data_dir_path(self, relative_path: str= None) -> str:
+        if relative_path == None:
+            return self.data_directory
+        return os.path.join( self.data_directory , relative_path )
 
-    def get_exports_dir_path(self):
-        """ The directory for exported models """
-        return os.path.join( self.data_directory , 'exportedmodels' )
+    def get_export_dir_path(self):
+        """ The directory for exported model """
+        return self.get_data_dir_path( 'model/exportedmodel' )
 
-    def get_current_model_dir_path(self):
+    def get_current_model_dir_path(self, relative_path: str= None):
         """ The directory for current train model """
-        return os.path.join( self.data_directory , 'model' )        
-
-    def get_validation_set_path(self):
-        """The path to the file with the validation set"""
-        return os.path.join( self.data_directory , 'validationSet.txt' )
-
-    def get_test_set_path(self):
-        """The path to the file with the test set"""
-        return os.path.join( self.data_directory , 'testSet.txt' )
-
-    def get_debug_dir_path(self):
-        """ Path to the debug directory """
-        return os.path.join( self.data_directory , 'debug' )
-
-    def get_evaluation_json_path(self):
-        """ Path to the file with the evaluation results """
-        return os.path.join( self.data_directory , 'evaluation.json' )
+        paths = [ 'model' ]
+        if relative_path != None:
+            paths.append(relative_path)
+        return os.path.join( self.data_directory , *paths )
 
     def get_empty_element(self) :
         """ Input entry with all zeros """
@@ -111,15 +101,6 @@ class ModelDataDefinition:
         for column_name in self.context_columns:
             element[column_name] = 0
         return element
-
-
-    def input_sequence_to_tf_predict_format( self , input: dict ) -> dict:
-        """ Convert an input to the Tensorflow prediction expected format: Batch with size 1 """
-        # TF expects a BATCH of size 1, so that's why the extra []
-        result = {}
-        for key in input:
-            result[key] = [ input[key] ]
-        return result
 
     def get_column_names(self) -> Set[str]:
         """ Set with all used column names """

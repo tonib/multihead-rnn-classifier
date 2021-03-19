@@ -13,8 +13,9 @@ class Predictor:
         # TODO: What does the compile parameter in load_model (default=True) ??? If this includes add an optimizer, it should be false!
         # TODO: This print warnings, see why..
         # W tensorflow/core/common_runtime/graph_constructor.cc:808] Node 'cond/while' has 13 outputs but the _output_shapes attribute specifies shapes for 44 outputs. Output shapes may be inaccurate
-        print("Loading model from " + ModelDataDefinition.EXPORTED_MODEL_DIR)
-        self.model: tf.keras.Model = tf.keras.models.load_model( ModelDataDefinition.EXPORTED_MODEL_DIR, 
+        exported_model_dir = data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
+        print("Loading model from " + exported_model_dir)
+        self.model: tf.keras.Model = tf.keras.models.load_model( exported_model_dir, 
             custom_objects={'MaskedOneHotEncoding': MaskedOneHotEncoding},
             compile=False )
 

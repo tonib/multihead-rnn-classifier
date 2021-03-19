@@ -6,9 +6,10 @@ import tensorflow as tf
 data_definition = ModelDataDefinition()
 
 # Get latest trained model
-latest_cp = tf.train.latest_checkpoint( ModelDataDefinition.CHECKPOINTS_DIR )
+checkpoints_dir = data_definition.get_data_dir_path( ModelDataDefinition.CHECKPOINTS_DIR )
+latest_cp = tf.train.latest_checkpoint( checkpoints_dir )
 if latest_cp == None:
-    print("No checkpoint found at " + ModelDataDefinition.CHECKPOINTS_DIR + ": Nothing exported")
+    print("No checkpoint found at " + checkpoints_dir + ": Nothing exported")
     exit()
 
 print("Exporting model from checkpoint " + latest_cp)
@@ -16,5 +17,6 @@ model = generate_model(data_definition)
 model.load_weights(latest_cp)
 
 # Save full model
-model.save( ModelDataDefinition.EXPORTED_MODEL_DIR, include_optimizer=False )
-print("Model exported to " + ModelDataDefinition.EXPORTED_MODEL_DIR)
+exported_model_dir = data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
+model.save( exported_model_dir, include_optimizer=False )
+print("Model exported to " + exported_model_dir)
