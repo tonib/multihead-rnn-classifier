@@ -1,6 +1,6 @@
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
-from classifier_dataset import ClassifierDataset
+from classifier_datasetv2 import ClassifierDataset
 from time import time
 import tensorflow as tf
 import json
@@ -11,7 +11,7 @@ data_definition = ModelDataDefinition()
 # Read all CSV paths
 all_data = DataDirectory.read_all(data_definition)
 
-ds = ClassifierDataset(all_data, data_definition, shuffle=False, debug_columns=True)
+ds = ClassifierDataset(all_data, data_definition, shuffle=True, debug_columns=False)
 
 # Test entire eval dataset
 print("Testing data set")
@@ -31,7 +31,7 @@ def pretty(title, row):
     print(title, json.dumps(serializable_row, sort_keys=True) )
 
 def print_some(print_pretty):
-    for row in ds.dataset.take(100):
+    for row in ds.dataset.take(1000):
         if print_pretty:
             pretty("Input:", row[0])
             pretty("Output:", row[1])

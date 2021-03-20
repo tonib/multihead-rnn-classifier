@@ -6,7 +6,16 @@ if TYPE_CHECKING:
 
 import tensorflow as tf
 
-# TODO: Parallelize operations (performance)
+# 118400
+# Batches: 1850 Elements: 118400 Time (s): 43.615002155303955 Elements/s: 2714.662252644221
+
+# 121600
+# Batches: 1900 Elements: 121600 Time (s): 44.7081823348999 Elements/s: 2719.8600714544627
+
+# 124800
+# Batches: 1950 Elements: 124800 Time (s): 45.92690873146057 Elements/s: 2717.3612038580395
+
+
 
 class ClassifierDataset:
 
@@ -46,15 +55,14 @@ class ClassifierDataset:
         # Get entire CSV files in pipeline, as a dictionary, key=CSV column name, value=values in that column
         self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
 
-        # Get a CSV dataset for each CSV file path (TODO: Use interleave here)
-        self.dataset = self.dataset.map(self._load_csv)
+        # Get a CSV dataset for each CSV file path
+        self.dataset = self.dataset.interleave(self._load_csv,
+            cycle_length=1 if not shuffle else None,
+            #num_parallel_calls=None if not shuffle else tf.data.experimental.AUTOTUNE,
+            num_parallel_calls=None if not shuffle else 16,
+            deterministic=not shuffle
+        )
         
-        # Process first sequence dataset
-
-        self.dataset = self.dataset.flat_map(lambda x: x)
-
-        #self.dataset = self.dataset.map(self._map_csv_file_to_sequences)
-
     def _load_csv(self, file_path):
         """ Load full CSV file content and return it to the pipeline as dict with keys=column names, values=column values """
         csv_ds = tf.data.experimental.CsvDataset(
@@ -64,12 +72,6 @@ class ClassifierDataset:
             use_quote_delim=False,
             select_cols=self._feature_column_indices
         )
-        # Load the entire file
-        #csv_ds = tf.data.experimental.get_single_element( csv_ds.batch(1000000) )
-
-        # full_csv_dict = {}
-        # for feature_column_name, csv_column_values in zip(self._feature_column_names, csv_ds):
-        #     full_csv_dict[feature_column_name] = csv_column_values
 
         # Map to dictionary with column names
         if self.debug_columns:
@@ -81,7 +83,12 @@ class ClassifierDataset:
             )
 
         # Get CSV file sequences
-        return self._map_csv_file_to_sequences(csv_ds)
+        csv_ds = self._map_csv_file_to_sequences(csv_ds)
+
+        # Process sequences
+        csv_ds = self._process_sequences(csv_ds)
+
+        return csv_ds
 
         # return tf.data.Dataset.from_tensor_slices(full_csv_dict)
 
@@ -90,7 +97,7 @@ class ClassifierDataset:
         row_dict = { feature_column_name: csv_column_values for feature_column_name, csv_column_values in zip(self._feature_column_names, enumerated_row[1]) }
 
         row_dict[ClassifierDataset.FILE_KEY] = file_path
-        row_dict[ClassifierDataset.ROW_KEY] = enumerated_row[0] + 1
+        row_dict[ClassifierDataset.ROW_KEY] = enumerated_row[0] + 2
         return row_dict
 
     def _flat_map_window(self, window_elements_dict):
@@ -108,33 +115,94 @@ class ClassifierDataset:
         # drop_remainder=True, the entire csv sequence will be dropped, and we don't what that. But, if drop_remainder=False,
         # final sequences with length < sequence_length will be feeded, and they must to be filtered... ¯\_(ツ)_/¯
         windows_ds = csv_columns_dict.window(self._data_definition.sequence_length, shift=1, drop_remainder=False)
-        #windows_ds = windows_ds.flat_map(lambda x: x)
-        #windows_ds = windows_ds.flat_map(lambda window: window.batch(self._data_definition.sequence_length, drop_remainder=False))
         windows_ds = windows_ds.flat_map(self._flat_map_window)
         return windows_ds
-
-        # windows_ds = windows_ds.map(self._flat_map_window)
-
-        # # Separate the first window from later windows. First window will generate multiple sequences
-        # first_window_ds = windows_ds.take(1)
-        # first_window_ds = first_window_ds.flat_map(self.expand_first_window)
-        # # Remove non trainable sequences
-        # if self._data_definition.trainable_column:
-        #     first_window_ds = first_window_ds.filter( lambda input_dict, output_dict: input_dict[self._data_definition.trainable_column] == 1 )
-
-        # later_windows_ds = windows_ds.skip(1)
-        # # Avoid final sequences with length < sequence_length
-        # later_windows_ds = later_windows_ds.filter( 
-        #     lambda x: tf.shape( x[self._data_definition.sequence_columns[0]] )[0] == self._data_definition.sequence_length )
-        # # Discard now non trainable sequences, to avoid process them
-        # if self._data_definition.trainable_column:
-        #     later_windows_ds = later_windows_ds.filter( lambda window_dict: window_dict[self._data_definition.trainable_column][-1] == 1 )
-        # # TODO: Performance of this could be better applying the operation over a sequences batch, instead of sequence by sequence
-        # later_windows_ds = later_windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, 
-        #     deterministic=not self.shuffle)
-
-        # return first_window_ds.concatenate( later_windows_ds )
     
+    def _process_sequences(self, windows_ds):
+
+        # Separate the first window from later windows. First window will generate multiple sequences
+        first_window_ds = windows_ds.take(1)
+        # TODO: This could be a map, and not a flat_map, check it
+        first_window_ds = first_window_ds.flat_map(self.expand_first_window)
+        # Remove non trainable sequences
+        if self._data_definition.trainable_column:
+            first_window_ds = first_window_ds.filter( lambda input_dict, output_dict: input_dict[self._data_definition.trainable_column] == 1 )
+
+        later_windows_ds = windows_ds.skip(1)
+        # Avoid final sequences with length < sequence_length
+        later_windows_ds = later_windows_ds.filter( 
+            lambda x: tf.shape( x[self._data_definition.sequence_columns[0]] )[0] == self._data_definition.sequence_length )
+        # Discard now non trainable sequences, to avoid process them
+        if self._data_definition.trainable_column:
+            later_windows_ds = later_windows_ds.filter( lambda window_dict: window_dict[self._data_definition.trainable_column][-1] == 1 )
+        # TODO: Performance of this could be better applying the operation over a sequences batch, instead of sequence by sequence
+        later_windows_ds = later_windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, 
+            deterministic=not self.shuffle)
+
+        return first_window_ds.concatenate( later_windows_ds )
+
+    def expand_first_window(self, window_elements_dict: dict):
+        """ Maps the first sequence to a dataset with initial incomplete subsequences. 
+            Zero will be used for padding.
+            Ex (padding element = 0, eos =-1, sequence_length = 3): 
+            [1, 2, 3] -> { "in":[ [-1, 0, 0], [1, -1, 0], [1, 2, -1] ], "out": [ 1, 2 , 3 ] ] } """
+
+        # Inputs
+        input_dict = {}
+        for key in self._data_definition.sequence_columns:
+            inputs = window_elements_dict[key] # [1, 2, 3]
+
+            # Increase the value in 2 because input values 0 and 1 are "keyword" values for padding and EOS
+            inputs += ClassifierDataset.N_KEYWORD_VALUES
+
+            elements_length = tf.shape(inputs)[0]
+            inputs = tf.reshape(inputs, (1, -1)) # [1, 2, 3] -> [[1, 2, 3]]
+            inputs = tf.repeat(inputs, repeats=elements_length, axis=0) # [[1, 2, 3]] -> [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+            # Keep lower subdiagonals: [[1, 2, 3], [1, 2, 3], [1, 2, 3]] -> [[1, 0, 0], [1, 2, 0], [1, 2, 3]]
+            inputs = tf.linalg.band_part( inputs , elements_length , 0 )
+            # Assign EOS: [[1, 0, 0], [1, 2, 0], [1, 2, 3]] -> [[-1, 0, 0], [1, -1, 0], [1, 2, -1]]
+            eos_vector = tf.repeat( ClassifierDataset.EOS_VALUE, elements_length)
+            inputs = tf.linalg.set_diag(inputs, eos_vector)
+
+            if elements_length < self._data_definition.sequence_length:
+                # Pad right up to sequence length. This can happens if the full CSV size is lower than sequence_length
+                zeros = tf.zeros( [ elements_length , self._data_definition.sequence_length - elements_length] , dtype=inputs.dtype )
+                inputs = tf.concat( [inputs, zeros], axis=1 )
+            input_dict[key] = inputs
+
+        for key in self.context_columns:
+            input_dict[key] = window_elements_dict[key]
+        
+        # Outputs
+        output_dict = {}
+        for key in self._data_definition.output_columns:
+            output_dict[key] = window_elements_dict[key]
+        
+        return tf.data.Dataset.from_tensor_slices( (input_dict, output_dict) )
+        
+    def process_full_window(self, window_elements_dict) -> Tuple:
+        """ Maps full window sequences to (input,output) tuples """
+        # Inputs
+        input_dict = {}
+        for key in self._data_definition.sequence_columns:
+            inputs = window_elements_dict[key]
+
+            # Increase the value in 2 because input values 0 and 1 are "keyword" values for padding and EOS
+            inputs += ClassifierDataset.N_KEYWORD_VALUES
+
+            # inputs[-1] = eos, hard way # [1, 2, 3] -> [1, 2, EOS]
+            inputs = tf.tensor_scatter_nd_update( inputs , [[self._data_definition.sequence_length-1]] , [ClassifierDataset.EOS_VALUE] )
+            input_dict[key] = inputs
+        for key in self.context_columns:
+            input_dict[key] = window_elements_dict[key][-1]
+
+        # Outputs
+        output_dict = {}
+        for key in self._data_definition.output_columns:
+            output_dict[key] = window_elements_dict[key][-1]
+
+        return (input_dict, output_dict)
+
     def _get_csv_files_structure(self):
 
         self._feature_column_names = list( self._data_definition.get_column_names() )
