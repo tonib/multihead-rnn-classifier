@@ -49,6 +49,8 @@ class ClassifierDataset:
         # Get a CSV dataset for each CSV file path (TODO: Use interleave here)
         self.dataset = self.dataset.map(self._load_csv)
         
+        # Process first sequence dataset
+
         self.dataset = self.dataset.flat_map(lambda x: x)
 
         #self.dataset = self.dataset.map(self._map_csv_file_to_sequences)
@@ -70,22 +72,26 @@ class ClassifierDataset:
         #     full_csv_dict[feature_column_name] = csv_column_values
 
         # Map to dictionary with column names
-        csv_ds = csv_ds.map(
-            lambda *row: { feature_column_name: csv_column_values for feature_column_name, csv_column_values in zip(self._feature_column_names, row) }
-        )
-
-        # TODO: Pending
-        # if self.debug_columns:
-        #     # For debugging and mental health, add file path and row numbers
-        #     n_csv_file_elements = tf.shape( full_csv_dict[feature_column_name] )[0]
-        #     full_csv_dict[ClassifierDataset.FILE_KEY] = tf.repeat( file_path , n_csv_file_elements )
-        #     # +2 to start with 1 based index, and skip titles row
-        #     full_csv_dict[ClassifierDataset.ROW_KEY] = tf.range(2, n_csv_file_elements + 2)
+        if self.debug_columns:
+            csv_ds = csv_ds.enumerate()
+            csv_ds = csv_ds.map(lambda *row: self._map_csv_row_to_dict_with_debug(file_path, row))
+        else:
+            csv_ds = csv_ds.map(
+                lambda *row: { feature_column_name: csv_column_values for feature_column_name, csv_column_values in zip(self._feature_column_names, row) }
+            )
 
         # Get CSV file sequences
         return self._map_csv_file_to_sequences(csv_ds)
 
         # return tf.data.Dataset.from_tensor_slices(full_csv_dict)
+
+    #@tf.function
+    def _map_csv_row_to_dict_with_debug(self, file_path, enumerated_row):
+        row_dict = { feature_column_name: csv_column_values for feature_column_name, csv_column_values in zip(self._feature_column_names, enumerated_row[1]) }
+
+        row_dict[ClassifierDataset.FILE_KEY] = file_path
+        row_dict[ClassifierDataset.ROW_KEY] = enumerated_row[0] + 1
+        return row_dict
 
     def _flat_map_window(self, window_elements_dict):
         """ Get real window values. I don't really understand this step, but it's required """
