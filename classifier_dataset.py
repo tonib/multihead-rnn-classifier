@@ -6,13 +6,14 @@ if TYPE_CHECKING:
 
 import tensorflow as tf
 
-# TODO: Parallelize operations (performance)
+# 118400
+# Batches: 1850 Elements: 118400 Time (s): 43.615002155303955 Elements/s: 2714.662252644221
 
-# 35200
-# Batches: 550 Elements: 35200 Time (s): 104.17873787879944 Elements/s: 337.8808451389702
+# 121600
+# Batches: 1900 Elements: 121600 Time (s): 44.7081823348999 Elements/s: 2719.8600714544627
 
-# 38400
-# Batches: 600 Elements: 38400 Time (s): 113.83943152427673 Elements/s: 337.3172150092039
+# 124800
+# Batches: 1950 Elements: 124800 Time (s): 45.92690873146057 Elements/s: 2717.3612038580395
 
 class ClassifierDataset:
 
@@ -51,33 +52,68 @@ class ClassifierDataset:
 
         # Get entire CSV files in pipeline, as a dictionary, key=CSV column name, value=values in that column
         self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
-        self.dataset = self.dataset.map(self._load_csv, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
 
-        # Map full CSV files to sequences
-        # TODO: I suspect this is not the best: map(_load_csv) could be a map_flat, and return sequences inside it. This would allow
-        # TODO: interleave CSV sequences...
-        self.dataset = self.dataset.flat_map( self._map_csv_file_to_sequences )
+        # Get a CSV dataset for each CSV file path
+        self.dataset = self.dataset.interleave(self._load_csv,
+            cycle_length=1 if not shuffle else None,
+            #num_parallel_calls=None if not shuffle else tf.data.experimental.AUTOTUNE,
+            num_parallel_calls=None if not shuffle else 16,
+            deterministic=not shuffle
+        )
         
-        # TODO: Remove trainable column from results, better cache size
-        
-    @tf.function
+    def _load_csv(self, file_path):
+        """ Load full CSV file content and return it to the pipeline as dict with keys=column names, values=column values """
+        csv_ds = tf.data.experimental.CsvDataset(
+            file_path, self._default_csv_values,
+            header=True,
+            field_delim=ClassifierDataset.CSV_SEPARATOR,
+            use_quote_delim=False,
+            select_cols=self._feature_column_indices
+        )
+
+        # Map to dictionary with column names
+        if self.debug_columns:
+            csv_ds = csv_ds.enumerate()
+            csv_ds = csv_ds.map(lambda *row: self._map_csv_row_to_dict_with_debug(file_path, row))
+        else:
+            csv_ds = csv_ds.map(
+                lambda *row: { feature_column_name: csv_column_values for feature_column_name, csv_column_values in zip(self._feature_column_names, row) }
+            )
+
+        # Get CSV file sequences
+        csv_ds = self._map_csv_file_to_sequences(csv_ds)
+
+        # Process sequences
+        csv_ds = self._process_sequences(csv_ds)
+
+        return csv_ds
+
+    def _map_csv_row_to_dict_with_debug(self, file_path, enumerated_row):
+        row_dict = { feature_column_name: csv_column_values for feature_column_name, csv_column_values in zip(self._feature_column_names, enumerated_row[1]) }
+
+        row_dict[ClassifierDataset.FILE_KEY] = file_path
+        row_dict[ClassifierDataset.ROW_KEY] = enumerated_row[0] + 2
+        return row_dict
+
     def _flat_map_window(self, window_elements_dict):
         """ Get real window values. I don't really understand this step, but it's required """
         result = {}
         for key in window_elements_dict:
             # See https://github.com/tensorflow/tensorflow/issues/23581#issuecomment-529702702
-            # TODO: + 1 can be removed? Probably yes
-            result[key] = tf.data.experimental.get_single_element( window_elements_dict[key].batch(self._data_definition.sequence_length + 1) )
-        return result
+            result[key] = tf.data.experimental.get_single_element( window_elements_dict[key].batch(self._data_definition.sequence_length) )
+        #return result
+        return tf.data.Dataset.from_tensors(result)
 
-    @tf.function
     def _map_csv_file_to_sequences(self, csv_columns_dict) -> tf.data.Dataset:
         """ Map a full csv file to windows of sequence_length elements """
         # We NEED drop_remainder=False, but it's tricky. If the entire csv is smaller than sequence_length, if
         # drop_remainder=True, the entire csv sequence will be dropped, and we don't what that. But, if drop_remainder=False,
         # final sequences with length < sequence_length will be feeded, and they must to be filtered... ¯\_(ツ)_/¯
         windows_ds = csv_columns_dict.window(self._data_definition.sequence_length, shift=1, drop_remainder=False)
-        windows_ds = windows_ds.map(self._flat_map_window)
+        windows_ds = windows_ds.flat_map(self._flat_map_window)
+        return windows_ds
+    
+    def _process_sequences(self, windows_ds):
 
         # Separate the first window from later windows. First window will generate multiple sequences
         first_window_ds = windows_ds.take(1)
@@ -98,9 +134,7 @@ class ClassifierDataset:
             deterministic=not self.shuffle)
 
         return first_window_ds.concatenate( later_windows_ds )
-        
 
-    @tf.function
     def expand_first_window(self, window_elements_dict: dict):
         """ Maps the first sequence to a dataset with initial incomplete subsequences. 
             Zero will be used for padding.
@@ -140,7 +174,6 @@ class ClassifierDataset:
         
         return tf.data.Dataset.from_tensor_slices( (input_dict, output_dict) )
         
-    @tf.function
     def process_full_window(self, window_elements_dict) -> Tuple:
         """ Maps full window sequences to (input,output) tuples """
         # Inputs
@@ -164,32 +197,6 @@ class ClassifierDataset:
 
         return (input_dict, output_dict)
 
-    @tf.function
-    def _load_csv(self, file_path: str) -> tf.data.Dataset:
-        """ Load full CSV file content and return it to the pipeline as dict with keys=column names, values=column values """
-        csv_ds = tf.data.experimental.CsvDataset(
-            file_path, self._default_csv_values, 
-            header=True,
-            field_delim=ClassifierDataset.CSV_SEPARATOR,
-            use_quote_delim=False,
-            select_cols=self._feature_column_indices
-        )
-        # Load the entire file
-        csv_ds = tf.data.experimental.get_single_element( csv_ds.batch(1000000) )
-
-        full_csv_dict = {}
-        for feature_column_name, csv_column_values in zip(self._feature_column_names, csv_ds):
-            full_csv_dict[feature_column_name] = csv_column_values
-
-        if self.debug_columns:
-            # For debugging and mental health, add file path and row numbers
-            n_csv_file_elements = tf.shape( full_csv_dict[feature_column_name] )[0]
-            full_csv_dict[ClassifierDataset.FILE_KEY] = tf.repeat( file_path , n_csv_file_elements )
-            # +2 to start with 1 based index, and skip titles row
-            full_csv_dict[ClassifierDataset.ROW_KEY] = tf.range(2, n_csv_file_elements + 2)
-        
-        return tf.data.Dataset.from_tensor_slices(full_csv_dict)
-
     def _get_csv_files_structure(self):
 
         self._feature_column_names = list( self._data_definition.get_column_names() )
@@ -207,11 +214,3 @@ class ClassifierDataset:
 
         # Column types: All int32
         self._default_csv_values = [ tf.int32 ] * len( self._feature_column_names )
-
-    def n_batches_in_dataset(self) -> int:
-        """ Returns the number of batches in the given dataset """
-        n_eval_batches = 0
-        for _ in self.dataset:
-            n_eval_batches += 1
-        return n_eval_batches
-        

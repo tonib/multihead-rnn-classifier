@@ -1,6 +1,6 @@
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
-from classifier_datasetv2 import ClassifierDataset
+from classifier_dataset import ClassifierDataset
 from time import time
 import tensorflow as tf
 import json
