@@ -40,17 +40,25 @@ def print_some(print_pretty):
             print(row)
 
 def traverse_all():
+
     BATCH_SIZE = 64
+
+    def performance(start, n_batches):
+        elapsed_time = time() - start
+        n_elements = n_batches * BATCH_SIZE
+        print("Batches:", n_batches, "Elements:", n_elements, "Time (s):", elapsed_time, "Elements/s:", n_elements / elapsed_time)
+        print()
+
     n_batches = 0
     start = time()
     for _ in ds.dataset.batch(BATCH_SIZE):
         n_batches += 1
-        if n_batches % 100 == 0:
+        if n_batches % 50 == 0:
             print(n_batches * BATCH_SIZE)
-    elapsed_time = time() - start
-    n_elements = n_batches * BATCH_SIZE
-    print("Total:", n_elements, "Time (s):", elapsed_time, "Elements/s:", n_elements / elapsed_time)
+            performance(start, n_batches)
 
-print_some(True)
+    performance(start, n_batches)
+
+#print_some(True)
 #print_some(False)
-#traverse_all()
+traverse_all()

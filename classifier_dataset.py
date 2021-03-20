@@ -8,6 +8,12 @@ import tensorflow as tf
 
 # TODO: Parallelize operations (performance)
 
+# 35200
+# Batches: 550 Elements: 35200 Time (s): 104.17873787879944 Elements/s: 337.8808451389702
+
+# 38400
+# Batches: 600 Elements: 38400 Time (s): 113.83943152427673 Elements/s: 337.3172150092039
+
 class ClassifierDataset:
 
     # Padding value. MUST TO BE ZERO (implementation details)
