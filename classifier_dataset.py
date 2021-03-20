@@ -36,6 +36,7 @@ class ClassifierDataset:
     ROW_KEY = '_file_row'
 
     def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, debug_columns: bool=False):
+        print("Setting up dataset, shuffle=" + str(shuffle) + ", debug_columns=" + str(debug_columns))
 
         self._csv_files = csv_files
         self._data_definition = data_definition

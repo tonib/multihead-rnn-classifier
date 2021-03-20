@@ -43,6 +43,7 @@ class DataDirectory:
     def read_all(data_definition : ModelDataDefinition) -> DataDirectory:
         """ Read all CSV files on data directory """
         # root_dir needs a trailing slash (i.e. /root/dir/)
+        print("Searching all csv files")
         return DataDirectory([path for path in glob.iglob(data_definition.data_directory + '/**/*.csv', recursive=True) ])
 
     @staticmethod
@@ -64,6 +65,7 @@ class DataDirectory:
         full_set = DataDirectory.read_all(data_definition)
 
         # Load evaluation dataset
+        print("Loading evaluation set")
         eval_set_path = data_definition.get_data_dir_path( 'validationSet.txt' )
         eval_set = DataDirectory.load_from_file( eval_set_path )
         if eval_set == None:
@@ -73,6 +75,7 @@ class DataDirectory:
             eval_set.save( eval_set_path )
 
         # Substract evaluation dataset from full dataset
+        print("Calculate train dataset")
         train_set = full_set.substract( eval_set )
         if len(eval_set.file_paths) == 0:
             # Dataset too small
