@@ -29,13 +29,14 @@ train_dataset = ClassifierDataset(train_files, data_definition, shuffle=True)
 train_cache_path = os.path.join(cache_dir_path, "train_cache")
 print("Caching train dataset in " + train_cache_path)
 train_dataset.dataset = train_dataset.dataset.cache(train_cache_path)
-train_dataset.dataset = train_dataset.dataset.prefetch(4096).shuffle(4096).batch(batch_size)
+train_dataset.dataset = train_dataset.dataset.shuffle(1024).batch(batch_size).prefetch(4)
 
-eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=False)
+eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=True) # shuffle=True -> Important for performance: It will enable files interleave
+eval_dataset.dataset = eval_dataset.dataset.batch(batch_size)
 eval_cache_path = os.path.join(cache_dir_path, "eval_cache")
 print("Caching evaluation dataset in " + eval_cache_path)
-eval_dataset.dataset = eval_dataset.dataset.batch(256)
 eval_dataset.dataset = eval_dataset.dataset.cache(eval_cache_path)
+eval_dataset.dataset = eval_dataset.dataset.prefetch(4)
 
 # Create model
 model = generate_model(data_definition)
