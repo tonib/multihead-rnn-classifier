@@ -42,6 +42,7 @@ class ModelDataDefinition:
             self.cell_type = ModelDataDefinition._read_setting( json_metadata , 'CellType' , 'gru' )
             self.log_each_epochs = int( ModelDataDefinition._read_setting( json_metadata , 'LogEachEpochs' , '0' ) )
             self.cache_dataset = bool( ModelDataDefinition._read_setting( json_metadata , 'DatasetCache' , '' ) ) # Yes, bool('') == False
+            self.batch_size = int( ModelDataDefinition._read_setting( json_metadata , 'BatchSize' , '64' ) )
 
             # Read columns definitions
             self.column_definitions: Dict[str, ColumnInfo] = {}
@@ -136,6 +137,7 @@ class ModelDataDefinition:
         print("CustomEstimator:", self.use_custom_estimator)
         print("LogEachEpochs:", self.log_each_epochs)
         print("DatasetCache:", self.cache_dataset)
+        print("BatchSize:", self.batch_size)
 
         if self.use_custom_estimator:
             print("LearningRate:", self.learning_rate)

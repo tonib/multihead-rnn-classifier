@@ -24,19 +24,17 @@ if data_definition.cache_dataset:
         print("Creating directory " + cache_dir_path)
         os.mkdir(cache_dir_path)
 
-batch_size = 64
-
 # Train dataset
 train_dataset = ClassifierDataset(train_files, data_definition, shuffle=True)
 if data_definition.cache_dataset:
     train_cache_path = os.path.join(cache_dir_path, "train_cache")
     print("Caching train dataset in " + train_cache_path)
     train_dataset.dataset = train_dataset.dataset.cache(train_cache_path)
-train_dataset.dataset = train_dataset.dataset.shuffle(1024).batch(batch_size).prefetch(4)
+train_dataset.dataset = train_dataset.dataset.shuffle(1024).batch( data_definition.batch_size ).prefetch(4)
 
-# Evaluation dataset
-eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=True) # shuffle=True -> Important for performance: It will enable files interleave
-eval_dataset.dataset = eval_dataset.dataset.batch(batch_size)
+# Evaluation dataset (shuffle=True -> Important for performance: It will enable files interleave)
+eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=True)
+eval_dataset.dataset = eval_dataset.dataset.batch( data_definition.batch_size )
 if data_definition.cache_dataset:
     eval_cache_path = os.path.join(cache_dir_path, "eval_cache")
     print("Caching evaluation dataset in " + eval_cache_path)
