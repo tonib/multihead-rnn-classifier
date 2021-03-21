@@ -1,4 +1,9 @@
 TODO:
+- Option to enable / disable cache
+- Option for tensorboard / checkpoints period (by epoch/batch)
+- Allow to configure the batch size (data_info configurable)
+- Allow to export a given epoch checkpoint (the best)
+- Upgrade to tf 2.4
 - If config is "SequenceColumns":["wordType","keywordIdx"], "ContextColumns":["ctxParmType"], it raises exception:
       File "train.py", line 33, in <module>
     model = generate_model(data_definition)
@@ -15,8 +20,7 @@ TODO:
         File "/home/toni/proyectos/tensorflow/venv-tf-2.3/lib/python3.8/site-packages/tensorflow/python/keras/layers/merge.py", line 493, in build
             raise ValueError('A `Concatenate` layer should be called '
         ValueError: A `Concatenate` layer should be called on a list of at least 2 inputs
-- Allow to export a given epoch checkpoint (the best)
-- Allow to configure the batch size (data_info configurable)
+
 - Add option to use XLA
 - ClassifierHead > tf_feature_column.embedding_column(), parm trainable should be false in inference time?
 - Check how VS code can find TF definitions

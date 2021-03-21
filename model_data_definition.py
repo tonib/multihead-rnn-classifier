@@ -40,6 +40,7 @@ class ModelDataDefinition:
             self.learning_rate = float( ModelDataDefinition._read_setting( json_metadata , 'LearningRate' , '0.001' ) )
             self.dropout = float( ModelDataDefinition._read_setting( json_metadata , 'Dropout' , '0' ) )
             self.cell_type = ModelDataDefinition._read_setting( json_metadata , 'CellType' , 'gru' )
+            self.log_each_epochs = int( ModelDataDefinition._read_setting( json_metadata , 'LogEachEpochs' , '0' ) )
 
             # Read columns definitions
             self.column_definitions: Dict[str, ColumnInfo] = {}
@@ -132,6 +133,7 @@ class ModelDataDefinition:
         print("TrainableColumn:", self.trainable_column)
         print("NNetworkElements:", self.n_network_elements)
         print("CustomEstimator:", self.use_custom_estimator)
+        print("LogEachEpochs:", self.log_each_epochs)
         
         if self.use_custom_estimator:
             print("LearningRate:", self.learning_rate)

@@ -4,6 +4,7 @@ from classifier_dataset import ClassifierDataset
 from model import generate_model
 import tensorflow as tf
 import os
+import time
 
 # Read data definition
 data_definition = ModelDataDefinition()
@@ -26,12 +27,14 @@ batch_size = 64
 train_dataset = ClassifierDataset(train_files, data_definition, shuffle=True)
 train_cache_path = os.path.join(cache_dir_path, "train_cache")
 print("Caching train dataset in " + train_cache_path)
-train_dataset.dataset = train_dataset.dataset.cache(train_cache_path).prefetch(4096).shuffle(4096).batch(batch_size)
+train_dataset.dataset = train_dataset.dataset.cache(train_cache_path)
+train_dataset.dataset = train_dataset.dataset.prefetch(4096).shuffle(4096).batch(batch_size)
 
 eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=False)
 eval_cache_path = os.path.join(cache_dir_path, "eval_cache")
 print("Caching evaluation dataset in " + eval_cache_path)
-eval_dataset.dataset = eval_dataset.dataset.batch(256).cache(eval_cache_path)
+eval_dataset.dataset = eval_dataset.dataset.batch(256)
+eval_dataset.dataset = eval_dataset.dataset.cache(eval_cache_path)
 
 # Create model
 model = generate_model(data_definition)
@@ -41,8 +44,11 @@ losses = {}
 for output_column_name in data_definition.output_columns:
     losses[output_column_name] = loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
+# Callbacks:
+callbacks = []
+
 # Tensorboard callback, each epoch
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=data_definition.get_data_dir_path( ModelDataDefinition.TBOARD_LOGS_DIR ))
+callbacks.append( tf.keras.callbacks.TensorBoard(log_dir=data_definition.get_data_dir_path( ModelDataDefinition.TBOARD_LOGS_DIR )) )
 
 # Save checkpoints, each epoch
 checkpoints_dir_path = data_definition.get_data_dir_path(ModelDataDefinition.CHECKPOINTS_DIR)
@@ -53,6 +59,26 @@ checkpoints_callback = tf.keras.callbacks.ModelCheckpoint(
     save_weights_only=True,
     verbose=1
 )
+callbacks.append( checkpoints_callback )
+
+if data_definition.log_each_epochs > 0:
+    # Log each x epochs, to check peformance
+    class LogCallback(tf.keras.callbacks.Callback):
+        def on_train_begin(self, logs=None):
+            print("Train started")
+            self.start_time = time.time() 
+            self.last_time = self.start_time
+       
+        def on_train_batch_end(self, batch, logs=None):
+            if batch % data_definition.log_each_epochs == 0:
+                current = time.time()
+                elapsed = current - self.last_time
+                rate = ( data_definition.log_each_epochs / elapsed ) if elapsed > 0 else 0
+                total_elapsed = current - self.start_time
+                print("Batch {} / {:.2f} s / {:.2f} batch/s: {}\n".format(batch, total_elapsed, rate, logs))
+                self.last_time = current
+    
+    callbacks.append( LogCallback() )
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=data_definition.learning_rate),
@@ -78,5 +104,5 @@ model.fit(train_dataset.dataset,
     validation_data=eval_dataset.dataset,
     #validation_steps=n_eval_batches,
     verbose=2,
-    callbacks=[tensorboard_callback, checkpoints_callback]
+    callbacks=callbacks
 )

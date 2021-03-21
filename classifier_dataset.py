@@ -56,7 +56,7 @@ class ClassifierDataset:
 
         # Get a CSV dataset for each CSV file path
         self.dataset = self.dataset.interleave(self._load_csv,
-            cycle_length=1 if not shuffle else None,
+            cycle_length=1 if not shuffle else 16,
             #num_parallel_calls=None if not shuffle else tf.data.experimental.AUTOTUNE,
             num_parallel_calls=None if not shuffle else 16,
             deterministic=not shuffle
