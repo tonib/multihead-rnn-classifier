@@ -2,6 +2,7 @@ from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
 from classifier_dataset import ClassifierDataset
 from model import generate_model
+from log_callback import LogCallback
 import tensorflow as tf
 import os
 import time
@@ -63,22 +64,7 @@ callbacks.append( checkpoints_callback )
 
 if data_definition.log_each_epochs > 0:
     # Log each x epochs, to check peformance
-    class LogCallback(tf.keras.callbacks.Callback):
-        def on_train_begin(self, logs=None):
-            print("Train started")
-            self.start_time = time.time() 
-            self.last_time = self.start_time
-       
-        def on_train_batch_end(self, batch, logs=None):
-            if batch % data_definition.log_each_epochs == 0:
-                current = time.time()
-                elapsed = current - self.last_time
-                rate = ( data_definition.log_each_epochs / elapsed ) if elapsed > 0 else 0
-                total_elapsed = current - self.start_time
-                print("Batch {} / {:.2f} s / {:.2f} batch/s: {}\n".format(batch, total_elapsed, rate, logs))
-                self.last_time = current
-    
-    callbacks.append( LogCallback() )
+    callbacks.append( LogCallback(data_definition) )
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=data_definition.learning_rate),
