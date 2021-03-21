@@ -16,6 +16,7 @@ print()
 train_files, eval_files = DataDirectory.get_train_and_validation_sets(data_definition)
 print("N. train files:", len(train_files.file_paths))
 print("N. evaluation files:", len(eval_files.file_paths))
+print()
 
 if data_definition.cache_dataset:
     # Cache files for datasets will be created in dir. data/cache. If it does not exists, train will fail
@@ -30,7 +31,11 @@ if data_definition.cache_dataset:
     train_cache_path = os.path.join(cache_dir_path, "train_cache")
     print("Caching train dataset in " + train_cache_path)
     train_dataset.dataset = train_dataset.dataset.cache(train_cache_path)
-train_dataset.dataset = train_dataset.dataset.shuffle(1024).batch( data_definition.batch_size ).prefetch(4)
+train_dataset.dataset = train_dataset.dataset.shuffle(1024).batch( data_definition.batch_size )
+if data_definition.max_batches_per_epoch > 0:
+    print("Train dataset limited to n. batches:", data_definition.max_batches_per_epoch)
+    train_dataset.dataset = train_dataset.dataset.take( data_definition.max_batches_per_epoch )
+train_dataset.dataset = train_dataset.dataset.prefetch(4)
 
 # Evaluation dataset (shuffle=True -> Important for performance: It will enable files interleave)
 eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=True)
@@ -39,7 +44,13 @@ if data_definition.cache_dataset:
     eval_cache_path = os.path.join(cache_dir_path, "eval_cache")
     print("Caching evaluation dataset in " + eval_cache_path)
     eval_dataset.dataset = eval_dataset.dataset.cache(eval_cache_path)
+if data_definition.max_batches_per_epoch > 0:
+    max_eval_batches = int( data_definition.max_batches_per_epoch * data_definition.percentage_evaluation )
+    print("Evaluation dataset limited to n. batches:", max_eval_batches)
+    eval_dataset.dataset = eval_dataset.dataset.take( max_eval_batches )
 eval_dataset.dataset = eval_dataset.dataset.prefetch(4)
+
+print()
 
 # Create model
 model = generate_model(data_definition)

@@ -1,7 +1,4 @@
 TODO:
-- Option to enable / disable cache
-- Option for tensorboard / checkpoints period (by epoch/batch)
-- Allow to configure the batch size (data_info configurable)
 - Allow to export a given epoch checkpoint (the best)
 - Upgrade to tf 2.4
 - If config is "SequenceColumns":["wordType","keywordIdx"], "ContextColumns":["ctxParmType"], it raises exception:
@@ -21,14 +18,8 @@ TODO:
             raise ValueError('A `Concatenate` layer should be called '
         ValueError: A `Concatenate` layer should be called on a list of at least 2 inputs
 
-- Add option to use XLA
-- ClassifierHead > tf_feature_column.embedding_column(), parm trainable should be false in inference time?
-- Check how VS code can find TF definitions
-- Check how VS code can use the venv
 - Install and use a linter
 - Add documentation about embedding
-- Each column should have it's own padding value
-- Inference time: Support padding automatically
 - Remove warning messages...
 - Option to fix the seed to make model comparisons (https://stackoverflow.com/questions/51072735/using-tf-set-random-seed-with-tf-estimator-estimator)
 - Use tfrecord files? (https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564)
