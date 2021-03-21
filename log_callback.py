@@ -23,9 +23,9 @@ class LogCallback(tf.keras.callbacks.Callback):
             rate = ( self.data_definition.log_each_epochs / elapsed ) if elapsed > 0 else 0
             total_elapsed = current - self.start_time
             if train:
-                print("Train - batch {} / {:.2f} s / {:.2f} batch/s: {}\n".format(batch, total_elapsed, rate, logs))
+                print("\n* Train - batch {} / {:.2f} s / {:.2f} batch/s: {}\n".format(batch, total_elapsed, rate, logs))
             else:
-                print("Evaluation - batch {} / {:.2f} s / {:.2f} batch/s".format(batch, total_elapsed, rate))
+                print("* Evaluation - batch {} / {:.2f} s / {:.2f} batch/s".format(batch, total_elapsed, rate))
             self.last_time = current
 
     def on_train_batch_end(self, batch, logs=None):

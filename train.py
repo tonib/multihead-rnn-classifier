@@ -17,25 +17,30 @@ train_files, eval_files = DataDirectory.get_train_and_validation_sets(data_defin
 print("N. train files:", len(train_files.file_paths))
 print("N. evaluation files:", len(eval_files.file_paths))
 
-# Cache files for datasets will be created in dir. data/cache. If it does not exists, train will fail
-cache_dir_path = data_definition.get_data_dir_path("cache")
-if not os.path.exists(cache_dir_path):
-    print("Creating directory " + cache_dir_path)
-    os.mkdir(cache_dir_path)
+if data_definition.cache_dataset:
+    # Cache files for datasets will be created in dir. data/cache. If it does not exists, train will fail
+    cache_dir_path = data_definition.get_data_dir_path("cache")
+    if not os.path.exists(cache_dir_path):
+        print("Creating directory " + cache_dir_path)
+        os.mkdir(cache_dir_path)
 
-# Get sequences datasets
 batch_size = 64
+
+# Train dataset
 train_dataset = ClassifierDataset(train_files, data_definition, shuffle=True)
-train_cache_path = os.path.join(cache_dir_path, "train_cache")
-print("Caching train dataset in " + train_cache_path)
-train_dataset.dataset = train_dataset.dataset.cache(train_cache_path)
+if data_definition.cache_dataset:
+    train_cache_path = os.path.join(cache_dir_path, "train_cache")
+    print("Caching train dataset in " + train_cache_path)
+    train_dataset.dataset = train_dataset.dataset.cache(train_cache_path)
 train_dataset.dataset = train_dataset.dataset.shuffle(1024).batch(batch_size).prefetch(4)
 
+# Evaluation dataset
 eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=True) # shuffle=True -> Important for performance: It will enable files interleave
 eval_dataset.dataset = eval_dataset.dataset.batch(batch_size)
-eval_cache_path = os.path.join(cache_dir_path, "eval_cache")
-print("Caching evaluation dataset in " + eval_cache_path)
-eval_dataset.dataset = eval_dataset.dataset.cache(eval_cache_path)
+if data_definition.cache_dataset:
+    eval_cache_path = os.path.join(cache_dir_path, "eval_cache")
+    print("Caching evaluation dataset in " + eval_cache_path)
+    eval_dataset.dataset = eval_dataset.dataset.cache(eval_cache_path)
 eval_dataset.dataset = eval_dataset.dataset.prefetch(4)
 
 # Create model

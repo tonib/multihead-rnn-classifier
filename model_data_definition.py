@@ -41,6 +41,7 @@ class ModelDataDefinition:
             self.dropout = float( ModelDataDefinition._read_setting( json_metadata , 'Dropout' , '0' ) )
             self.cell_type = ModelDataDefinition._read_setting( json_metadata , 'CellType' , 'gru' )
             self.log_each_epochs = int( ModelDataDefinition._read_setting( json_metadata , 'LogEachEpochs' , '0' ) )
+            self.cache_dataset = bool( ModelDataDefinition._read_setting( json_metadata , 'DatasetCache' , '' ) ) # Yes, bool('') == False
 
             # Read columns definitions
             self.column_definitions: Dict[str, ColumnInfo] = {}
@@ -115,7 +116,7 @@ class ModelDataDefinition:
         for col_name in column_names:
             column = self.column_definitions[ col_name ]
             if column.embeddable_dimension > 0:
-                txt_embedding = ", Embeddable (dim = " + str(column.embeddable_dimension) + ")"
+                txt_embedding = ", Embedable (dim = " + str(column.embeddable_dimension) + ")"
             else:
                 txt_embedding = ""
             print("   ", column.name, ":", len(column.labels), "labels", txt_embedding )
@@ -134,7 +135,8 @@ class ModelDataDefinition:
         print("NNetworkElements:", self.n_network_elements)
         print("CustomEstimator:", self.use_custom_estimator)
         print("LogEachEpochs:", self.log_each_epochs)
-        
+        print("DatasetCache:", self.cache_dataset)
+
         if self.use_custom_estimator:
             print("LearningRate:", self.learning_rate)
             print("Dropout:", self.dropout)
