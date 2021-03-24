@@ -1,9 +1,11 @@
+import configure_tf_log # Must be FIRST import
 import os
 import json
 from column_info import ColumnInfo
 from typing import List, Set, Dict
 import tensorflow as tf
 import argparse
+import logging
 
 class ModelDataDefinition:
     """ Definitions of model data, model settings and training """
@@ -79,10 +81,16 @@ class ModelDataDefinition:
     def _read_cmd_line_arguments(self):
         parser = argparse.ArgumentParser(description='Train and predict sequeces')
         parser.add_argument('--datadir', type=str, default='data' , help='Directory path with data. Default="data"')
+        parser.add_argument(configure_tf_log.NOTFWARNINGS_FLAG, action='store_const' , const=True, help='Disable Tensowflow warning messages')
+
         args = parser.parse_args()
 
         self.data_directory = args.datadir
         print("Data directory:" , self.data_directory )
+
+        if args.notfwarnings:
+            print("TF log info/warning messages disabled")
+            tf.get_logger().setLevel(logging.ERROR)
 
     def get_data_dir_path(self, relative_path: str= None) -> str:
         if relative_path == None:

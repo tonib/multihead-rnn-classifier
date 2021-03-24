@@ -39,7 +39,9 @@ REMINDERS
 git push -u origin master
 
 To run without GPU support, export CUDA_VISIBLE_DEVICES=-1
-TF c++ log to warning level: export TF_CPP_MIN_LOG_LEVEL=1
+TF c++ log level:
+export TF_CPP_MIN_LOG_LEVEL=1 # Disable info messages
+export TF_CPP_MIN_LOG_LEVEL=2 # Disable info and warning messages
 
 tensorboard --logdir data/model/tensorboard_logs
 http://localhost:6006

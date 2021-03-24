@@ -1,3 +1,4 @@
+import configure_tf_log # Must be FIRST import
 from predictor import Predictor
 from model_data_definition import ModelDataDefinition
 from time import time

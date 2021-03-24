@@ -1,3 +1,4 @@
+import configure_tf_log # Must be FIRST import
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
 from classifier_dataset import ClassifierDataset
