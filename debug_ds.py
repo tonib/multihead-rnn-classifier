@@ -11,7 +11,10 @@ data_definition = ModelDataDefinition()
 # Read all CSV paths
 all_data = DataDirectory.read_all(data_definition)
 
-ds = ClassifierDataset(all_data, data_definition, shuffle=True, debug_columns=False)
+# True -> Test dataset performance, False -> Print ds values
+TEST_PERFORMANCE = False
+
+ds = ClassifierDataset(all_data, data_definition, shuffle=TEST_PERFORMANCE, debug_columns=not TEST_PERFORMANCE)
 
 # Test entire eval dataset
 print("Testing data set")
@@ -59,6 +62,8 @@ def traverse_all():
 
     performance(start, n_batches)
 
-#print_some(True)
-#print_some(False)
-traverse_all()
+if TEST_PERFORMANCE:
+    traverse_all()
+else:
+    print_some(True)
+

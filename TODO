@@ -1,6 +1,8 @@
 TODO:
+- Allow to test performance from untrained model
 - Allow to export a given epoch checkpoint (the best)
-- Upgrade to tf 2.4
+- Upgrade to tf 2.4: I cannot get it work, CUDA 11 fails..., keep 2.3
+- Remove TF other files (eval.py?)
 - If config is "SequenceColumns":["wordType","keywordIdx"], "ContextColumns":["ctxParmType"], it raises exception:
       File "train.py", line 33, in <module>
     model = generate_model(data_definition)

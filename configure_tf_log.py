@@ -8,6 +8,5 @@ import os
 NOTFWARNINGS_FLAG = "--notfwarnings"
 
 if NOTFWARNINGS_FLAG in sys.argv:
-    #cur_value = and os.environ['TF_CPP_MIN_LOG_LEVEL'] != '2'
     print("Disabling info/warning messages from Tensorflow C++ library")
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'

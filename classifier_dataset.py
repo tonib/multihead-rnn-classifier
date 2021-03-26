@@ -86,7 +86,15 @@ class ClassifierDataset:
         # Process sequences
         csv_ds = self._process_sequences(csv_ds)
 
+        # Remove train column (avoid keras warning about unused inputs)
+        if self._data_definition.trainable_column:
+            csv_ds = csv_ds.map(self.remove_trainable_column)
+
         return csv_ds
+
+    def remove_trainable_column(self, input, output):
+        del input[self._data_definition.trainable_column]
+        return (input, output)
 
     def _map_csv_row_to_dict_with_debug(self, file_path, enumerated_row):
         row_dict = { feature_column_name: csv_column_values for feature_column_name, csv_column_values in zip(self._feature_column_names, enumerated_row[1]) }
