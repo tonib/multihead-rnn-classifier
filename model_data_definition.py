@@ -79,14 +79,18 @@ class ModelDataDefinition:
 
 
     def _read_cmd_line_arguments(self):
-        parser = argparse.ArgumentParser(description='Train and predict sequeces')
+        parser = argparse.ArgumentParser(description='Train and predict sequences')
         parser.add_argument('--datadir', type=str, default='data' , help='Directory path with data. Default="data"')
         parser.add_argument(configure_tf_log.NOTFWARNINGS_FLAG, action='store_const' , const=True, help='Disable Tensowflow warning messages')
+        parser.add_argument('--checkpoint', type=int, default=0, 
+            help='Only for export.py script. Number of epoch checkpoint to export (1=First). Default is last completely trained epoch')
 
         args = parser.parse_args()
 
         self.data_directory = args.datadir
         print("Data directory:" , self.data_directory )
+
+        self.export_checkpoint = args.checkpoint
 
         if args.notfwarnings:
             print("TF log info/warning messages disabled")
