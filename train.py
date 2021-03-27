@@ -1,7 +1,7 @@
 import configure_tf_log # Must be FIRST import
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
-from classifier_dataset import ClassifierDataset
+from dataset.rnn_dataset import RnnDataset
 from model import generate_model
 from log_callback import LogCallback
 import tensorflow as tf
@@ -27,7 +27,7 @@ if data_definition.cache_dataset:
         os.mkdir(cache_dir_path)
 
 # Train dataset
-train_dataset = ClassifierDataset(train_files, data_definition, shuffle=True)
+train_dataset = RnnDataset(train_files, data_definition, shuffle=True)
 if data_definition.cache_dataset:
     train_cache_path = os.path.join(cache_dir_path, "train_cache")
     print("Caching train dataset in " + train_cache_path)
@@ -39,7 +39,7 @@ if data_definition.max_batches_per_epoch > 0:
 train_dataset.dataset = train_dataset.dataset.prefetch(4)
 
 # Evaluation dataset (shuffle=True -> Important for performance: It will enable files interleave)
-eval_dataset = ClassifierDataset(eval_files, data_definition, shuffle=True)
+eval_dataset = RnnDataset(eval_files, data_definition, shuffle=True)
 eval_dataset.dataset = eval_dataset.dataset.batch( data_definition.batch_size )
 if data_definition.cache_dataset:
     eval_cache_path = os.path.join(cache_dir_path, "eval_cache")

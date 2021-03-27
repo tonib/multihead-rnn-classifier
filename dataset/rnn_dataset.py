@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Tuple
 if TYPE_CHECKING:
-    from model_data_definition import ModelDataDefinition
-    from data_directory import DataDirectory
+    from ..model_data_definition import ModelDataDefinition
+    from ..data_directory import DataDirectory
 
 import tensorflow as tf
 
@@ -15,7 +15,7 @@ import tensorflow as tf
 # 124800
 # Batches: 1950 Elements: 124800 Time (s): 45.92690873146057 Elements/s: 2717.3612038580395
 
-class ClassifierDataset:
+class RnnDataset:
 
     # Padding value. MUST TO BE ZERO (implementation details)
     PADDING_VALUE = 0
@@ -45,8 +45,8 @@ class ClassifierDataset:
 
         self.context_columns = list(data_definition.context_columns)
         if debug_columns:
-            self.context_columns.append(ClassifierDataset.FILE_KEY)
-            self.context_columns.append(ClassifierDataset.ROW_KEY)
+            self.context_columns.append(RnnDataset.FILE_KEY)
+            self.context_columns.append(RnnDataset.ROW_KEY)
         if data_definition.trainable_column:
             self.context_columns.append(data_definition.trainable_column)
 
@@ -66,7 +66,7 @@ class ClassifierDataset:
         csv_ds = tf.data.experimental.CsvDataset(
             file_path, self._default_csv_values,
             header=True,
-            field_delim=ClassifierDataset.CSV_SEPARATOR,
+            field_delim=RnnDataset.CSV_SEPARATOR,
             use_quote_delim=False,
             select_cols=self._feature_column_indices
         )
@@ -99,8 +99,8 @@ class ClassifierDataset:
     def _map_csv_row_to_dict_with_debug(self, file_path, enumerated_row):
         row_dict = { feature_column_name: csv_column_values for feature_column_name, csv_column_values in zip(self._feature_column_names, enumerated_row[1]) }
 
-        row_dict[ClassifierDataset.FILE_KEY] = file_path
-        row_dict[ClassifierDataset.ROW_KEY] = enumerated_row[0] + 2
+        row_dict[RnnDataset.FILE_KEY] = file_path
+        row_dict[RnnDataset.ROW_KEY] = enumerated_row[0] + 2
         return row_dict
 
     def _flat_map_window(self, window_elements_dict):
@@ -155,7 +155,7 @@ class ClassifierDataset:
             inputs = window_elements_dict[key] # [1, 2, 3]
 
             # Increase the value in 2 because input values 0 and 1 are "keyword" values for padding and EOS
-            inputs += ClassifierDataset.N_KEYWORD_VALUES
+            inputs += RnnDataset.N_KEYWORD_VALUES
 
             elements_length = tf.shape(inputs)[0]
             inputs = tf.reshape(inputs, (1, -1)) # [1, 2, 3] -> [[1, 2, 3]]
@@ -163,7 +163,7 @@ class ClassifierDataset:
             # Keep lower subdiagonals: [[1, 2, 3], [1, 2, 3], [1, 2, 3]] -> [[1, 0, 0], [1, 2, 0], [1, 2, 3]]
             inputs = tf.linalg.band_part( inputs , elements_length , 0 )
             # Assign EOS: [[1, 0, 0], [1, 2, 0], [1, 2, 3]] -> [[-1, 0, 0], [1, -1, 0], [1, 2, -1]]
-            eos_vector = tf.repeat( ClassifierDataset.EOS_VALUE, elements_length)
+            eos_vector = tf.repeat( RnnDataset.EOS_VALUE, elements_length)
             inputs = tf.linalg.set_diag(inputs, eos_vector)
 
             if elements_length < self._data_definition.sequence_length:
@@ -190,10 +190,10 @@ class ClassifierDataset:
             inputs = window_elements_dict[key]
 
             # Increase the value in 2 because input values 0 and 1 are "keyword" values for padding and EOS
-            inputs += ClassifierDataset.N_KEYWORD_VALUES
+            inputs += RnnDataset.N_KEYWORD_VALUES
 
             # inputs[-1] = eos, hard way # [1, 2, 3] -> [1, 2, EOS]
-            inputs = tf.tensor_scatter_nd_update( inputs , [[self._data_definition.sequence_length-1]] , [ClassifierDataset.EOS_VALUE] )
+            inputs = tf.tensor_scatter_nd_update( inputs , [[self._data_definition.sequence_length-1]] , [RnnDataset.EOS_VALUE] )
             input_dict[key] = inputs
         for key in self.context_columns:
             input_dict[key] = window_elements_dict[key][-1]
@@ -213,7 +213,7 @@ class ClassifierDataset:
         # So, guess the the CSV structure (all files MUST share the same structure):
         with open(self._csv_files.file_paths[0]) as f:
             first_line = f.readline()
-            csv_column_names = first_line.split(ClassifierDataset.CSV_SEPARATOR)
+            csv_column_names = first_line.split(RnnDataset.CSV_SEPARATOR)
             csv_column_names_to_indices = { name:index for index, name in enumerate(csv_column_names) }
             # select_cols parm in tf.data.experimental.CsvDataset must be ordered by column index. So, reorder feature_column_names
             # to follow that order

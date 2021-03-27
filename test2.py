@@ -1,6 +1,6 @@
 from predictor import Predictor
 from model_data_definition import ModelDataDefinition
-from classifier_dataset import ClassifierDataset
+from dataset.rnn_dataset import RnnDataset
 from data_directory import DataDirectory
 import tensorflow as tf
 import numpy as np

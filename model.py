@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Tuple
-from classifier_dataset import ClassifierDataset
+from dataset.rnn_dataset import RnnDataset
 if TYPE_CHECKING:
     from column_info import ColumnInfo
 
@@ -35,7 +35,7 @@ def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequen
     shape = [None] if is_sequence else ()
     input = tf.keras.Input(name=column_name, dtype=tf.int32, shape=shape)
 
-    n_labels = len(column_info.labels) + ClassifierDataset.N_KEYWORD_VALUES
+    n_labels = len(column_info.labels) + RnnDataset.N_KEYWORD_VALUES
 
     # Encode input, add masking
     if column_info.embeddable_dimension > 0:

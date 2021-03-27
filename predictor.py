@@ -1,5 +1,5 @@
 from model_data_definition import ModelDataDefinition
-from classifier_dataset import ClassifierDataset
+from dataset.rnn_dataset import RnnDataset
 from model import MaskedOneHotEncoding
 import tensorflow as tf
 import json
@@ -37,7 +37,7 @@ class Predictor:
         for seq_column_name in self.data_definition.sequence_columns:
 
             sequence_feature_values = input[seq_column_name]
-            sequence_feature_values += ClassifierDataset.N_KEYWORD_VALUES
+            sequence_feature_values += RnnDataset.N_KEYWORD_VALUES
 
             # Truncate sequence if too long
             expected_length = self.data_definition.sequence_length - 1
@@ -46,7 +46,7 @@ class Predictor:
                 sequence_feature_values = sequence_feature_values[ sequence_feature_length - expected_length : ]
             
             # Add EOS symbol
-            sequence_feature_values = tf.concat( [ sequence_feature_values , [ClassifierDataset.EOS_VALUE] ] , axis=0 )
+            sequence_feature_values = tf.concat( [ sequence_feature_values , [RnnDataset.EOS_VALUE] ] , axis=0 )
 
             # Add padding if too short
             sequence_feature_length = tf.shape( sequence_feature_values )[0]
