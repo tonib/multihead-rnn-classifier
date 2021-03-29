@@ -1,6 +1,6 @@
 from model_data_definition import ModelDataDefinition
 from dataset.rnn_dataset import RnnDataset
-from model.rnn_model import MaskedOneHotEncoding
+from model.masked_one_hot_encoding import MaskedOneHotEncoding
 import tensorflow as tf
 import json
 
