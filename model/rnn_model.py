@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, List, Tuple
 from dataset.rnn_dataset import RnnDataset
 if TYPE_CHECKING:
     from column_info import ColumnInfo
+    from ..model_data_definition import ModelDataDefinition
 
 import tensorflow as tf
-from model_data_definition import ModelDataDefinition
 
 class MaskedOneHotEncoding(tf.keras.layers.Layer):
     """ Compute masked one hot encoding from an integer input. Mask value is 0. Input mask is ignored. """
@@ -29,7 +29,7 @@ class MaskedOneHotEncoding(tf.keras.layers.Layer):
     def compute_mask(self, inputs, mask=None):
         return tf.cast( inputs , tf.bool )
 
-def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequence: bool, model_inputs: dict) -> Tuple:
+def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequence: bool, model_inputs: dict):
 
     column_info: ColumnInfo  = data_definition.column_definitions[column_name]
     shape = [None] if is_sequence else ()

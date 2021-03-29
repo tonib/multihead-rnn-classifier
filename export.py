@@ -1,5 +1,5 @@
 from model_data_definition import ModelDataDefinition
-from model import generate_model
+from model.rnn_model import generate_model
 import tensorflow as tf
 import os
 

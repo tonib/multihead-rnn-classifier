@@ -2,7 +2,7 @@ import configure_tf_log # Must be FIRST import
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
 from dataset.rnn_dataset import RnnDataset
-from model import generate_model
+from model.rnn_model import generate_model
 from log_callback import LogCallback
 import tensorflow as tf
 import os
