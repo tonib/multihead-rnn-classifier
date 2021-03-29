@@ -1,9 +1,12 @@
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
+from dataset.csv_files_dataset import CsvFilesDataset
 from dataset.rnn_dataset import RnnDataset
+from dataset.transformer_dataset import TransformerDataset
 from time import time
 import tensorflow as tf
 import json
+import numpy as np
 
 # Read data definition
 data_definition = ModelDataDefinition()
@@ -12,9 +15,10 @@ data_definition = ModelDataDefinition()
 all_data = DataDirectory.read_all(data_definition)
 
 # True -> Test dataset performance, False -> Print ds values
-TEST_PERFORMANCE = False
+TEST_PERFORMANCE = True
 
 ds = RnnDataset(all_data, data_definition, shuffle=TEST_PERFORMANCE, debug_columns=not TEST_PERFORMANCE)
+#ds = TransformerDataset(all_data, data_definition, shuffle=TEST_PERFORMANCE, debug_columns=not TEST_PERFORMANCE)
 
 # Test entire eval dataset
 print("Testing data set")
@@ -24,8 +28,13 @@ def pretty(title, row):
         serializable_row = {}
         for key in row:
             serializable_row[key] = row[key].numpy()
-            if key == RnnDataset.FILE_KEY:
-                serializable_row[key] = serializable_row[key].decode('UTF-8')
+            if key == CsvFilesDataset.FILE_KEY:
+                if isinstance(serializable_row[key], np.ndarray):
+                    # Transformer (array of strings)
+                    serializable_row[key] = [ s.decode('UTF-8') for s in serializable_row[key] ]
+                else:
+                    # rnn (single string)
+                    serializable_row[key] = serializable_row[key].decode('UTF-8')
             else:
                 serializable_row[key] = serializable_row[key].tolist()
     else:
@@ -36,8 +45,8 @@ def pretty(title, row):
 def print_some(print_pretty):
     for row in ds.dataset.take(1000):
         if print_pretty:
-            pretty("Input:", row[0])
-            pretty("Output:", row[1])
+            pretty("*** Input:", row[0])
+            pretty("*** Output:", row[1])
             print("\n")
         else:
             print(row)

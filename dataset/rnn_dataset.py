@@ -28,13 +28,13 @@ class RnnDataset(CsvFilesDataset):
     N_KEYWORD_VALUES = 2
 
     def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, debug_columns: bool=False):
-        super().__init__(csv_files, data_definition, shuffle, debug_columns)
+        super().__init__(csv_files, data_definition, data_definition.sequence_length, shuffle, debug_columns)
         
-    def _map_csv_file_to_sequences(self, csv_columns_dict) -> tf.data.Dataset:
+    def _map_csv_file_to_sequences(self, csv_columns_dict, file_path: str) -> tf.data.Dataset:
         """ Map a full csv file to windows of sequence_length elements """
 
         # Get the csv file window sequences
-        csv_ds = CsvFilesDataset._map_csv_file_to_sequences(self, csv_columns_dict)
+        csv_ds = CsvFilesDataset._map_csv_file_to_sequences(self, csv_columns_dict, file_path)
 
         # Process window sequences
         csv_ds = self._process_sequences(csv_ds)
@@ -113,6 +113,7 @@ class RnnDataset(CsvFilesDataset):
             inputs += RnnDataset.N_KEYWORD_VALUES
 
             # inputs[-1] = eos, hard way # [1, 2, 3] -> [1, 2, EOS]
+            # TODO: Check if it's faster to do a concat( [[:-1],EOS] )
             inputs = tf.tensor_scatter_nd_update( inputs , [[self._data_definition.sequence_length-1]] , [RnnDataset.EOS_VALUE] )
             input_dict[key] = inputs
         for key in self.context_columns:

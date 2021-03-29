@@ -17,13 +17,14 @@ class CsvFilesDataset:
     # Key in dataset dictionary for row column
     ROW_KEY = '_file_row'
 
-    def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, debug_columns: bool=False):
+    def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, sequence_length: int, shuffle: bool, debug_columns: bool=False):
 
         self._csv_files = csv_files
         self._data_definition = data_definition
         self._get_csv_files_structure()
         self.debug_columns = debug_columns
         self.shuffle = shuffle
+        self.sequence_length = sequence_length
 
         self.context_columns = list(data_definition.context_columns)
         if debug_columns:
@@ -63,7 +64,7 @@ class CsvFilesDataset:
             )
 
         # Get CSV file sequences
-        csv_ds = self._map_csv_file_to_sequences(csv_ds)
+        csv_ds = self._map_csv_file_to_sequences(csv_ds, file_path)
 
         # Remove train column (avoid keras warning about unused inputs)
         if self._data_definition.trainable_column:
@@ -87,16 +88,16 @@ class CsvFilesDataset:
         result = {}
         for key in window_elements_dict:
             # See https://github.com/tensorflow/tensorflow/issues/23581#issuecomment-529702702
-            result[key] = tf.data.experimental.get_single_element( window_elements_dict[key].batch(self._data_definition.sequence_length) )
+            result[key] = tf.data.experimental.get_single_element( window_elements_dict[key].batch(self.sequence_length) )
         #return result
         return tf.data.Dataset.from_tensors(result)
 
-    def _map_csv_file_to_sequences(self, csv_columns_dict) -> tf.data.Dataset:
+    def _map_csv_file_to_sequences(self, csv_columns_dict, file_path: str) -> tf.data.Dataset:
         """ Map a full csv file to windows of sequence_length elements """
         # We NEED drop_remainder=False, but it's tricky. If the entire csv is smaller than sequence_length, if
         # drop_remainder=True, the entire csv sequence will be dropped, and we don't what that. But, if drop_remainder=False,
         # final sequences with length < sequence_length will be feeded, and they must to be filtered... ¯\_(ツ)_/¯
-        windows_ds = csv_columns_dict.window(self._data_definition.sequence_length, shift=1, drop_remainder=False)
+        windows_ds = csv_columns_dict.window(self.sequence_length, shift=1, drop_remainder=False)
         windows_ds = windows_ds.flat_map(self._flat_map_window)
         return windows_ds
     
