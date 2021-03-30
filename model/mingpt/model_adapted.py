@@ -7,6 +7,15 @@ GPT model:
 - the final decoder is a linear projection into a vanilla Softmax classifier
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...model_data_definition import ModelDataDefinition
+    from ...column_info import ColumnInfo
+
+from ..masked_one_hot_encoding import MaskedOneHotEncoding
+from dataset.transformer_dataset import TransformerDataset
+
 import logging
 import math
 
@@ -22,18 +31,23 @@ class GPTConfig:
     resid_pdrop = 0.1
     attn_pdrop = 0.1
 
-    def __init__(self, vocab_size, block_size, **kwargs):
+    def __init__(self, vocab_size, **kwargs):
+        # TODO: Remove vocab_size
         self.vocab_size = vocab_size
-        self.block_size = block_size
         for k, v in kwargs.items():
             setattr(self, k, v)
 
 
+# class GPT1Config(GPTConfig):
+#     """ GPT-1 like network roughly 125M params """
+#     n_layer = 12
+#     n_head = 12
+#     n_embd = 768
+
 class GPT1Config(GPTConfig):
-    """ GPT-1 like network roughly 125M params """
-    n_layer = 12
-    n_head = 12
-    n_embd = 768
+    n_layer = 2
+    n_head = 2
+    n_embd = 128
 
 
 def gelu(x):
@@ -173,43 +187,100 @@ class EncoderLayer(tf.keras.layers.Layer):
 class GPT(tf.keras.Model):
     """  the full GPT language model, with a context size of block_size """
 
-    def __init__(self, config):
+    def __init__(self, config: GPT1Config, data_definition: ModelDataDefinition):
         super().__init__()
 
         # input embedding stem
-        self.tok_emb = tf.keras.layers.Embedding(config.vocab_size,
-                                                 config.n_embd,
-                                                 embeddings_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
+        # self.tok_emb = tf.keras.layers.Embedding(config.vocab_size,
+        #                                          config.n_embd,
+        #                                          embeddings_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
+
+        # tonib: Custom embedding
+        self.n_embd: int = config.n_embd
+        self.create_preprocessing_layers(data_definition)
+
         self.pos_emb = self.add_weight("position_embeddings",
-                                       shape=[config.block_size,
-                                              config.n_embd],
+                                       shape=[data_definition.sequence_length, self.n_embd],
                                        initializer=tf.keras.initializers.Zeros(),
                                        dtype=tf.float32)
         self.drop = tf.keras.layers.Dropout(config.embd_pdrop)
         # transformer
-        self.blocks = [EncoderLayer(config.n_embd, config.n_head, config.attn_pdrop, config.resid_pdrop)
+        self.blocks = [EncoderLayer(self.n_embd, config.n_head, config.attn_pdrop, config.resid_pdrop)
                        for _ in range(config.n_layer)]
         # decoder head
         self.ln_f = tf.keras.layers.LayerNormalization(epsilon=1e-5)
         self.head = tf.keras.layers.Dense(config.vocab_size, use_bias=False,
                                           kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
 
-        self.block_size = config.block_size
-        self.n_embd = config.n_embd
+        self.block_size = data_definition.sequence_length
         self.n_layer = config.n_layer
+        
+
+    # def create_preprocessing_layers(self, data_definition: ModelDataDefinition) -> int:
+    #     self.preprocess_layers = {}
+    #     word_dimension = 0
+    #     for column_name in ( data_definition.sequence_columns + data_definition.context_columns ):
+    #         column_info: ColumnInfo = data_definition.column_definitions[column_name]
+    #         n_labels = len(column_info.labels) + TransformerDataset.N_KEYWORD_VALUES
+    #         if column_info.embeddable_dimension > 0:
+    #             # TODO: What about padding here? Zero will be embedded too...
+    #             layer = tf.keras.layers.Embedding(n_labels,
+    #                                               column_info.embeddable_dimension,
+    #                                               embeddings_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
+    #             word_dimension += column_info.embeddable_dimension
+    #         else:
+    #             layer = MaskedOneHotEncoding(n_labels)
+    #             # TODO: Add a output_dimension property to MaskedOneHotEncoding for the -1?
+    #             word_dimension += n_labels - 1 # -1 because zero is reserved for padding (see MaskedOneHotEncoding implementation)
+    #         self.preprocess_layers[column_name] = layer
+    #     return word_dimension
+
+    def create_preprocessing_layers(self, data_definition: ModelDataDefinition) -> int:
+        # One hot encoding for word each component
+        self.preprocess_layers = {}
+        for column_name in ( data_definition.sequence_columns + data_definition.context_columns ):
+            column_info: ColumnInfo = data_definition.column_definitions[column_name]
+            n_labels = len(column_info.labels) + TransformerDataset.N_KEYWORD_VALUES
+            self.preprocess_layers[column_name] = MaskedOneHotEncoding(n_labels)
+        
+        # A linear combination of components to calculate an "embedding". TODO: Check if there is a better way to do this embedding
+        self.tok_emb = tf.keras.layers.Dense(self.n_embd, use_bias=False, 
+                                             kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
 
     @tf.function
-    def call(self, inputs: tf.Tensor, training=False):
-        t = tf.shape(inputs)[1]
+    def preprocess_inputs(self, inputs: dict):
+        # Preprocess each input component
+        processed_inputs = []
+        for key in inputs:
+            processed_inputs.append( self.preprocess_layers[key]( inputs[key] ) )
+        # Combine all inputs as a single tensor. inputs shape was (batch_size, sequence size, size for each component), so axis=2
+        word = tf.concat(processed_inputs, axis=2)
+        # Apply embedding
+        return self.tok_emb(word)
+
+    @tf.function
+    def call(self, inputs: dict, training=False):
+
+        # tonib: I don't understand this. "tf.shape(inputs)[1]" seems to be the sequence length. Should not be ALWAYS equal to self.block_size?
+        # t = tf.shape(inputs)[1]
         # assert t <= self.block_size, "Cannot forward, model block size is exhausted."
 
         # forward the GPT model
         # each index maps to a (learnable) vector
-        token_embeddings = self.tok_emb(inputs)
+
+        # token_embeddings = self.tok_emb(inputs)
+        # tonib: Preprocess inputs to an "embedding"
+        token_embeddings = self.preprocess_inputs(inputs)
+        t = tf.shape(token_embeddings)[1]
+        #assert t <= self.block_size, "Cannot forward, model block size is exhausted."
+
+        tf.debugging.assert_equal( tf.shape(token_embeddings)[2] , self.n_embd , "Wrong embedding size" )
+
+        # TODO: Check WTF does this
         position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [t, self.n_embd]),
                                              axis=0)  # each position maps to a (learnable) vector
-        x = self.drop(token_embeddings +
-                      position_embeddings, training=training)
+                                             
+        x = self.drop(token_embeddings + position_embeddings, training=training)
         mask = 1 - tf.linalg.band_part(tf.ones((t, t)), -1, 0)
         for i in range(self.n_layer):
             x = self.blocks[i](x, mask, training=training)

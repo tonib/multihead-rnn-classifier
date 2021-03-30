@@ -1,20 +1,23 @@
-from predictor import Predictor
 from model_data_definition import ModelDataDefinition
-from dataset.rnn_dataset import RnnDataset
-from data_directory import DataDirectory
+from model.mingpt.model_adapted import GPT, GPT1Config
+from dataset.transformer_dataset import TransformerDataset
 import tensorflow as tf
 import numpy as np
+from data_directory import DataDirectory
 
 data_definition = ModelDataDefinition()
-predictor = Predictor(data_definition)
 
-for l in range(0, 3): # range(0, data_definition.sequence_length):
-    input = {}
-    for seq_column_name in data_definition.sequence_columns:
-        input[seq_column_name] = tf.zeros(l, dtype=tf.int32)
-    for ctx_column_name in data_definition.context_columns:
-        input[ctx_column_name] = tf.constant(0, dtype=tf.int32)
+model = GPT(GPT1Config(100), data_definition)
 
-    print( predictor.predict(input) )
+# Read all CSV paths
+all_data = DataDirectory.read_all(data_definition)
 
-print( predictor._predict_tf_function.pretty_printed_concrete_signatures() )
+ds = TransformerDataset(all_data, data_definition, shuffle=False, debug_columns=False)
+
+#ds.dataset = ds.dataset.batch(1).take(3)
+ds.dataset = ds.dataset.batch(1).take(1)
+
+for row in ds.dataset:
+    input = row[0]
+    print(input)
+    print( model(input) )

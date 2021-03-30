@@ -10,8 +10,8 @@ all_data = DataDirectory.read_all(data_definition)
 
 ds = TransformerDataset(all_data, data_definition, shuffle=False, debug_columns=True)
 
-#ds.dataset = ds.dataset.batch(1).take(3)
-ds.dataset = ds.dataset.take(3)
+ds.dataset = ds.dataset.batch(1).take(3)
+#ds.dataset = ds.dataset.take(3)
 
 for row in ds.dataset:
     print(row)
