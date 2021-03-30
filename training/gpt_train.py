@@ -96,9 +96,14 @@ class GptTrain:
             metrics=['accuracy']
         )
 
-        # TODO: Does not work for keras.Model subclassing...
-        # TODO: Google "keras model subclass summary", maybe it can be fixed (.build() call?, add tf.keras.Input() layers?)
+        # Does not work for keras.Model subclassing. model.build() neither
         # model.summary()
+        # The only way I have found to get a summary is to feed a real sample, this seems to compile the model. After that,
+        # summary can be printed
+        build_model_ds = train_dataset.dataset.take(1)
+        for input, output in build_model_ds:
+            model(input)
+            model.summary()
 
         # Restore latest checkpoint
         latest_cp = tf.train.latest_checkpoint( checkpoints_dir_path )
