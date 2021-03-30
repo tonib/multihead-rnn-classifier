@@ -1,14 +1,15 @@
 import configure_tf_log # Must be FIRST import
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
-from dataset.rnn_dataset import RnnDataset
+from model.mingpt.model_adapted import GPT, GPT1Config
+from dataset.transformer_dataset import TransformerDataset
 from model.rnn_model import generate_model
 from training.log_callback import LogCallback
 import tensorflow as tf
 import os
 import time
 
-class RnnTrain:
+class GptTrain:
 
     def train(self):
 
@@ -31,7 +32,7 @@ class RnnTrain:
                 os.mkdir(cache_dir_path)
 
         # Train dataset
-        train_dataset = RnnDataset(train_files, data_definition, shuffle=True)
+        train_dataset = TransformerDataset(train_files, data_definition, shuffle=True)
         if data_definition.cache_dataset:
             train_cache_path = os.path.join(cache_dir_path, "train_cache")
             print("Caching train dataset in " + train_cache_path)
@@ -43,7 +44,7 @@ class RnnTrain:
         train_dataset.dataset = train_dataset.dataset.prefetch(4)
 
         # Evaluation dataset (shuffle=True -> Important for performance: It will enable files interleave)
-        eval_dataset = RnnDataset(eval_files, data_definition, shuffle=True)
+        eval_dataset = TransformerDataset(eval_files, data_definition, shuffle=True)
         eval_dataset.dataset = eval_dataset.dataset.batch( data_definition.batch_size )
         if data_definition.cache_dataset:
             eval_cache_path = os.path.join(cache_dir_path, "eval_cache")
@@ -58,12 +59,15 @@ class RnnTrain:
         print()
 
         # Create model
-        model = generate_model(data_definition)
+        model = GPT(GPT1Config(), data_definition)
 
+        # TODO: Pending multiples outputs losses
         # Losses for each output (sum of all will be minimized)
-        losses = {}
-        for output_column_name in data_definition.output_columns:
-            losses[output_column_name] = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        # losses = {}
+        # for output_column_name in data_definition.output_columns:
+        #     losses[output_column_name] = loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        # TODO: Reduction ?
+        losses = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
         # Callbacks:
         callbacks = []
@@ -91,7 +95,10 @@ class RnnTrain:
             loss = losses,
             metrics=['accuracy']
         )
-        model.summary()
+
+        # TODO: Does not work for keras.Model subclassing...
+        # TODO: Google "keras model subclass summary", maybe it can be fixed (.build() call?, add tf.keras.Input() layers?)
+        # model.summary()
 
         # Restore latest checkpoint
         latest_cp = tf.train.latest_checkpoint( checkpoints_dir_path )

@@ -7,7 +7,7 @@ from data_directory import DataDirectory
 
 data_definition = ModelDataDefinition()
 
-model = GPT(GPT1Config(100), data_definition)
+model = GPT(GPT1Config(), data_definition)
 
 # Read all CSV paths
 all_data = DataDirectory.read_all(data_definition)
@@ -20,4 +20,5 @@ ds.dataset = ds.dataset.batch(1).take(1)
 for row in ds.dataset:
     input = row[0]
     print(input)
-    print( model(input) )
+    output = model(input)
+    print( tf.shape(output) )

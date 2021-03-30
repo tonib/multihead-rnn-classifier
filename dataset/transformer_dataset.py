@@ -62,7 +62,16 @@ class TransformerDataset(CsvFilesDataset):
 
         # Now do the real processing
         # Here we do NOT filter untrainable sequences (TODO: Mask loss for these untrainable?)
-        return windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
+        windows_ds = windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
+
+        # TODO: Currently multioutput is unsupported. Train a single output:
+        windows_ds = windows_ds.map(self.map_single_output)
+
+        return windows_ds
+        
+    # TODO: Remove this when multiple outputs were supported
+    def map_single_output(self, input, output):
+        return (input, output['outputTypeIdx'])
 
     def pad_sequence(self, inputs):
         inputs_length = tf.shape(inputs)[0]

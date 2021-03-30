@@ -1,4 +1,5 @@
 TODO:
+- Implement perplexity?
 - Allow to test performance from untrained model
 - Upgrade to tf 2.4: I cannot get it work, CUDA 11 fails..., keep 2.3
 - Remove TF other files (eval.py?)

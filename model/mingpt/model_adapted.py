@@ -31,9 +31,7 @@ class GPTConfig:
     resid_pdrop = 0.1
     attn_pdrop = 0.1
 
-    def __init__(self, vocab_size, **kwargs):
-        # TODO: Remove vocab_size
-        self.vocab_size = vocab_size
+    def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -207,9 +205,13 @@ class GPT(tf.keras.Model):
         # transformer
         self.blocks = [EncoderLayer(self.n_embd, config.n_head, config.attn_pdrop, config.resid_pdrop)
                        for _ in range(config.n_layer)]
+        
+        # TODO: Currently single output is supported:
+        vocab_size = len( data_definition.column_definitions['outputTypeIdx'].labels )
+        
         # decoder head
         self.ln_f = tf.keras.layers.LayerNormalization(epsilon=1e-5)
-        self.head = tf.keras.layers.Dense(config.vocab_size, use_bias=False,
+        self.head = tf.keras.layers.Dense(vocab_size, use_bias=False,
                                           kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
 
         self.block_size = data_definition.sequence_length
