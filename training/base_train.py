@@ -32,7 +32,7 @@ class BaseTrain:
         self.prepare_checkpoints()
         self.other_callbacks()
         self.compile()
-        self.model.summary()
+        self.print_summary()
 
     def create_datasets(self):
         # Get train and evaluation source file paths
@@ -123,6 +123,9 @@ class BaseTrain:
             metrics=['accuracy']
         )
 
+    def print_summary(self):
+        self.model.summary()
+        
     def train(self):
         self.model.fit(self.train_dataset.dataset, 
             initial_epoch=self.initial_epoch,
