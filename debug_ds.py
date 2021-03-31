@@ -1,5 +1,5 @@
 from data_directory import DataDirectory
-from model_data_definition import ModelDataDefinition
+from model_definition import ModelDefinition
 from dataset.csv_files_dataset import CsvFilesDataset
 from dataset.rnn_dataset import RnnDataset
 from dataset.transformer_dataset import TransformerDataset
@@ -9,16 +9,17 @@ import json
 import numpy as np
 
 # Read data definition
-data_definition = ModelDataDefinition()
+model_definition = ModelDefinition()
 
 # Read all CSV paths
-all_data = DataDirectory.read_all(data_definition)
+all_data = DataDirectory.read_all(model_definition.data_definition)
 
 # True -> Test dataset performance, False -> Print ds values
 TEST_PERFORMANCE = True
 
-ds = RnnDataset(all_data, data_definition, shuffle=TEST_PERFORMANCE, debug_columns=not TEST_PERFORMANCE)
-#ds = TransformerDataset(all_data, data_definition, shuffle=TEST_PERFORMANCE, debug_columns=not TEST_PERFORMANCE)
+# Create dataset for this model type
+print("Dataset type:", model_definition.dataset_class)
+ds = model_definition.dataset_class(all_data, model_definition.data_definition, shuffle=TEST_PERFORMANCE, debug_columns=not TEST_PERFORMANCE)
 
 # Test entire eval dataset
 print("Testing data set")
@@ -66,7 +67,6 @@ def traverse_all():
     for _ in ds.dataset.batch(BATCH_SIZE):
         n_batches += 1
         if n_batches % 50 == 0:
-            print(n_batches * BATCH_SIZE)
             performance(start, n_batches)
 
     performance(start, n_batches)

@@ -46,7 +46,8 @@ class ModelDataDefinition:
             self.cache_dataset = bool( ModelDataDefinition._read_setting( json_metadata , 'DatasetCache' , '' ) ) # Yes, bool('') == False
             self.batch_size = int( ModelDataDefinition._read_setting( json_metadata , 'BatchSize' , '64' ) )
             self.max_batches_per_epoch = int( ModelDataDefinition._read_setting( json_metadata , 'MaxBatchesPerEpoch' , '0' ) )
-
+            self.model_type = ModelDataDefinition._read_setting( json_metadata , 'ModelType' , 'gpt' )
+            
             if self.cache_dataset and self.max_batches_per_epoch > 0:
                 raise Exception("DatasetCache = True and MaxBatchesPerEpoch > 0 cannot be set at same time. DatasetCache = True is for small datasets")
             
@@ -143,6 +144,7 @@ class ModelDataDefinition:
         self._print_column_summary("* SEQUENCE COLUMNS:", self.sequence_columns)
         self._print_column_summary("* CONTEXT COLUMNS:", self.context_columns)
         self._print_column_summary("* OUTPUT COLUMNS:", self.output_columns)
+        print("ModelType:", self.model_type)
         print("MaxTrainSeconds:", self.max_train_seconds)
         print("MinLossPercentage:", self.min_loss_percentage)
         print("PercentageEvaluation:", self.percentage_evaluation)
