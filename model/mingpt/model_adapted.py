@@ -207,13 +207,20 @@ class GPT(tf.keras.Model):
                        for _ in range(config.n_layer)]
         
         # TODO: Currently single output is supported:
-        vocab_size = len( data_definition.column_definitions['outputTypeIdx'].labels )
+        #vocab_size = len( data_definition.column_definitions['outputTypeIdx'].labels )
         
-        # decoder head
+        # decoder heads
         self.ln_f = tf.keras.layers.LayerNormalization(epsilon=1e-5)
-        self.head = tf.keras.layers.Dense(vocab_size, use_bias=False,
-                                          kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
 
+        # self.head = tf.keras.layers.Dense(vocab_size, use_bias=False,
+        #                                   kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
+        self.heads = {}
+        for column_name in data_definition.output_columns:
+            column_info: ColumnInfo = data_definition.column_definitions[column_name]
+            self.heads[column_name] = tf.keras.layers.Dense( len(column_info.labels), use_bias=False,
+                                                             kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02) )
+
+        self.output_columns = data_definition.output_columns
         self.block_size = data_definition.sequence_length
         self.n_layer = config.n_layer
         
@@ -287,5 +294,10 @@ class GPT(tf.keras.Model):
         for i in range(self.n_layer):
             x = self.blocks[i](x, mask, training=training)
         x = self.ln_f(x)
-        logits = self.head(x)
+
+        #logits = self.head(x)
+        logits = {}
+        for column_name in self.output_columns:
+            logits[column_name] = self.heads[column_name](x)
+        
         return logits

@@ -9,6 +9,7 @@ import tensorflow as tf
 import os
 import time
 
+# TODO: Create base class for GptTrain and RnnTrain with all the common code
 class GptTrain:
 
     def train(self):
@@ -61,13 +62,11 @@ class GptTrain:
         # Create model
         model = GPT(GPT1Config(), data_definition)
 
-        # TODO: Pending multiples outputs losses
-        # Losses for each output (sum of all will be minimized)
-        # losses = {}
-        # for output_column_name in data_definition.output_columns:
-        #     losses[output_column_name] = loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
         # TODO: Reduction ?
-        losses = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        # Losses for each output (sum of all will be minimized)
+        losses = {}
+        for output_column_name in data_definition.output_columns:
+            losses[output_column_name] = loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
         # Callbacks:
         callbacks = []

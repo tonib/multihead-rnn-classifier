@@ -21,4 +21,5 @@ for row in ds.dataset:
     input = row[0]
     print(input)
     output = model(input)
-    print( tf.shape(output) )
+    print( output )
+    #print( tf.shape(output) )

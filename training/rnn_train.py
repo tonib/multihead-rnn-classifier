@@ -8,6 +8,7 @@ import tensorflow as tf
 import os
 import time
 
+# TODO: Create base class for GptTrain and RnnTrain with all the common code
 class RnnTrain:
 
     def train(self):

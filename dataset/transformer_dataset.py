@@ -65,7 +65,7 @@ class TransformerDataset(CsvFilesDataset):
         windows_ds = windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
 
         # TODO: Currently multioutput is unsupported. Train a single output:
-        windows_ds = windows_ds.map(self.map_single_output)
+        #windows_ds = windows_ds.map(self.map_single_output)
 
         return windows_ds
         
