@@ -301,3 +301,7 @@ class GPT(tf.keras.Model):
             logits[column_name] = self.heads[column_name](x)
         
         return logits
+
+    @staticmethod
+    def create_model(data_definition: ModelDataDefinition) -> tf.keras.Model:
+        return GPT(GPT1Config(), data_definition)

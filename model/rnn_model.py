@@ -28,7 +28,7 @@ def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequen
 
     return processed_input
 
-def generate_model(data_definition: ModelDataDefinition):
+def create_rnn_model(data_definition: ModelDataDefinition):
 
     # Define sequence inputs
     model_inputs = {}

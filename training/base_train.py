@@ -4,7 +4,6 @@ from typing import Type
 
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
-from model.rnn_model import generate_model
 from training.log_callback import LogCallback
 import tensorflow as tf
 import os

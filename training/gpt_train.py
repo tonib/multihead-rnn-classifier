@@ -1,6 +1,6 @@
 from training.base_train import BaseTrain
 from dataset.transformer_dataset import TransformerDataset
-from model.mingpt.model_adapted import GPT, GPT1Config
+from model.mingpt.model_adapted import GPT
 
 import tensorflow as tf
 
@@ -12,7 +12,7 @@ class GptTrain(BaseTrain):
         super().__init__(TransformerDataset)
 
     def create_model(self) -> tf.keras.Model:
-        return GPT(GPT1Config(), self.data_definition)
+        return GPT.create_model(self.data_definition)
 
     def print_summary(self):
         # Does not work for keras.Model subclassing. model.build() neither

@@ -1,4 +1,5 @@
 TODO:
+- Save state for each GPT layer (and model too?)... (DAMN)
 - Mask loss for padded sequences
 - Implement perplexity?
 - Allow to test performance from untrained model
