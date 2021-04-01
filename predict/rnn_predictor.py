@@ -4,7 +4,7 @@ from model.masked_one_hot_encoding import MaskedOneHotEncoding
 import tensorflow as tf
 import json
 
-class Predictor:
+class RnnPredictor:
 
     def __init__(self, data_definition: ModelDataDefinition):
         self.data_definition = data_definition
@@ -96,3 +96,12 @@ class Predictor:
     def predict_json(self, input_json: str, debug=False) -> str:
         input = json.loads(input_json)
         return json.dumps( self.predict(input, debug) )
+
+    def get_empty_element(self) :
+        """ Input entry with context all zeros """
+        element = {}
+        for column_name in self.data_definition.sequence_columns:
+            element[column_name] = []
+        for column_name in self.data_definition.context_columns:
+            element[column_name] = 0
+        return element

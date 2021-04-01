@@ -1,5 +1,5 @@
 import configure_tf_log # Must be FIRST import
-from predictor import Predictor
+from predict.rnn_predictor import RnnPredictor
 from model_data_definition import ModelDataDefinition
 from time import time
 import json
@@ -8,10 +8,10 @@ import json
 data_definition = ModelDataDefinition()
 
 print("Reading exported model")
-predictor = Predictor(data_definition)
+predictor = RnnPredictor(data_definition)
 
 # Sample input: First file word (sequence with all pad elements)
-input = data_definition.get_empty_element()
+input = predictor.get_empty_element()
 #print(input)
 json_test = json.dumps(input)
 

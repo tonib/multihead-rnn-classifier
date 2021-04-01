@@ -113,15 +113,6 @@ class ModelDataDefinition:
             paths.append(relative_path)
         return os.path.join( self.data_directory , *paths )
 
-    def get_empty_element(self) :
-        """ Input entry with all zeros """
-        element = {}
-        for column_name in self.sequence_columns:
-            element[column_name] = []
-        for column_name in self.context_columns:
-            element[column_name] = 0
-        return element
-
     def get_column_names(self) -> Set[str]:
         """ Set with all used column names """
         all_columns = self.sequence_columns + self.output_columns + self.context_columns
