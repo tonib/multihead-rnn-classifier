@@ -10,10 +10,10 @@ GPT model:
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...model_data_definition import ModelDataDefinition
-    from ...column_info import ColumnInfo
+    from column_info import ColumnInfo
 
-from ..masked_one_hot_encoding import MaskedOneHotEncoding
+from model.masked_one_hot_encoding import MaskedOneHotEncoding
+from model_data_definition import ModelDataDefinition
 from dataset.transformer_dataset import TransformerDataset
 
 import logging
@@ -161,7 +161,6 @@ class EncoderLayer(tf.keras.layers.Layer):
 
     def __init__(self, d_model, num_heads, attn_pdrop, resid_pdrop):
         super(EncoderLayer, self).__init__()
-
         self.mha = MultiHeadAttention(d_model, num_heads,
                                       attn_pdrop, resid_pdrop)
         self.ffn = point_wise_feed_forward_network(
@@ -181,6 +180,8 @@ class GPT(tf.keras.Model):
 
     def __init__(self, data_definition: ModelDataDefinition):
         super().__init__()
+
+        self.data_definition = data_definition
 
         # input embedding stem
         # self.tok_emb = tf.keras.layers.Embedding(config.vocab_size,
@@ -216,10 +217,12 @@ class GPT(tf.keras.Model):
         self.block_size = data_definition.sequence_length
         self.n_layer = data_definition.gpt_n_layers
         
-    # def get_config(self):
-    #     return {
-            
-    #     }
+    def get_config(self) -> dict:
+        return { "data_definition": self.data_definition.to_dict() }
+
+    @staticmethod
+    def from_config(cfg: dict) -> GPT:
+        return GPT( ModelDataDefinition.from_dict( cfg["data_definition"] ) )
 
     def create_preprocessing_layers(self, data_definition: ModelDataDefinition) -> int:
         # One hot encoding for word each component

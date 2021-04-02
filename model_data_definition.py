@@ -76,7 +76,22 @@ class ModelDataDefinition:
                 self.context_columns = json_metadata['ContextColumns']
 
             # Output column names
-            self.output_columns = json_metadata['OutputColumns']
+            self.output_columns = json_metadata['OutputColumns']       
+
+    def to_dict(self) -> dict:
+        """ Returns dict with instace values, all serializable. Used to serialize Keras model """
+        values_dict = self.__dict__.copy()
+        values_dict["column_definitions"] = { col_name : self.column_definitions[col_name].__dict__ for col_name in self.column_definitions }
+        return values_dict
+
+    @staticmethod
+    def from_dict(values_dict: dict) -> ModelDataDefinition:
+        """ Creates a ModelDataDefinition from a values dict. Used to deserialize Keras model """
+        data_definition = ModelDataDefinition()
+        data_definition.__dict__ = values_dict.copy()
+        data_definition.column_definitions = { col_name : ColumnInfo(**data_definition.column_definitions[col_name])
+                                               for col_name in data_definition.column_definitions }
+        return data_definition
 
     @staticmethod
     def from_file() -> ModelDataDefinition:

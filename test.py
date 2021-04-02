@@ -5,7 +5,6 @@ import json
 
 # Read data definition
 data_definition = ModelDataDefinition.from_file()
-json.dumps(data_definition.__dict__)
 
 # Read all CSV paths
 all_data = DataDirectory.read_all(data_definition)
