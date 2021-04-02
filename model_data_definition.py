@@ -48,6 +48,13 @@ class ModelDataDefinition:
             self.max_batches_per_epoch = int( ModelDataDefinition._read_setting( json_metadata , 'MaxBatchesPerEpoch' , '0' ) )
             self.model_type = ModelDataDefinition._read_setting( json_metadata , 'ModelType' , 'gpt' )
             
+            self.gpt_embedding_dropout = float( ModelDataDefinition._read_setting( json_metadata , 'GptEmbeddingDropout' , '0.1' ) )
+            self.gpt_residual_dropout = float( ModelDataDefinition._read_setting( json_metadata , 'GptResidualDropout' , '0.1' ) )
+            self.gpt_attention_dropout = float( ModelDataDefinition._read_setting( json_metadata , 'GptAttentionDropout' , '0.1' ) )
+            self.gpt_n_layers = int( ModelDataDefinition._read_setting( json_metadata , 'GptNLayers' , '2' ) )
+            self.gpt_n_heads = int( ModelDataDefinition._read_setting( json_metadata , 'GptNHeads' , '2' ) )
+            self.gpt_embedding_size = int( ModelDataDefinition._read_setting( json_metadata , 'GptEmbeddingSize' , '128' ) )
+
             if self.cache_dataset and self.max_batches_per_epoch > 0:
                 raise Exception("DatasetCache = True and MaxBatchesPerEpoch > 0 cannot be set at same time. DatasetCache = True is for small datasets")
             
@@ -67,10 +74,6 @@ class ModelDataDefinition:
 
             # Output column names
             self.output_columns = json_metadata['OutputColumns']
-
-            # Switch to use our custom RNN estimator or the TF RNN canned estimator
-            self.use_custom_estimator = bool( ModelDataDefinition._read_setting( json_metadata , 'CustomEstimator' , False ) )
-
 
     @staticmethod
     def _read_setting( json_metadata : dict , setting_name : str , default_value : object ) -> object:
@@ -136,23 +139,27 @@ class ModelDataDefinition:
         self._print_column_summary("* CONTEXT COLUMNS:", self.context_columns)
         self._print_column_summary("* OUTPUT COLUMNS:", self.output_columns)
         print("ModelType:", self.model_type)
+        if self.model_type == "gpt":
+            print("GptEmbeddingDropout:", self.gpt_embedding_dropout)
+            print("GptResidualDropout:", self.gpt_residual_dropout)
+            print("GptAttentionDropout:", self.gpt_attention_dropout)
+            print("GptNLayers:", self.gpt_n_layers)
+            print("GptNHeads:", self.gpt_n_heads)
+            print("GptEmbeddingSize:", self.gpt_embedding_size)
+        elif self.model_type == "rnn":
+            print("NNetworkElements:", self.n_network_elements)
+            print("Dropout:", self.dropout)
+            print("CellType:", self.cell_type)
+        print("LearningRate:", self.learning_rate)
         print("MaxTrainSeconds:", self.max_train_seconds)
         print("MinLossPercentage:", self.min_loss_percentage)
         print("PercentageEvaluation:", self.percentage_evaluation)
         print("MaxEpochs:", self.max_epochs)
         print("SequenceLength:", self.sequence_length)
         print("TrainableColumn:", self.trainable_column)
-        print("NNetworkElements:", self.n_network_elements)
-        print("CustomEstimator:", self.use_custom_estimator)
         print("LogEachEpochs:", self.log_each_epochs)
         print("DatasetCache:", self.cache_dataset)
         print("BatchSize:", self.batch_size)
         print("MaxBatchesPerEpoch:", self.max_batches_per_epoch)
-        
-        if self.use_custom_estimator:
-            print("LearningRate:", self.learning_rate)
-            print("Dropout:", self.dropout)
-            print("CellType:", self.cell_type)
-        
         
         

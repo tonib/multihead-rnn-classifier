@@ -91,7 +91,7 @@ class BaseTrain:
         checkpoint_path_prefix = checkpoints_dir_path + '/checkpoint-'
         checkpoints_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path_prefix + '{epoch:04d}.ckpt',
-            save_weights_only=True,
+            save_weights_only=True, # TODO: Check this (this saves optimizer state?)
             verbose=1
         )
         self.callbacks.append( checkpoints_callback )

@@ -25,15 +25,14 @@ import tensorflow as tf
 logger = logging.getLogger(__name__)
 
 
-class GPTConfig:
-    """ base GPT config, params common to all GPT versions """
-    embd_pdrop = 0.1
-    resid_pdrop = 0.1
-    attn_pdrop = 0.1
-
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
+# class GPTConfig:
+#     """ base GPT config, params common to all GPT versions """
+#     embd_pdrop = 0.1
+#     resid_pdrop = 0.1
+#     attn_pdrop = 0.1
+#     def __init__(self, **kwargs):
+#         for k, v in kwargs.items():
+#             setattr(self, k, v)
 
 
 # class GPT1Config(GPTConfig):
@@ -41,11 +40,6 @@ class GPTConfig:
 #     n_layer = 12
 #     n_head = 12
 #     n_embd = 768
-
-class GPT1Config(GPTConfig):
-    n_layer = 2
-    n_head = 2
-    n_embd = 128
 
 
 def gelu(x):
@@ -185,7 +179,7 @@ class EncoderLayer(tf.keras.layers.Layer):
 class GPT(tf.keras.Model):
     """  the full GPT language model, with a context size of block_size """
 
-    def __init__(self, config: GPT1Config, data_definition: ModelDataDefinition):
+    def __init__(self, data_definition: ModelDataDefinition):
         super().__init__()
 
         # input embedding stem
@@ -194,21 +188,19 @@ class GPT(tf.keras.Model):
         #                                          embeddings_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
 
         # tonib: Custom embedding
-        self.n_embd: int = config.n_embd
+        self.n_embd: int = data_definition.gpt_embedding_size
         self.create_preprocessing_layers(data_definition)
 
         self.pos_emb = self.add_weight("position_embeddings",
                                        shape=[data_definition.sequence_length, self.n_embd],
                                        initializer=tf.keras.initializers.Zeros(),
                                        dtype=tf.float32)
-        self.drop = tf.keras.layers.Dropout(config.embd_pdrop)
+        self.drop = tf.keras.layers.Dropout(data_definition.gpt_embedding_dropout)
         # transformer
-        self.blocks = [EncoderLayer(self.n_embd, config.n_head, config.attn_pdrop, config.resid_pdrop)
-                       for _ in range(config.n_layer)]
-        
-        # TODO: Currently single output is supported:
-        #vocab_size = len( data_definition.column_definitions['outputTypeIdx'].labels )
-        
+        self.blocks = [EncoderLayer(self.n_embd, data_definition.gpt_n_heads, data_definition.gpt_attention_dropout, 
+                                    data_definition.gpt_residual_dropout)
+                       for _ in range(data_definition.gpt_n_layers)]
+                
         # decoder heads
         self.ln_f = tf.keras.layers.LayerNormalization(epsilon=1e-5)
 
@@ -222,27 +214,12 @@ class GPT(tf.keras.Model):
 
         self.output_columns = data_definition.output_columns
         self.block_size = data_definition.sequence_length
-        self.n_layer = config.n_layer
+        self.n_layer = data_definition.gpt_n_layers
         
-
-    # def create_preprocessing_layers(self, data_definition: ModelDataDefinition) -> int:
-    #     self.preprocess_layers = {}
-    #     word_dimension = 0
-    #     for column_name in ( data_definition.sequence_columns + data_definition.context_columns ):
-    #         column_info: ColumnInfo = data_definition.column_definitions[column_name]
-    #         n_labels = len(column_info.labels) + TransformerDataset.N_KEYWORD_VALUES
-    #         if column_info.embeddable_dimension > 0:
-    #             # TODO: What about padding here? Zero will be embedded too...
-    #             layer = tf.keras.layers.Embedding(n_labels,
-    #                                               column_info.embeddable_dimension,
-    #                                               embeddings_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
-    #             word_dimension += column_info.embeddable_dimension
-    #         else:
-    #             layer = MaskedOneHotEncoding(n_labels)
-    #             # TODO: Add a output_dimension property to MaskedOneHotEncoding for the -1?
-    #             word_dimension += n_labels - 1 # -1 because zero is reserved for padding (see MaskedOneHotEncoding implementation)
-    #         self.preprocess_layers[column_name] = layer
-    #     return word_dimension
+    # def get_config(self):
+    #     return {
+            
+    #     }
 
     def create_preprocessing_layers(self, data_definition: ModelDataDefinition) -> int:
         # One hot encoding for word each component
@@ -304,4 +281,4 @@ class GPT(tf.keras.Model):
 
     @staticmethod
     def create_model(data_definition: ModelDataDefinition) -> tf.keras.Model:
-        return GPT(GPT1Config(), data_definition)
+        return GPT(data_definition)

@@ -19,6 +19,10 @@ class BasePredictor:
         self.model: tf.keras.Model = tf.keras.models.load_model( exported_model_dir, 
             custom_objects=custom_objects,
             compile=False )
+        
+        # According to https://www.tensorflow.org/guide/keras/save_and_serialize#custom_objects , this should load the TF graph only
+        # and could be used to do predictions. I don't know what it loads, but it gives different predictions...
+        #self.model = tf.saved_model.load(exported_model_dir)
 
     def predict(self, input: dict, debug=False) -> dict:
         # Convert input python values to tensors

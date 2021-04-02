@@ -1,6 +1,7 @@
 TODO:
 - Save state for each GPT layer (and model too?)... (DAMN)
-- Mask loss for padded sequences
+- Test prediction after train and after export gives same outputs...
+- Mask loss for padded sequences (gpt)
 - Implement perplexity?
 - Allow to test performance from untrained model
 - Upgrade to tf 2.4: I cannot get it work, CUDA 11 fails..., keep 2.3
