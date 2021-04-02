@@ -5,7 +5,7 @@ from time import time
 import json
 
 # Read data definition
-data_definition = ModelDataDefinition()
+data_definition = ModelDataDefinition.from_file()
 
 print("Reading exported model")
 predictor = RnnPredictor(data_definition)

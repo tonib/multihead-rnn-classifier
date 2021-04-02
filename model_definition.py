@@ -16,7 +16,7 @@ class ModelDefinition:
 
     def __init__(self):
 
-        self.data_definition = ModelDataDefinition()
+        self.data_definition = ModelDataDefinition.from_file()
 
         if self.data_definition.model_type == "gpt":
             self.trainer_class = GptTrain

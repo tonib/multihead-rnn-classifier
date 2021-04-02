@@ -8,7 +8,7 @@ import traceback
 # TODO: Define buffer size for std output ???
 
 # Read data definition
-data_definition = ModelDataDefinition()
+data_definition = ModelDataDefinition.from_file()
 
 print("# Reading exported model", flush=True)
 predictor = Predictor(data_definition)

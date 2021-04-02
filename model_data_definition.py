@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import configure_tf_log # Must be FIRST import
+
 import os
 import json
 from column_info import ColumnInfo
@@ -19,8 +22,8 @@ class ModelDataDefinition:
     # Tensorboard logs
     TBOARD_LOGS_DIR = 'model/tensorboard_logs'
 
-    def __init__(self):
-
+    def load(self):
+        """ Load data from data_info.json file """
         self._read_cmd_line_arguments()
 
         metadata_file_path = os.path.join( self.data_directory , 'data_info.json' )
@@ -74,6 +77,13 @@ class ModelDataDefinition:
 
             # Output column names
             self.output_columns = json_metadata['OutputColumns']
+
+    @staticmethod
+    def from_file() -> ModelDataDefinition:
+        """ Create instance and load from file """
+        data_definition = ModelDataDefinition()
+        data_definition.load()
+        return data_definition
 
     @staticmethod
     def _read_setting( json_metadata : dict , setting_name : str , default_value : object ) -> object:

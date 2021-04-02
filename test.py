@@ -1,9 +1,11 @@
 from model_data_definition import ModelDataDefinition
 from dataset.transformer_dataset import TransformerDataset
 from data_directory import DataDirectory
+import json
 
 # Read data definition
-data_definition = ModelDataDefinition()
+data_definition = ModelDataDefinition.from_file()
+json.dumps(data_definition.__dict__)
 
 # Read all CSV paths
 all_data = DataDirectory.read_all(data_definition)

@@ -21,7 +21,7 @@ class BaseTrain:
         self.callbacks = []
 
         # Read data definition
-        self.data_definition = ModelDataDefinition()
+        self.data_definition = ModelDataDefinition.from_file()
         self.data_definition.print_summary()
         print()
 
@@ -102,7 +102,7 @@ class BaseTrain:
             # Get epoch number from checkpoint path
             l = len(checkpoint_path_prefix)
             self.initial_epoch = int(latest_cp[l:l+4])
-            print("*** Continuing training from checkpoint " + latest_cp + ", epoch " + str(initial_epoch))
+            print("*** Continuing training from checkpoint " + latest_cp + ", epoch " + str(self.initial_epoch))
             self.model.load_weights(latest_cp)
         else:
             self.initial_epoch = 0

@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 from data_directory import DataDirectory
 
-data_definition = ModelDataDefinition()
+data_definition = ModelDataDefinition.from_file()
 
 model = GPT(GPT1Config(), data_definition)
 
