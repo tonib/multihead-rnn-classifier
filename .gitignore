@@ -4,7 +4,6 @@
 # Data samples and debug dir
 exportedmodels
 data
-debug
 logs
 
 # Other data directories (debug)
