@@ -4,6 +4,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
     rm -rf data/cache
     rm -rf data/model
+    rm -rf data/validationSet.txt
     echo
     echo "Model and cache deleted"
 fi
