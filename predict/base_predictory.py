@@ -9,7 +9,11 @@ class BasePredictor:
     def __init__(self, data_definition: ModelDataDefinition):
         self.data_definition = data_definition
 
-    def _load_model(self, custom_objects: dict):
+    def _load_model(self, custom_objects: dict, model: tf.keras.Model = None):
+        if model != None:
+            self.model = model
+            return
+            
         # Load exported model
         # TODO: What does the compile parameter in load_model (default=True) ??? If this includes add an optimizer, it should be false!
         # TODO: This print warnings, see why..

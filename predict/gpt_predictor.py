@@ -7,10 +7,10 @@ import tensorflow as tf
 
 class GptPredictor(BasePredictor):
 
-    def __init__(self, data_definition: ModelDataDefinition):
+    def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model = None):
         super().__init__(data_definition)
 
-        self._load_model({"GPT": GPT})
+        self._load_model({"GPT": GPT}, model)
         self.all_column_names = self.data_definition.sequence_columns + self.data_definition.context_columns
 
         # self._predict_tf CANNOT be decorated with tf.function, because inputs can have 
@@ -101,7 +101,6 @@ class GptPredictor(BasePredictor):
         # 1   2 3 4 | input len = 4 | get idx 3
         # 2   3 4 5 | input len = 4 | get idx 3
         idx = tf.minimum(seq_len, self.data_definition.sequence_length-1)
-
         output = {}
         for key in batched_logits:
             # Model returned values are logits. Convert to probabilities and unbatch result

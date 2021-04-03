@@ -6,10 +6,10 @@ import tensorflow as tf
 
 class RnnPredictor(BasePredictor):
 
-    def __init__(self, data_definition: ModelDataDefinition):
+    def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model = None):
         super().__init__(data_definition)
 
-        self._load_model({'MaskedOneHotEncoding': MaskedOneHotEncoding})
+        self._load_model({'MaskedOneHotEncoding': MaskedOneHotEncoding}, model)
 
         # self._predict_tf CANNOT be decorated with tf.function, because inputs can have 
         # different shapes (dict with keys specified by self.data_definition, with different sequence lengths). If you decorate it with @tf.function, 
