@@ -31,7 +31,6 @@ class TransformerDataset(CsvFilesDataset):
             # - TransformerDataset.N_KEYWORD_VALUES because a +TransformerDataset.N_KEYWORD_VALUES will be added in process_full_window()
             bos_word[key] = tf.constant(TransformerDataset.BOS_VALUE - TransformerDataset.N_KEYWORD_VALUES, dtype=tf.int32)
         if self.debug_columns:
-            print("**", file_path)
             bos_word[CsvFilesDataset.FILE_KEY] = tf.constant("BOS")
             bos_word[CsvFilesDataset.ROW_KEY] = tf.constant(0, dtype=tf.int64)
 
@@ -62,17 +61,8 @@ class TransformerDataset(CsvFilesDataset):
 
         # Now do the real processing
         # Here we do NOT filter untrainable sequences (TODO: Mask loss for these untrainable?)
-        windows_ds = windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
-
-        # TODO: Currently multioutput is unsupported. Train a single output:
-        #windows_ds = windows_ds.map(self.map_single_output)
-
-        return windows_ds
+        return windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
         
-    # TODO: Remove this when multiple outputs were supported
-    def map_single_output(self, input, output):
-        return (input, output['outputTypeIdx'])
-
     def pad_sequence(self, inputs):
         inputs_length = tf.shape(inputs)[0]
         seq_len_diff = self._data_definition.sequence_length - inputs_length
@@ -82,15 +72,6 @@ class TransformerDataset(CsvFilesDataset):
             zeros = tf.zeros( [seq_len_diff] , dtype=inputs.dtype )
             inputs = tf.concat( [inputs, zeros], axis=0 )
         return inputs
-
-        #elif seq_len_diff < 0:
-            # Sequence too long, remove tail elements:
-            # This should not happen
-            # tf.debugging.Assert(False, seq_len_diff)
-            #raise Exception("Sequence too long, this should not happen. Seq.len=", str(seq_len_diff))
-            #return inputs[:seq_len_diff]
-        #else:
-        #    return inputs
 
     def process_full_window(self, window):
 
@@ -106,12 +87,21 @@ class TransformerDataset(CsvFilesDataset):
             # Remove last value
             inputs = inputs[:-1]
             
+            # Pad sequence, if needed. It will be if file length is shorter than self._data_definition.sequence_length
             input_dict[key] = self.pad_sequence(inputs)
 
         for key in self.context_columns:
+
             # This is tricky. The context what we know about the NEXT token to predict. We feed the context of the i-th output word
             # to the (i-1)-th input word
-            input_dict[key] = self.pad_sequence( window[key][1:] )
+            input = window[key][1:]
+
+            # Increase values to reserve keyword values (BOS will never be feeded, but yes padding, so here we are wasting a position.
+            # Don't make it more complicated...)
+            if key != CsvFilesDataset.FILE_KEY and key != CsvFilesDataset.ROW_KEY:
+                input += TransformerDataset.N_KEYWORD_VALUES
+            
+            input_dict[key] = self.pad_sequence( input )
 
         # Output
         output_dict = {}
@@ -119,42 +109,3 @@ class TransformerDataset(CsvFilesDataset):
             output_dict[key] = self.pad_sequence( window[key][1:] )
 
         return (input_dict, output_dict)
-
-    # def get_bos_sequence_from_fist_window(self, window):
-    #     # For the fist sequence we will generate two samples, one with an initial BOS and other as a normal sequence
-
-    #     # Prepare the BOS sequence:
-    #     # Inputs
-    #     bos_input = {}
-    #     for key in self._data_definition.sequence_columns:
-    #         inputs = window[key]
-            
-    #         # Increase values to reserve keyword values
-    #         inputs += RnnDataset.N_KEYWORD_VALUES
-
-    #         # Add BOS
-    #         inputs = tf.concat( [[TransformerDataset.BOS_VALUE], inputs], axis=1 )
-
-    #         # Fit to seq. length
-    #         bos_input[key] = self.pad_sequence(inputs)
-
-    #     for key in self.context_columns:
-    #         # Keep as is: BOS will get context for word with index=0
-    #         bos_input[key] = self.pad_sequence( window[key] )
-
-    #     # Output
-    #     bos_output = {}
-    #     for key in self._data_definition.output_columns:
-    #         # Keep as is
-    #         bos_output[key] = self.pad_sequence( window[key] )
-        
-    #     return (bos_input, bos_output)
-
-    # def expand_first_window(self, window):
-    #     # Get the first sequences, with an BOS initial symbol
-    #     bos_input, bos_output = self.get_bos_sequence_from_fist_window(window)
-    #     for key in bos_input:
-    #         bos_input[key] = tf.expand_dims(input, axis)
-
-    #     # If the first window is full, process it also as a normal window (without the initial BOS)
-    #     if 
