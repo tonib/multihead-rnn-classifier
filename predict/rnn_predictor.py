@@ -3,7 +3,6 @@ from dataset.rnn_dataset import RnnDataset
 from model.masked_one_hot_encoding import MaskedOneHotEncoding
 from predict.base_predictory import BasePredictor
 import tensorflow as tf
-import json
 
 class RnnPredictor(BasePredictor):
 
@@ -19,8 +18,8 @@ class RnnPredictor(BasePredictor):
         signature = {}
         for seq_column_name in self.data_definition.sequence_columns:
             signature[seq_column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32)
-        for txt_column_name in self.data_definition.context_columns:
-            signature[txt_column_name] = tf.TensorSpec(shape=(), dtype=tf.int32)
+        for cxt_column_name in self.data_definition.context_columns:
+            signature[cxt_column_name] = tf.TensorSpec(shape=(), dtype=tf.int32)
         self._predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
     def _preprocess_input(self, input: dict):
@@ -55,7 +54,7 @@ class RnnPredictor(BasePredictor):
 
         return postprocessed
     
-    # @tf.function < NO (__init__ comments)
+    # @tf.function < NO (see __init__ comments)
     def _predict_tf(self, input: dict) -> dict:
         input = self._preprocess_input(input)
         batched_logits = self.model(input)
@@ -67,7 +66,7 @@ class RnnPredictor(BasePredictor):
         return output
 
     def get_empty_element(self) :
-        """ Input entry with context all zeros """
+        """ Empty input entry with context all zeros """
         element = {}
         for column_name in self.data_definition.sequence_columns:
             element[column_name] = []
