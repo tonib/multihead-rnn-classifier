@@ -8,22 +8,6 @@ import tensorflow as tf
 import json
 import numpy as np
 
-# Read data definition
-model_definition = ModelDefinition()
-
-# Read all CSV paths
-all_data = DataDirectory.read_all(model_definition.data_definition)
-
-# True -> Test dataset performance, False -> Print ds values
-TEST_PERFORMANCE = True
-
-# Create dataset for this model type
-print("Dataset type:", model_definition.dataset_class)
-ds = model_definition.dataset_class(all_data, model_definition.data_definition, shuffle=TEST_PERFORMANCE, debug_columns=not TEST_PERFORMANCE)
-
-# Test entire eval dataset
-print("Testing data set")
-
 def pretty(title, row):
     if isinstance(row, dict):
         serializable_row = {}
@@ -71,8 +55,26 @@ def traverse_all():
 
     performance(start, n_batches)
 
-if TEST_PERFORMANCE:
-    traverse_all()
-else:
-    print_some(True)
+if __name__ == '__main__':
+
+    # Read data definition
+    model_definition = ModelDefinition()
+
+    # Read all CSV paths
+    all_data = DataDirectory.read_all(model_definition.data_definition)
+
+    # True -> Test dataset performance, False -> Print ds values
+    TEST_PERFORMANCE = True
+
+    # Create dataset for this model type
+    print("Dataset type:", model_definition.dataset_class)
+    ds = model_definition.dataset_class(all_data, model_definition.data_definition, shuffle=TEST_PERFORMANCE, debug_columns=not TEST_PERFORMANCE)
+
+    # Test entire eval dataset
+    print("Testing data set")
+
+    if TEST_PERFORMANCE:
+        traverse_all()
+    else:
+        print_some(True)
 
