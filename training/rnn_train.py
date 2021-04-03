@@ -10,3 +10,9 @@ class RnnTrain(BaseTrain):
 
     def create_model(self) -> tf.keras.Model:
         return create_rnn_model(self.data_definition)
+
+    def create_losses(self):
+        # Losses for each output (sum of all will be minimized)
+        self.losses = {}
+        for output_column_name in self.data_definition.output_columns:
+            self.losses[output_column_name] = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)

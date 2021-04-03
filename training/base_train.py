@@ -79,10 +79,7 @@ class BaseTrain:
         return None
 
     def create_losses(self):
-        # Losses for each output (sum of all will be minimized)
-        self.losses = {}
-        for output_column_name in self.data_definition.output_columns:
-            self.losses[output_column_name] = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        raise NotImplemented("To be implemented by inherited classes")
 
     def prepare_checkpoints(self):
         # Save checkpoints, each epoch
