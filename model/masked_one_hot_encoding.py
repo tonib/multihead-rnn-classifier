@@ -12,6 +12,8 @@ class MaskedOneHotEncoding(tf.keras.layers.Layer):
 
     def call(self, inputs):
         # -1 is to optimize the output size. As zero is reserved for padding, only 1+ values will be used as real inputs
+        tf.debugging.assert_greater_equal(inputs, 0, "MaskedOneHotEncoding: inputs[i] < 0")
+        tf.debugging.assert_less(inputs, self.input_n_labels, "MaskedOneHotEncoding: inputs[i] >= self.input_n_labels")
         return tf.one_hot(inputs - 1, self.input_n_labels - 1)
 
     def get_config(self):
