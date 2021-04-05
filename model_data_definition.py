@@ -26,7 +26,7 @@ class ModelDataDefinition:
         """ Load data from data_info.json file """
         self._read_cmd_line_arguments()
 
-        metadata_file_path = os.path.join( self.data_directory , 'data_info.json' )
+        metadata_file_path = self.get_config_file_path()
         print("Reading data structure info from " , metadata_file_path)
         
         with open( metadata_file_path , 'r' , encoding='utf-8' )  as file:
@@ -93,6 +93,9 @@ class ModelDataDefinition:
                                                for col_name in data_definition.column_definitions }
         return data_definition
 
+    def get_config_file_path(self) -> str:
+        return os.path.join( self.data_directory , 'data_info.json' )
+
     @staticmethod
     def from_file() -> ModelDataDefinition:
         """ Create instance and load from file """
@@ -113,6 +116,8 @@ class ModelDataDefinition:
         parser.add_argument(configure_tf_log.NOTFWARNINGS_FLAG, action='store_const' , const=True, help='Disable Tensowflow warning messages')
         parser.add_argument('--checkpoint', type=int, default=0, 
             help='Only for export.py script. Number of epoch checkpoint to export (1=First). Default is last completely trained epoch')
+        parser.add_argument('--productiondir', type=str, default='production', 
+            help='Only for production.py script. Directory for production files. Default is "production"')
 
         args = parser.parse_args()
 
@@ -120,6 +125,7 @@ class ModelDataDefinition:
         print("Data directory:" , self.data_directory )
 
         self.export_checkpoint = args.checkpoint
+        self.production_dir = args.productiondir
 
         if args.notfwarnings:
             print("TF log info/warning messages disabled")
