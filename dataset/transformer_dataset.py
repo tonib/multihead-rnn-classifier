@@ -105,30 +105,28 @@ class TransformerDataset(CsvFilesDataset):
 
             # Increase values to reserve keyword values (BOS will never be feeded, but yes padding, so here we are wasting a position.
             # Don't make it more complicated...)
-            #if key != CsvFilesDataset.FILE_KEY and key != CsvFilesDataset.ROW_KEY and key != self._data_definition.trainable_column:
-            if key != CsvFilesDataset.FILE_KEY and key != CsvFilesDataset.ROW_KEY:
+            if key != CsvFilesDataset.FILE_KEY and key != CsvFilesDataset.ROW_KEY and key != self._data_definition.trainable_column:
                 input += TransformerDataset.N_KEYWORD_VALUES
             
             input_dict[key] = self.pad_sequence(input, TransformerDataset.PADDING_VALUE)
 
         # Output
         # Mask non trainable outputs, if needed. This is, set a TransformerDataset.OUTPUT_PADDING_VALUE value in non trainable positions 
-        # if self._data_definition.trainable_column != None:
-        #     # Get indices of non trainable positions
-        #     non_trainable_indices = window[self._data_definition.trainable_column][1:]
-        #     non_trainable_indices = tf.equal( non_trainable_indices , 0 )
-        #     non_trainable_indices = tf.where( non_trainable_indices ) # Ex. [ [0] , [2] ]
-        #     # Prepare update values for tensor_scatter_nd_update call
-        #     number_non_trainable = tf.shape(non_trainable_indices)[0]
-        #     non_trainable_values = tf.repeat( TransformerDataset.OUTPUT_PADDING_VALUE , number_non_trainable )
+        if self._data_definition.trainable_column != None:
+            # Get indices of non trainable positions
+            non_trainable_indices = window[self._data_definition.trainable_column][1:]
+            non_trainable_indices = tf.equal( non_trainable_indices , 0 )
+            non_trainable_indices = tf.where( non_trainable_indices ) # Ex. [ [0] , [2] ]
+            # Prepare update values for tensor_scatter_nd_update call
+            number_non_trainable = tf.shape(non_trainable_indices)[0]
+            non_trainable_values = tf.repeat( TransformerDataset.OUTPUT_PADDING_VALUE , number_non_trainable )
 
         output_dict = {}
         for key in self._data_definition.output_columns:
-            output_dict[key] = self.pad_sequence( window[key][1:], TransformerDataset.OUTPUT_PADDING_VALUE)
-            # outputs = window[key][1:]
-            # if self._data_definition.trainable_column != None:
-            #     # Apply non trainable mask
-            #     outputs = tf.tensor_scatter_nd_update(outputs, non_trainable_indices, non_trainable_values)
-            # output_dict[key] = self.pad_sequence( outputs, TransformerDataset.OUTPUT_PADDING_VALUE)
+            outputs = window[key][1:]
+            if self._data_definition.trainable_column != None:
+                # Apply non trainable mask
+                outputs = tf.tensor_scatter_nd_update(outputs, non_trainable_indices, non_trainable_values)
+            output_dict[key] = self.pad_sequence( outputs, TransformerDataset.OUTPUT_PADDING_VALUE)
 
         return (input_dict, output_dict)
