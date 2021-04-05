@@ -76,7 +76,7 @@ class GptTrain(BaseTrain):
         # Losses for each output (sum of all will be minimized)
         self.losses = {}
         for output_column_name in self.data_definition.output_columns:
-            self.losses[output_column_name] = GptTrain.masked_accuracy
+            self.losses[output_column_name] = GptTrain.gpt_loss
 
     def create_metrics(self):
         self.metrics = [ GptTrain.masked_accuracy ]

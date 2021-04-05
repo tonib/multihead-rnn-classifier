@@ -1,25 +1,16 @@
-from model_data_definition import ModelDataDefinition
-from model.mingpt.model_adapted import GPT, GPT1Config
-from dataset.transformer_dataset import TransformerDataset
 import tensorflow as tf
-import numpy as np
-from data_directory import DataDirectory
 
-data_definition = ModelDataDefinition.from_file()
 
-model = GPT(GPT1Config(), data_definition)
+x = tf.constant( [ 1 , 2 , 3 , 4 ] )
+trainable = tf.constant( [ 0 , 0 , 0 , 0 ] )
 
-# Read all CSV paths
-all_data = DataDirectory.read_all(data_definition)
+non_trainable_indices = trainable
+non_trainable_indices = tf.equal( non_trainable_indices , 0 )
+non_trainable_indices = tf.where( non_trainable_indices ) # Ex. [ [0] , [2] ]
 
-ds = TransformerDataset(all_data, data_definition, shuffle=False, debug_columns=False)
+number_non_trainable = tf.shape(non_trainable_indices)[0]
+non_trainable_values = tf.repeat( -1 , number_non_trainable )
 
-#ds.dataset = ds.dataset.batch(1).take(3)
-ds.dataset = ds.dataset.batch(1).take(1)
+x = tf.tensor_scatter_nd_update(x, non_trainable_indices, non_trainable_values)
 
-for row in ds.dataset:
-    input = row[0]
-    print(input)
-    output = model(input)
-    print( output )
-    #print( tf.shape(output) )
+print( x )
