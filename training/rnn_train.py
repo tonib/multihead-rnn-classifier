@@ -16,3 +16,6 @@ class RnnTrain(BaseTrain):
         self.losses = {}
         for output_column_name in self.data_definition.output_columns:
             self.losses[output_column_name] = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+
+    def create_metrics(self):
+        self.metrics = ['accuracy']

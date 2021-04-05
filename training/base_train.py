@@ -19,6 +19,7 @@ class BaseTrain:
         """
         self.dataset_class = dataset_class
         self.callbacks = []
+        self.metrics = []
 
         # Read data definition
         self.data_definition = ModelDataDefinition.from_file()
@@ -28,6 +29,7 @@ class BaseTrain:
         self.create_datasets()
         self.model = self.create_model()
         self.create_losses()
+        self.create_metrics()
         self.prepare_checkpoints()
         self.other_callbacks()
         self.compile()
@@ -75,8 +77,7 @@ class BaseTrain:
         print()
 
     def create_model(self) -> tf.keras.Model:
-        # To be defined in inherited classes
-        return None
+        raise NotImplemented("To be implemented by inherited classes")
 
     def create_losses(self):
         raise NotImplemented("To be implemented by inherited classes")
@@ -112,11 +113,14 @@ class BaseTrain:
             # Log each x epochs, to check peformance
             self.callbacks.append( LogCallback(self.data_definition) )
 
+    def create_metrics(self):
+        raise NotImplemented("To be implemented by inherited classes")
+
     def compile(self):
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=self.data_definition.learning_rate),
             loss = self.losses,
-            metrics=['accuracy']
+            metrics=self.metrics
         )
 
     def print_summary(self):
