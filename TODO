@@ -1,10 +1,5 @@
 TODO:
 - Dataset IS BAD: Context columns object type and part type have no value when token is not trainable...
-- Accuracy is wrong: Computes accuracy for padding elements (should be ignored)
-  Also, accuracy for non trainable should be ignored?
-- TEST GPT predictor predictions
-- GPT: Test prediction after train and after export gives same outputs...
-- Mask loss for padded sequences (gpt)
 - Implement perplexity?
 - Allow to test performance from untrained model
 - Upgrade to tf 2.4: I cannot get it work, CUDA 11 fails..., keep 2.3
