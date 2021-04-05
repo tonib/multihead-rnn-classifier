@@ -64,7 +64,7 @@ if __name__ == '__main__':
     all_data = DataDirectory.read_all(model_definition.data_definition)
 
     # True -> Test dataset performance, False -> Print ds values
-    TEST_PERFORMANCE = True
+    TEST_PERFORMANCE = False
 
     # Create dataset for this model type
     print("Dataset type:", model_definition.dataset_class)

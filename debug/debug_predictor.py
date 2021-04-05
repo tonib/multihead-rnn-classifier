@@ -10,11 +10,6 @@ from time import time
 import json
 import tensorflow as tf
 
-model_definition = ModelDefinition()
-data_definition = model_definition.data_definition
-predictor = model_definition.predictor_class(data_definition)
-
-
 def debug_preprocessing(input):
     # Convert input python values to tensors
     for key in input:
@@ -33,7 +28,7 @@ def debug_gpt_preprocessing():
             input[col_name] = range(length+1)
         debug_preprocessing( input )
 
-def pretty_prediction(prediction):
+def pretty_prediction(prediction, data_definition):
     for col_name in prediction:
         # Get top predictions:
         probabilities = prediction[col_name]["probabilities"]
@@ -43,7 +38,7 @@ def pretty_prediction(prediction):
         n_top_indices = 5
         if len(top_indices) > n_top_indices:
             top_indices = top_indices[:n_top_indices]
-        print(col_name, ":", str( { data_definition.column_definitions[col_name].labels[idx] : probabilities[idx] for idx in top_indices } ) )
+        print(col_name, ":", str( { "(" + str(idx) + ") " + data_definition.column_definitions[col_name].labels[idx] : probabilities[idx] for idx in top_indices } ) )
 
 def debug_gpt_prediction():
     print("Empty events from workpanel")
@@ -54,7 +49,7 @@ def debug_gpt_prediction():
         "objectType": [4], "partType": [0], "textHash0": [], "textHash1": [], "textHash2": [], "textHash3": [], "wordType": []
     }
     prediction = predictor.predict(input)
-    pretty_prediction(prediction)
+    pretty_prediction(prediction, data_definition)
     print()
 
     print("Empty procedure part from procedure")
@@ -66,21 +61,8 @@ def debug_gpt_prediction():
     }
     #debug_preprocessing(input)
     prediction = predictor.predict(input)
-    pretty_prediction(prediction)
+    pretty_prediction(prediction, data_definition)
     print()
-
-    # Keys order change is OK. TODO: Delete this
-    # print("Empty procedure part from procedure")
-    # input = {
-    #     "wordType": [], "keywordIdx": [], "kbObjectTypeIdx": [], "dataTypeIdx": [], "dataTypeExtTypeHash": [], "isCollection": [], 
-    #     "lengthBucket": [], "decimalsBucket": [], "textHash0": [], "textHash1": [], "textHash2": [], "textHash3": [], "controlType": [], 
-    #     "ctxParmType": [0], "ctxParmExtTypeHash": [0], "ctxParmLength": [18], "ctxParmDecimals": [10], "ctxParmCollection": [2], 
-    #     "ctxParmAccess": [0], "ctxIsVariable": [0], "objectType": [2], "partType": [2]
-    # }
-    # #debug_preprocessing(input)
-    # prediction = predictor.predict(input)
-    # pretty_prediction(prediction)
-    # print()
 
 def debug_rnn_prediction():
     print("Empty events from workpanel")
@@ -91,7 +73,7 @@ def debug_rnn_prediction():
         "objectType": 4, "partType": 0, "textHash0": [], "textHash1": [], "textHash2": [], "textHash3": [], "wordType": []
     }
     prediction = predictor.predict(input)
-    pretty_prediction(prediction)
+    pretty_prediction(prediction, data_definition)
     print()
 
     print("Empty procedure part from procedure")
@@ -103,10 +85,15 @@ def debug_rnn_prediction():
     }
     #debug_preprocessing(input)
     prediction = predictor.predict(input)
-    pretty_prediction(prediction)
+    pretty_prediction(prediction, data_definition)
     print()
 
 if __name__ == '__main__':
+
+    model_definition = ModelDefinition()
+    data_definition = model_definition.data_definition
+    predictor = model_definition.predictor_class(data_definition)
+
     # Debug empty element preprocessing
     # debug_preprocessing( predictor.get_empty_element() )
 

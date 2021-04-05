@@ -1,15 +1,9 @@
-from model_data_definition import ModelDataDefinition
-from dataset.transformer_dataset import TransformerDataset
-from data_directory import DataDirectory
-import json
 import tensorflow as tf
-from model.mingpt.model_adapted import GPT
 
-# Read data definition
-data_definition = ModelDataDefinition.from_file()
+m = tf.keras.metrics.SparseCategoricalAccuracy()
+#m.update_state([[2], [1]], [[0.1, 0.6, 0.3], [0.05, 0.95, 0]])
+#m.update_state( [1, 1], [[0.1, 0.6, 0.3], [0.05, 0.95, 0]])
+m.update_state( 0, [0.1, 0.6, 0.3])
 
-exported_model_dir = data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
-print("Loading model from " + exported_model_dir)
-model: tf.keras.Model = tf.keras.models.load_model( exported_model_dir, 
-    custom_objects={"GPT": GPT},
-    compile=False )
+print( m.result().numpy() )
+

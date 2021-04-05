@@ -9,7 +9,7 @@ from .csv_files_dataset import CsvFilesDataset
 
 class TransformerDataset(CsvFilesDataset):
 
-    # Padding value
+    # Padding value (input values)
     PADDING_VALUE = 0
 
     # Beging of string (beging of file, really) value
@@ -17,6 +17,9 @@ class TransformerDataset(CsvFilesDataset):
 
     # Number of "keywords" (PADDING_VALUE,...)
     N_KEYWORD_VALUES = 2
+
+    # Padding value (output values)
+    OUTPUT_PADDING_VALUE = -1
 
     def __init__(self, csv_files: DataDirectory, data_definition: ModelDataDefinition, shuffle: bool, debug_columns: bool=False):
         self.window_length = data_definition.sequence_length + 1
@@ -63,14 +66,18 @@ class TransformerDataset(CsvFilesDataset):
         # Here we do NOT filter untrainable sequences (TODO: Mask loss for these untrainable?)
         return windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
         
-    def pad_sequence(self, inputs):
+    def pad_sequence(self, inputs, pad_value):
         inputs_length = tf.shape(inputs)[0]
         seq_len_diff = self._data_definition.sequence_length - inputs_length
         tf.debugging.assert_non_negative(seq_len_diff, "seq_len_diff should be >= 0")
         if seq_len_diff > 0:
             # Too short: Pad right up to sequence length
-            zeros = tf.zeros( [seq_len_diff] , dtype=inputs.dtype )
-            inputs = tf.concat( [inputs, zeros], axis=0 )
+            if pad_value == 0:
+                # Use zeros instead repeat, because if debug_columns = True, here can come strings (file name), and "zero" will be an empty string
+                padding = tf.zeros( [seq_len_diff] , dtype=inputs.dtype )
+            else:
+                padding = tf.repeat(pad_value, seq_len_diff)
+            inputs = tf.concat( [inputs, padding], axis=0 )
         return inputs
 
     def process_full_window(self, window):
@@ -88,7 +95,7 @@ class TransformerDataset(CsvFilesDataset):
             inputs = inputs[:-1]
             
             # Pad sequence, if needed. It will be if file length is shorter than self._data_definition.sequence_length
-            input_dict[key] = self.pad_sequence(inputs)
+            input_dict[key] = self.pad_sequence(inputs, TransformerDataset.PADDING_VALUE)
 
         for key in self.context_columns:
 
@@ -101,11 +108,11 @@ class TransformerDataset(CsvFilesDataset):
             if key != CsvFilesDataset.FILE_KEY and key != CsvFilesDataset.ROW_KEY:
                 input += TransformerDataset.N_KEYWORD_VALUES
             
-            input_dict[key] = self.pad_sequence( input )
+            input_dict[key] = self.pad_sequence(input, TransformerDataset.PADDING_VALUE)
 
         # Output
         output_dict = {}
         for key in self._data_definition.output_columns:
-            output_dict[key] = self.pad_sequence( window[key][1:] )
+            output_dict[key] = self.pad_sequence( window[key][1:], TransformerDataset.OUTPUT_PADDING_VALUE)
 
         return (input_dict, output_dict)

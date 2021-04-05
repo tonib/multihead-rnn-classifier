@@ -1,4 +1,7 @@
 TODO:
+- Dataset IS BAD: Context columns object type and part type have no value when token is not trainable...
+- Accuracy is wrong: Computes accuracy for padding elements (should be ignored)
+  Also, accuracy for non trainable should be ignored?
 - TEST GPT predictor predictions
 - GPT: Test prediction after train and after export gives same outputs...
 - Mask loss for padded sequences (gpt)
