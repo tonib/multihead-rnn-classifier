@@ -1,6 +1,5 @@
 import configure_tf_log # Must be FIRST import
-from model_data_definition import ModelDataDefinition
-from predictor import Predictor
+from model_definition import ModelDefinition
 import sys
 import json
 import traceback
@@ -8,12 +7,12 @@ import traceback
 # TODO: Define buffer size for std output ???
 
 # Read data definition
-data_definition = ModelDataDefinition.from_file()
+model_definition = ModelDefinition()
 
 print("# Reading exported model", flush=True)
-predictor = Predictor(data_definition)
+predictor = model_definition.predictor_class(model_definition.data_definition)
 
-print("# Sample:", json.dumps( data_definition.get_empty_element() ) , flush=True)
+print("# Sample:", json.dumps( predictor.get_empty_element() ) , flush=True)
 
 # This text will be used as flag to start sending requests
 print("READY TO SERVE", flush=True)
