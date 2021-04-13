@@ -1,12 +1,17 @@
 TODO:
 - GPT Prediction preprocessing: Include BOS only if the sequence is empty ??? PROBABILY NOT
+- Change RNN to consume context on each timestep
+- Change GPT to Keras functional?
 - Model server, use ModelDefinition
+- Model server: Run an initial prediction before notify the server is ready: First execution takes a lot ot fime (seconds)
 - Add check to be sure context columns are not in output (it will not work)
-- Check if there is a way to use model in C#. If not, check Tensorflow lite?. Memory consumption and setup time is really high with TF2.
-  About this, to avoid rewrite preprocessing in C#, export the prediction model?
+- Production:
+    - Check if there is a way to use model in C#. If not, check Tensorflow lite?. Memory consumption and setup time is really high with TF2.
+      About this, to avoid rewrite preprocessing in C#, export the prediction model?
+    - ML.NET ?
 - Dataset IS BAD: Context columns object type and part type have no value when token is not trainable...
 - Implement perplexity?
-- Allow to test performance from untrained model
+- Allow to test prediction performance from untrained model
 - Upgrade to tf 2.4: I cannot get it work, CUDA 11 fails..., keep 2.3
 - Remove TF other files (eval.py?)
 - If config is "SequenceColumns":["wordType","keywordIdx"], "ContextColumns":["ctxParmType"], it raises exception:
