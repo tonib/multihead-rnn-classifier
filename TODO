@@ -1,4 +1,6 @@
 TODO:
+- "LogEachEpochs" is WRONG. Should be "LogEachBatches"
+- Export model with preprocessing?
 - GPT Prediction preprocessing: Include BOS only if the sequence is empty ??? PROBABILY NOT
 - Change RNN to consume context on each timestep
 - Change GPT to Keras functional?
@@ -9,6 +11,7 @@ TODO:
     - Check if there is a way to use model in C#. If not, check Tensorflow lite?. Memory consumption and setup time is really high with TF2.
       About this, to avoid rewrite preprocessing in C#, export the prediction model?
     - ML.NET ?
+    - gpt: Unsupported op tf.linalg.band_part (see https://github.com/tensorflow/tensorflow/issues/27618 for a workaround)
 - Dataset IS BAD: Context columns object type and part type have no value when token is not trainable...
 - Implement perplexity?
 - Allow to test prediction performance from untrained model

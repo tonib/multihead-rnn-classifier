@@ -22,7 +22,7 @@ class ModelDataDefinition:
     # Tensorboard logs
     TBOARD_LOGS_DIR = 'model/tensorboard_logs'
 
-    def load(self):
+    def _load(self):
         """ Load data from data_info.json file """
         self._read_cmd_line_arguments()
 
@@ -100,7 +100,7 @@ class ModelDataDefinition:
     def from_file() -> ModelDataDefinition:
         """ Create instance and load from file """
         data_definition = ModelDataDefinition()
-        data_definition.load()
+        data_definition._load()
         return data_definition
 
     @staticmethod

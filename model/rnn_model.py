@@ -11,7 +11,7 @@ from .masked_one_hot_encoding import MaskedOneHotEncoding
 def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequence: bool, model_inputs: dict):
 
     column_info: ColumnInfo  = data_definition.column_definitions[column_name]
-    shape = [None] if is_sequence else ()
+    shape = [data_definition.sequence_length] if is_sequence else ()
     input = tf.keras.Input(name=column_name, dtype=tf.int32, shape=shape)
 
     n_labels = len(column_info.labels) + RnnDataset.N_KEYWORD_VALUES

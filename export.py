@@ -25,6 +25,7 @@ model = model_definition.create_model_function(model_definition.data_definition)
 model.load_weights(export_cp_path)
 
 # TODO: Fails with GPT model (missing signature?)
+# TODO: It seems because input shapes are not specified. Try model.get_concrete_function (https://github.com/tensorflow/tensorflow/issues/40344)
 # See https://stackoverflow.com/questions/51806852/cant-save-custom-subclassed-model
 # From previous, see: https://colab.research.google.com/drive/172D4jishSgE3N7AO6U2OKAA_0wNnrMOq#scrollTo=4Onp-8rGyeQG
 # The only way to build a subclassed keras model I have found is to run predictions. So, here is:

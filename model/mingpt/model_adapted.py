@@ -268,8 +268,9 @@ class GPT(tf.keras.Model):
         # TODO: Check WTF does this
         position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [t, self.n_embd]),
                                              axis=0)  # each position maps to a (learnable) vector
-                                             
+        
         x = self.drop(token_embeddings + position_embeddings, training=training)
+        # TODO: Could this be a constant?   
         mask = 1 - tf.linalg.band_part(tf.ones((t, t)), -1, 0)
         for i in range(self.n_layer):
             x = self.blocks[i](x, mask, training=training)
