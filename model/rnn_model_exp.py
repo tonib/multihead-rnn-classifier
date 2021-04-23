@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Tuple
-from dataset.rnn_dataset import RnnDataset
+from dataset.rnn_dataset_exp import RnnDatasetExp
 if TYPE_CHECKING:
     from column_info import ColumnInfo
     from ..model_data_definition import ModelDataDefinition
@@ -8,13 +8,12 @@ if TYPE_CHECKING:
 import tensorflow as tf
 from .masked_one_hot_encoding import MaskedOneHotEncoding
 
-def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequence: bool, model_inputs: dict):
+def _get_input(data_definition: ModelDataDefinition, column_name: str, model_inputs: dict):
 
     column_info: ColumnInfo  = data_definition.column_definitions[column_name]
-    shape = [data_definition.sequence_length] if is_sequence else ()
-    input = tf.keras.Input(name=column_name, dtype=tf.int32, shape=shape)
+    input = tf.keras.Input(name=column_name, dtype=tf.int32, shape=[data_definition.sequence_length])
 
-    n_labels = len(column_info.labels) + RnnDataset.N_KEYWORD_VALUES
+    n_labels = len(column_info.labels) + RnnDatasetExp.N_KEYWORD_VALUES
 
     # Encode input, add masking
     if column_info.embeddable_dimension > 0:
@@ -28,21 +27,23 @@ def _get_input(data_definition: ModelDataDefinition, column_name: str, is_sequen
 
     return processed_input
 
-def create_rnn_model(data_definition: ModelDataDefinition):
+def create_rnn_model_exp(data_definition: ModelDataDefinition):
 
     # Define sequence inputs
     model_inputs = {}
-    sequence_inputs = [_get_input(data_definition, column_name, True, model_inputs) for column_name in data_definition.sequence_columns]
-    context_inputs = [_get_input(data_definition, column_name, False, model_inputs) for column_name in data_definition.context_columns]
-
-    # TODO: Use ModelDataDefinition.RnnEmbeddingSize to make a single "embedding" from input timesteps here?
-
-    # Merge context to each sequence timestep
-    context_inputs = tf.keras.layers.Concatenate(name="concatenated_context")( context_inputs )
-    context_inputs = tf.keras.layers.RepeatVector(data_definition.sequence_length, name="repeated_context")(context_inputs)
+    sequences = []
+    for column_name in ( data_definition.sequence_columns + data_definition.context_columns ):
+        sequences.append( _get_input(data_definition, column_name, model_inputs) )
     
-    # Merge "sequenced" context and sequences on each timestep (sequence_inputs: array and context_inputs: Tensor)
-    input = tf.keras.layers.Concatenate()( sequence_inputs + [ context_inputs ] )
+    # Merge all inputs for each timestep
+    if len(sequences) > 1:
+        input = tf.keras.layers.Concatenate()( sequences )
+    else:
+        input = sequences[0]
+    
+    # Optional "embedding" to reduce model size:
+    if data_definition.rnn_embedding_size > 0:
+        input = tf.keras.layers.Dense(data_definition.rnn_embedding_size, name="input_embedding")(input)
 
     if data_definition.cell_type == "gru":
         model = tf.keras.layers.GRU(data_definition.n_network_elements, name="rnn")(input)

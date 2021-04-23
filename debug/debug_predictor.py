@@ -97,7 +97,7 @@ if __name__ == '__main__':
     # Debug empty element preprocessing
     # debug_preprocessing( predictor.get_empty_element() )
 
-    if data_definition.model_type == "gpt":
+    if data_definition.model_type == "gpt" or data_definition.model_type == "exp":
         debug_gpt_prediction()
     else:
         debug_rnn_prediction()

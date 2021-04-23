@@ -41,16 +41,19 @@ class ModelDataDefinition:
             self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
             self.sequence_length = int( ModelDataDefinition._read_setting( json_metadata , 'SequenceLength' , '128' ) )
             self.trainable_column = ModelDataDefinition._read_setting( json_metadata , 'TrainableColumn' , None )
-            self.n_network_elements = int( ModelDataDefinition._read_setting( json_metadata , 'NNetworkElements' , '64' ) )
             self.learning_rate = float( ModelDataDefinition._read_setting( json_metadata , 'LearningRate' , '0.001' ) )
-            self.dropout = float( ModelDataDefinition._read_setting( json_metadata , 'Dropout' , '0' ) )
-            self.cell_type = ModelDataDefinition._read_setting( json_metadata , 'CellType' , 'gru' )
             self.log_each_epochs = int( ModelDataDefinition._read_setting( json_metadata , 'LogEachEpochs' , '0' ) )
             self.cache_dataset = bool( ModelDataDefinition._read_setting( json_metadata , 'DatasetCache' , '' ) ) # Yes, bool('') == False
             self.batch_size = int( ModelDataDefinition._read_setting( json_metadata , 'BatchSize' , '64' ) )
             self.max_batches_per_epoch = int( ModelDataDefinition._read_setting( json_metadata , 'MaxBatchesPerEpoch' , '0' ) )
+
             self.model_type = ModelDataDefinition._read_setting( json_metadata , 'ModelType' , 'gpt' )
-            
+
+            self.cell_type = ModelDataDefinition._read_setting( json_metadata , 'CellType' , 'gru' )
+            self.dropout = float( ModelDataDefinition._read_setting( json_metadata , 'Dropout' , '0' ) )
+            self.n_network_elements = int( ModelDataDefinition._read_setting( json_metadata , 'NNetworkElements' , '256' ) )
+            self.rnn_embedding_size = int( ModelDataDefinition._read_setting( json_metadata , 'RnnEmbeddingSize' , '0' ) )
+
             self.gpt_embedding_dropout = float( ModelDataDefinition._read_setting( json_metadata , 'GptEmbeddingDropout' , '0.1' ) )
             self.gpt_residual_dropout = float( ModelDataDefinition._read_setting( json_metadata , 'GptResidualDropout' , '0.1' ) )
             self.gpt_attention_dropout = float( ModelDataDefinition._read_setting( json_metadata , 'GptAttentionDropout' , '0.1' ) )

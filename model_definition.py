@@ -11,6 +11,11 @@ from dataset.rnn_dataset import RnnDataset
 from model.rnn_model import create_rnn_model
 from predict.rnn_predictor import RnnPredictor
 
+from training.rnn_train_exp import RnnTrainExp
+from dataset.rnn_dataset_exp import RnnDatasetExp
+from model.rnn_model_exp import create_rnn_model_exp
+from predict.rnn_predictor_exp import RnnPredictorExp
+
 class ModelDefinition:
     """
     Defines classes and functions used by each model type
@@ -31,6 +36,12 @@ class ModelDefinition:
             self.dataset_class = RnnDataset
             self.create_model_function = create_rnn_model
             self.predictor_class = RnnPredictor
+
+        elif self.data_definition.model_type == "exp":
+            self.trainer_class = RnnTrainExp
+            self.dataset_class = RnnDatasetExp
+            self.create_model_function = create_rnn_model_exp
+            self.predictor_class = RnnPredictorExp
 
         else:
             raise Exception("Unknown model type " + self.data_definition.model_type)
