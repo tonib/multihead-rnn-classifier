@@ -17,10 +17,10 @@ class LogCallback(tf.keras.callbacks.Callback):
         self.last_time = self.start_time
     
     def print_batch(self, train: bool, batch, logs=None):
-        if batch > 0 and batch % self.data_definition.log_each_epochs == 0:
+        if batch > 0 and batch % self.data_definition.log_each_batches == 0:
             current = time()
             elapsed = current - self.last_time
-            rate = ( self.data_definition.log_each_epochs / elapsed ) if elapsed > 0 else 0
+            rate = ( self.data_definition.log_each_batches / elapsed ) if elapsed > 0 else 0
             total_elapsed = current - self.start_time
             if train:
                 print("\n* Train - batch {} / {:.2f} s / {:.2f} batch/s: {}\n".format(batch, total_elapsed, rate, logs))

@@ -109,8 +109,8 @@ class BaseTrain:
         # Tensorboard callback, each epoch
         self.callbacks.append( tf.keras.callbacks.TensorBoard(log_dir=self.data_definition.get_data_dir_path( ModelDataDefinition.TBOARD_LOGS_DIR )) )
 
-        if self.data_definition.log_each_epochs > 0:
-            # Log each x epochs, to check peformance
+        if self.data_definition.log_each_batches > 0:
+            # Log each x batches, to check peformance
             self.callbacks.append( LogCallback(self.data_definition) )
 
     def create_metrics(self):

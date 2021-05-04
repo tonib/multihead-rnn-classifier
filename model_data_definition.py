@@ -42,7 +42,7 @@ class ModelDataDefinition:
             self.sequence_length = int( ModelDataDefinition._read_setting( json_metadata , 'SequenceLength' , '128' ) )
             self.trainable_column = ModelDataDefinition._read_setting( json_metadata , 'TrainableColumn' , None )
             self.learning_rate = float( ModelDataDefinition._read_setting( json_metadata , 'LearningRate' , '0.001' ) )
-            self.log_each_epochs = int( ModelDataDefinition._read_setting( json_metadata , 'LogEachEpochs' , '0' ) )
+            self.log_each_batches = int( ModelDataDefinition._read_setting( json_metadata , 'LogEachBatches' , '0' ) )
             self.cache_dataset = bool( ModelDataDefinition._read_setting( json_metadata , 'DatasetCache' , '' ) ) # Yes, bool('') == False
             self.batch_size = int( ModelDataDefinition._read_setting( json_metadata , 'BatchSize' , '64' ) )
             self.max_batches_per_epoch = int( ModelDataDefinition._read_setting( json_metadata , 'MaxBatchesPerEpoch' , '0' ) )
@@ -191,7 +191,7 @@ class ModelDataDefinition:
         print("MaxEpochs:", self.max_epochs)
         print("SequenceLength:", self.sequence_length)
         print("TrainableColumn:", self.trainable_column)
-        print("LogEachEpochs:", self.log_each_epochs)
+        print("LogEachBatches:", self.log_each_batches)
         print("DatasetCache:", self.cache_dataset)
         print("BatchSize:", self.batch_size)
         print("MaxBatchesPerEpoch:", self.max_batches_per_epoch)
