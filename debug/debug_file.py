@@ -1,6 +1,5 @@
 
 import configure_tf_log # Must be FIRST import
-from predict.rnn_predictor import RnnPredictor
 from model_definition import ModelDefinition
 from debug_ds import pretty
 from time import time

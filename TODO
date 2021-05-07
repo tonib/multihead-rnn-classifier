@@ -1,5 +1,4 @@
 TODO:
-- "LogEachEpochs" is WRONG. Should be "LogEachBatches"
 - Export model with preprocessing?
 - GPT Prediction preprocessing: Include BOS only if the sequence is empty ??? PROBABILY NOT
 - Change RNN to consume context on each timestep
