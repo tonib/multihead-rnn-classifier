@@ -33,7 +33,7 @@ class BasePredictor:
             input[key] = tf.constant(input[key], dtype=tf.int32)
 
         # Call the TF graph prediction function
-        output = self._predict_tf_function(input)
+        output = self.predict_tf_function(input)
 
         # Convert tensors to python values
         # The "probabilities" property is needed to keep backward compatibility with v1

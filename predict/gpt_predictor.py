@@ -20,7 +20,7 @@ class GptPredictor(BasePredictor):
         signature = {}
         for column_name in self.all_column_names:
             signature[column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32)
-        self._predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
+        self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
     def pad_sequence(self, inputs):
         inputs_length = tf.shape(inputs)[0]

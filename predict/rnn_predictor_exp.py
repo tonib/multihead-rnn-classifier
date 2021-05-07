@@ -19,7 +19,7 @@ class RnnPredictorExp(BasePredictor):
         signature = {}
         for seq_column_name in ( self.data_definition.sequence_columns + self.data_definition.context_columns ):
             signature[seq_column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32)
-        self._predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
+        self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
     def _preprocess_input(self, input: dict):
         postprocessed = {}
