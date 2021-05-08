@@ -39,5 +39,6 @@ for input, output in build_model_ds:
 # Save full model
 print("Saving model...")
 exported_model_dir = model_definition.data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
-model.save( exported_model_dir, include_optimizer=False )
+# model.save( exported_model_dir, include_optimizer=False )
+tf.saved_model.save(model, exported_model_dir)
 print("Model exported to " + exported_model_dir)

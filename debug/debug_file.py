@@ -18,6 +18,8 @@ ds = model_definition.dataset_class(data_dir, data_definition, shuffle=False, de
 ds.dataset = ds.dataset.batch(1).take(1)
 #ds.dataset = ds.dataset.take(3)
 
+# TODO: I think this was done to debug GPT only. Make it work with rnn too?
+
 for row in ds.dataset:
     input = row[0]
     expected_output = row[1]

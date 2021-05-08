@@ -4,7 +4,7 @@ from model.masked_one_hot_encoding import MaskedOneHotEncoding
 import tensorflow as tf
 import json
 
-class BasePredictor:
+class BasePredictor(tf.Module):
 
     def __init__(self, data_definition: ModelDataDefinition):
         self.data_definition = data_definition
@@ -20,12 +20,12 @@ class BasePredictor:
         # W tensorflow/core/common_runtime/graph_constructor.cc:808] Node 'cond/while' has 13 outputs but the _output_shapes attribute specifies shapes for 44 outputs. Output shapes may be inaccurate
         exported_model_dir = self.data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
         print("Loading model from " + exported_model_dir)
-        self.model: tf.keras.Model = tf.keras.models.load_model( exported_model_dir, 
-            custom_objects=custom_objects,
-            compile=False )
+        # self.model: tf.keras.Model = tf.keras.models.load_model( exported_model_dir, 
+        #     custom_objects=custom_objects,
+        #     compile=False )
         
-        # This also works (it not loads a keras model, just the graph)
-        #self.model = tf.saved_model.load(exported_model_dir)
+        # This also works (it not loads a keras model, just the graph) 
+        self.model = tf.saved_model.load(exported_model_dir)
 
     def predict(self, input: dict, debug=False) -> dict:
         # Convert input python values to tensors
