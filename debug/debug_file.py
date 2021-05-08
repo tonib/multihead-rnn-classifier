@@ -1,6 +1,7 @@
 
 import configure_tf_log # Must be FIRST import
 from model_definition import ModelDefinition
+from predict.predictor import Predictor
 from debug_ds import pretty
 from time import time
 import json
@@ -10,7 +11,7 @@ from debug.debug_predictor import pretty_prediction
 
 model_definition = ModelDefinition()
 data_definition = model_definition.data_definition
-predictor = model_definition.predictor_class(data_definition)
+predictor = Predictor(model_definition)
 
 data_dir = DataDirectory(["data/PAlcCanFac.csv"])
 ds = model_definition.dataset_class(data_dir, data_definition, shuffle=False, debug_columns=False)

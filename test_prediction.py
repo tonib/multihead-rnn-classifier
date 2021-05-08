@@ -1,5 +1,6 @@
 import configure_tf_log # Must be FIRST import
 from model_definition import ModelDefinition
+from predict.predictor import Predictor
 from time import time
 import json
 
@@ -7,7 +8,7 @@ import json
 model_definition = ModelDefinition()
 
 print("Reading exported model")
-predictor = model_definition.predictor_class(model_definition.data_definition)
+predictor = Predictor(model_definition)
 
 # Sample input: First file word (sequence with all pad elements)
 input = predictor.get_empty_element()

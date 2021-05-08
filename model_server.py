@@ -1,5 +1,6 @@
 import configure_tf_log # Must be FIRST import
 from model_definition import ModelDefinition
+from predict.predictor import Predictor
 import sys
 import json
 import traceback
@@ -10,7 +11,7 @@ import traceback
 model_definition = ModelDefinition()
 
 print("# Reading exported model", flush=True)
-predictor = model_definition.predictor_class(model_definition.data_definition)
+predictor = Predictor(model_definition)
 
 print("# Sample:", json.dumps( predictor.get_empty_element() ) , flush=True)
 

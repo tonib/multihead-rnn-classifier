@@ -6,10 +6,11 @@ import tensorflow as tf
 
 class RnnPredictorExp(BasePredictor):
 
-    def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model = None):
-        super().__init__(data_definition)
+    def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
+        super().__init__(data_definition, model)
 
-        self._load_model({'MaskedOneHotEncoding': MaskedOneHotEncoding}, model)
+        # self._load_model({'MaskedOneHotEncoding': MaskedOneHotEncoding}, model)
+
         self.all_column_names = self.data_definition.sequence_columns + self.data_definition.context_columns
 
         # self._predict_tf CANNOT be decorated with tf.function, because inputs can have 
@@ -81,11 +82,12 @@ class RnnPredictorExp(BasePredictor):
             output[key] = tf.nn.softmax(batched_logits[key][0])
         return output
 
-    def get_empty_element(self) :
+    @staticmethod
+    def get_empty_element(data_definition: ModelDataDefinition):
         """ Input entry with context all zeros """
         element = {}
-        for column_name in self.data_definition.sequence_columns:
+        for column_name in data_definition.sequence_columns:
             element[column_name] = []
-        for column_name in self.data_definition.context_columns:
+        for column_name in data_definition.context_columns:
             element[column_name] = [0]
         return element
