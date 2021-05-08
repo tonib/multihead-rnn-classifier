@@ -4,6 +4,7 @@
 
 import configure_tf_log # Must be FIRST import
 from model_definition import ModelDefinition
+from predict.predictor import Predictor
 from debug_ds import pretty
 from time import time
 import json
@@ -91,7 +92,7 @@ if __name__ == '__main__':
 
     model_definition = ModelDefinition()
     data_definition = model_definition.data_definition
-    predictor = model_definition.predictor_class(data_definition)
+    predictor = Predictor(model_definition)
 
     # Debug empty element preprocessing
     # debug_preprocessing( predictor.get_empty_element() )

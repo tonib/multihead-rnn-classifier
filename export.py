@@ -37,8 +37,15 @@ for input, output in build_model_ds:
     model(input)
 
 # Save full model
+# print("Saving model...")
+# exported_model_dir = model_definition.data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
+# # model.save( exported_model_dir, include_optimizer=False )
+# tf.saved_model.save(model, exported_model_dir)
+# print("Model exported to " + exported_model_dir)
+
+# Save the TF prediction module with input preprocessing
 print("Saving model...")
 exported_model_dir = model_definition.data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
-# model.save( exported_model_dir, include_optimizer=False )
-tf.saved_model.save(model, exported_model_dir)
-print("Model exported to " + exported_model_dir)
+prediction_module = model_definition.predictor_class(model_definition.data_definition, model)
+tf.saved_model.save(prediction_module, exported_model_dir)
+print("Model, with preprocessing, exported to " + exported_model_dir)

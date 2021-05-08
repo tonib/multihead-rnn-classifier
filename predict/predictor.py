@@ -9,29 +9,16 @@ class Predictor:
     """ To make predictions in Python """
     
     def __init__(self, model_definition: ModelDefinition, model: tf.keras.Model = None):
-        self.model_definition = model_definition 
-        self._load_model(model)
+        self.model_definition = model_definition
 
-        # Create the TF prediction module
-        self.prediction_module = model_definition.predictor_class(self.model_definition.data_definition, self.model)
-
-    def _load_model(self, model: tf.keras.Model = None):
         if model != None:
-            self.model = model
-            return
-            
-        # Load exported model
-        # TODO: What does the compile parameter in load_model (default=True) ??? If this includes add an optimizer, it should be false!
-        # TODO: This print warnings, see why..
-        # W tensorflow/core/common_runtime/graph_constructor.cc:808] Node 'cond/while' has 13 outputs but the _output_shapes attribute specifies shapes for 44 outputs. Output shapes may be inaccurate
-        exported_model_dir = self.model_definition.data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
-        print("Loading model from " + exported_model_dir)
-        # self.model: tf.keras.Model = tf.keras.models.load_model( exported_model_dir, 
-        #     custom_objects=custom_objects,
-        #     compile=False )
-        
-        # This also works (it not loads a keras model, just the graph) 
-        self.model = tf.saved_model.load(exported_model_dir)
+            # Create the TF prediction module
+            self.prediction_module = model_definition.predictor_class(self.model_definition.data_definition, model)
+        else:
+            # Load it from the export directory
+            exported_model_dir = self.model_definition.data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
+            print("Loading prediction module from " + exported_model_dir)
+            self.prediction_module = tf.saved_model.load(exported_model_dir)
 
     def predict(self, input: dict, debug=False) -> dict:
         # Convert input python values to tensors
