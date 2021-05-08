@@ -1,16 +1,12 @@
 import tensorflow as tf
 
+t = tf.constant(3)
 
-x = tf.constant( [ 1 , 2 , 3 , 4 ] )
-trainable = tf.constant( [ 0 , 0 , 0 , 0 ] )
+mask = 1 - tf.linalg.band_part(tf.ones((t, t)), -1, 0)
+print(mask)
 
-non_trainable_indices = trainable
-non_trainable_indices = tf.equal( non_trainable_indices , 0 )
-non_trainable_indices = tf.where( non_trainable_indices ) # Ex. [ [0] , [2] ]
-
-number_non_trainable = tf.shape(non_trainable_indices)[0]
-non_trainable_values = tf.repeat( -1 , number_non_trainable )
-
-x = tf.tensor_scatter_nd_update(x, non_trainable_indices, non_trainable_values)
-
-print( x )
+a = tf.range(t)
+mask = a[:,None]<a[None,:]# true in upper_triangular
+mask = tf.cast(mask, tf.float32)
+#mask = tf.logical_and(mask, mask1)
+print(mask)

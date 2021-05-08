@@ -213,10 +213,18 @@ class GPT(tf.keras.Model):
             self.heads[column_name] = tf.keras.layers.Dense( len(column_info.labels), use_bias=False,
                                                              kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02) )
 
+        self.causal_mask = self.create_causal_mask(data_definition.sequence_length)
+
         self.output_columns = data_definition.output_columns
         self.block_size = data_definition.sequence_length
         self.n_layer = data_definition.gpt_n_layers
         
+    def create_causal_mask(self, sequence_length: int) -> tf.Tensor:
+        """ Returns the causal mask to use in MultiHeadAttention to avoid to feed future timesteps in current timestep """
+        # Mask values: 1 == do not feed this position, 0 == feed this position
+        # Ex: [[0. 1. 1.], [0. 0. 1.], [0. 0. 0.]]
+        return 1 - tf.linalg.band_part(tf.ones((sequence_length, sequence_length)), -1, 0)
+
     def get_config(self) -> dict:
         return { "data_definition": self.data_definition.to_dict() }
 
@@ -225,7 +233,7 @@ class GPT(tf.keras.Model):
         return GPT( ModelDataDefinition.from_dict( cfg["data_definition"] ) )
 
     def create_preprocessing_layers(self, data_definition: ModelDataDefinition) -> int:
-        # One hot encoding for word each component
+        # One hot encoding for each word component
         self.preprocess_layers = {}
         for column_name in ( data_definition.sequence_columns + data_definition.context_columns ):
             column_info: ColumnInfo = data_definition.column_definitions[column_name]
@@ -263,6 +271,7 @@ class GPT(tf.keras.Model):
         t = tf.shape(token_embeddings)[1]
         #assert t <= self.block_size, "Cannot forward, model block size is exhausted."
 
+        tf.debugging.assert_equal( tf.shape(token_embeddings)[1] , self.block_size , "Wrong sequence length" )
         tf.debugging.assert_equal( tf.shape(token_embeddings)[2] , self.n_embd , "Wrong embedding size" )
 
         # TODO: Check WTF does this
@@ -270,10 +279,14 @@ class GPT(tf.keras.Model):
                                              axis=0)  # each position maps to a (learnable) vector
         
         x = self.drop(token_embeddings + position_embeddings, training=training)
-        # TODO: Could this be a constant?   
-        mask = 1 - tf.linalg.band_part(tf.ones((t, t)), -1, 0)
+
+        # Causal mask: Do not feed future timesteps in current timestep. (1 == do not feed this position, 0 == feed this position)
+        # Ex: [[0. 1. 1.], [0. 0. 1.], [0. 0. 0.]]
+        # TODO: Could this be a constant? 
+        # mask = 1 - tf.linalg.band_part(tf.ones((t, t)), -1, 0)
+
         for i in range(self.n_layer):
-            x = self.blocks[i](x, mask, training=training)
+            x = self.blocks[i](x, self.causal_mask, training=training)
         x = self.ln_f(x)
 
         #logits = self.head(x)

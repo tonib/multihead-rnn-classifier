@@ -19,7 +19,7 @@ class RnnPredictorExp(BasePredictor):
         # So, declare the AutoGraph here, with the right signature:
         signature = {}
         for seq_column_name in ( self.data_definition.sequence_columns + self.data_definition.context_columns ):
-            signature[seq_column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32)
+            signature[seq_column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32, name=seq_column_name)
         self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
     def _preprocess_input(self, input: dict):

@@ -1,10 +1,12 @@
 import tensorflow as tf
+from model_definition import ModelDefinition
 from model_data_definition import ModelDataDefinition
 from dataset.rnn_dataset import RnnDataset
 import numpy as np
 from time import time
 
-data_definition = ModelDataDefinition.from_file()
+model_definition = ModelDefinition()
+data_definition = model_definition.data_definition
 exported_model_dir = data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
 
 path = data_definition.get_data_dir_path( 'model/model.tflite' )
@@ -23,25 +25,32 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-#print(input_details[0])
-#exit()
+# print(len(input_details))
+# print(input_details)
+# exit()
 # print(output_details)
 
 # Inputs
-element = {}
-for column_name in data_definition.sequence_columns:
-    py_input = [RnnDataset.EOS_VALUE] + ([0]*63)
-    element[column_name] = np.array( [py_input], dtype=np.int32)
-    print(column_name, element[column_name])
-for column_name in data_definition.context_columns:
-    element[column_name] = np.array([0], dtype=np.int32)
+element = model_definition.predictor_class.get_empty_element(data_definition)
+for column_name in element:
+    element[column_name] = np.array(element[column_name], dtype=np.int32)
+# print(element)
+# exit()
+
+# element = {}
+# for column_name in data_definition.sequence_columns:
+#     py_input = [RnnDataset.EOS_VALUE] + ([0]*63)
+#     element[column_name] = np.array( [py_input], dtype=np.int32)
+#     print(column_name, element[column_name])
+# for column_name in data_definition.context_columns:
+#     element[column_name] = np.array([0], dtype=np.int32)
 
 def set_values():
     # Set input values
     for input_spec in input_details:
         name = input_spec["name"][ len("serving_default_") : -2 ]
         #print(input_spec)
-        #print(i, name, element[name].shape, element[name])
+        print(name, element[name].shape, element[name], input_spec)
         interpreter.set_tensor(input_spec["index"], element[name])
 
 # for column_name in element:

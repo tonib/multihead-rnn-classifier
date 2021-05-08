@@ -20,7 +20,7 @@ class GptPredictor(BasePredictor):
         # So, declare the AutoGraph here, with the right signature:
         signature = {}
         for column_name in self.all_column_names:
-            signature[column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32)
+            signature[column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32, name=column_name)
         self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
     def pad_sequence(self, inputs):
