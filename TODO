@@ -1,8 +1,8 @@
 TODO:
+- Model server: Add support for tf lite
+- Add TF Lite support for rnn, exp models (currently only gpt is supported)
 - GPT Prediction preprocessing: Include BOS only if the sequence is empty ??? PROBABILY NOT
-- Change RNN to consume context on each timestep
 - Change GPT to Keras functional?
-- Model server, use ModelDefinition
 - Model server: Run an initial prediction before notify the server is ready: First execution takes a lot ot time (seconds)
 - Add check to be sure context columns are not in output (it will not work)
 - Production:

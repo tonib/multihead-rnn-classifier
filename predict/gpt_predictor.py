@@ -5,7 +5,7 @@ from model_data_definition import ModelDataDefinition
 
 import tensorflow as tf
 
-class GptPredictor(BasePredictor):
+class GptPredictorBase(BasePredictor):
 
     def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
         super().__init__(data_definition, model)
@@ -13,15 +13,6 @@ class GptPredictor(BasePredictor):
         # self._load_model({"GPT": GPT}, model)
 
         self.all_column_names = self.data_definition.sequence_columns + self.data_definition.context_columns
-
-        # self._predict_tf CANNOT be decorated with tf.function, because inputs can have 
-        # different shapes (dict with keys specified by self.data_definition, with different sequence lengths). If you decorate it with @tf.function, 
-        # a different graph will be generated for each different sequence length feeded to the funcion. 
-        # So, declare the AutoGraph here, with the right signature:
-        signature = {}
-        for column_name in self.all_column_names:
-            signature[column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32, name=column_name)
-        self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
     def pad_sequence(self, inputs):
         inputs_length = tf.shape(inputs)[0]
@@ -105,7 +96,7 @@ class GptPredictor(BasePredictor):
         output = {}
         for key in batched_logits:
             # Model returned values are logits. Convert to probabilities and unbatch result
-            output[key] = tf.nn.softmax( batched_logits[key][0][idx] )
+            output[key] = tf.nn.softmax( batched_logits[key][0][idx] , name=key + "_softmax")
         
         return output
 
@@ -118,3 +109,42 @@ class GptPredictor(BasePredictor):
         for column_name in data_definition.context_columns:
             element[column_name] = [0]
         return element
+
+class GptPredictor(GptPredictorBase):
+    def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
+        super().__init__(data_definition, model)
+
+        # self._predict_tf CANNOT be decorated with tf.function, because inputs can have 
+        # different shapes (dict with keys specified by self.data_definition, with different sequence lengths). If you decorate it with @tf.function, 
+        # a different graph will be generated for each different sequence length feeded to the funcion. 
+        # So, declare the AutoGraph here, with the right signature:
+        signature = {}
+        for column_name in self.all_column_names:
+            signature[column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32, name=column_name)
+        self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
+
+class GptPredictorLite(GptPredictorBase):
+
+    def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
+        super().__init__(data_definition, model)
+
+        # Signature for TF.lite (it seems not to support very well dynamic lengths)
+        # See https://stackoverflow.com/questions/55701663/input-images-with-dynamic-dimensions-in-tensorflow-lite
+        # So, have a fixed shape input, with a "padding" value of -1
+        # TODO: This is WRONG: Context sequences can have a extra position, shape should be [data_definition.sequence_length+1]
+        signature = {}
+        for column_name in self.all_column_names:
+            signature[column_name] = tf.TensorSpec(shape=[data_definition.sequence_length], dtype=tf.int32, name=column_name)
+        self.predict_tflite_function = tf.function(func=self._predict_tflite, input_signature=[signature])
+
+    def _predict_tflite(self, input:dict) -> dict:
+        # Remove padding value (-1)
+        processed_input = {}
+        for key in input:
+            input_component = input[key]
+            mask = tf.not_equal(input_component, -1)
+            input_component = tf.boolean_mask(input_component, mask)
+            processed_input[key] = input_component
+        
+        # Do real preprocessing/prediction
+        return self._predict_tf(processed_input)

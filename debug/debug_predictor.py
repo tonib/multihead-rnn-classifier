@@ -29,7 +29,11 @@ def debug_gpt_preprocessing():
         debug_preprocessing( input )
 
 def pretty_prediction(prediction, data_definition):
-    for col_name in prediction:
+
+    keys = list(prediction.keys())
+    keys.sort()
+
+    for col_name in keys:
         # Get top predictions:
         probabilities = prediction[col_name]["probabilities"]
         #print(probabilities)

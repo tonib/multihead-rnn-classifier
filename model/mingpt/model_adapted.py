@@ -210,7 +210,7 @@ class GPT(tf.keras.Model):
         self.heads = {}
         for column_name in data_definition.output_columns:
             column_info: ColumnInfo = data_definition.column_definitions[column_name]
-            self.heads[column_name] = tf.keras.layers.Dense( len(column_info.labels), use_bias=False,
+            self.heads[column_name] = tf.keras.layers.Dense( len(column_info.labels), use_bias=False, name=column_name + "_logits",
                                                              kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02) )
 
         self.causal_mask = self.create_causal_mask(data_definition.sequence_length)
