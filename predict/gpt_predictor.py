@@ -131,10 +131,12 @@ class GptPredictorLite(GptPredictorBase):
         # Signature for TF.lite (it seems not to support very well dynamic lengths)
         # See https://stackoverflow.com/questions/55701663/input-images-with-dynamic-dimensions-in-tensorflow-lite
         # So, have a fixed shape input, with a "padding" value of -1
-        # TODO: This is WRONG: Context sequences can have a extra position, shape should be [data_definition.sequence_length+1]
         signature = {}
-        for column_name in self.all_column_names:
+        for column_name in self.data_definition.sequence_columns:
             signature[column_name] = tf.TensorSpec(shape=[data_definition.sequence_length], dtype=tf.int32, name=column_name)
+        for column_name in self.data_definition.context_columns:
+            # Context columns can have a extra position, for token to predict
+            signature[column_name] = tf.TensorSpec(shape=[data_definition.sequence_length+1], dtype=tf.int32, name=column_name)
         self.predict_tflite_function = tf.function(func=self._predict_tflite, input_signature=[signature])
 
     def _predict_tflite(self, input:dict) -> dict:

@@ -37,7 +37,8 @@ def test_empty_prediction():
 def test_random():
     for _ in range(10):
         input = {}
-        seq_len = random.randint(0, model_definition.data_definition.sequence_length - 1)
+        seq_len = random.randint(0, model_definition.data_definition.sequence_length)
+        #seq_len = model_definition.data_definition.sequence_length
 
         for col_name in model_definition.data_definition.sequence_columns:
             col_definition = model_definition.data_definition.column_definitions[col_name]
