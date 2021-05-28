@@ -4,23 +4,12 @@ from model.masked_one_hot_encoding import MaskedOneHotEncoding
 from predict.base_predictory import BasePredictor
 import tensorflow as tf
 
-class RnnPredictor(BasePredictor):
+class RnnPredictorBase(BasePredictor):
 
     def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
         super().__init__(data_definition, model)
 
         # self._load_model({'MaskedOneHotEncoding': MaskedOneHotEncoding}, model)
-
-        # self._predict_tf CANNOT be decorated with tf.function, because inputs can have 
-        # different shapes (dict with keys specified by self.data_definition, with different sequence lengths). If you decorate it with @tf.function, 
-        # a different graph will be generated for each different sequence length feeded to the funcion. 
-        # So, declare the AutoGraph here, with the right signature:
-        signature = {}
-        for seq_column_name in self.data_definition.sequence_columns:
-            signature[seq_column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32, name=seq_column_name)
-        for cxt_column_name in self.data_definition.context_columns:
-            signature[cxt_column_name] = tf.TensorSpec(shape=(), dtype=tf.int32, name=cxt_column_name)
-        self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
     def _preprocess_input(self, input: dict):
         postprocessed = {}
@@ -74,3 +63,48 @@ class RnnPredictor(BasePredictor):
         for column_name in data_definition.context_columns:
             element[column_name] = 0
         return element
+
+
+class RnnPredictor(RnnPredictorBase):
+    """ Tensorflow RNN predictor """
+
+    def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
+        super().__init__(data_definition, model)
+
+        # self._predict_tf CANNOT be decorated with tf.function, because inputs can have 
+        # different shapes (dict with keys specified by self.data_definition, with different sequence lengths). If you decorate it with @tf.function, 
+        # a different graph will be generated for each different sequence length feeded to the funcion. 
+        # So, declare the AutoGraph here, with the right signature:
+        signature = {}
+        for seq_column_name in self.data_definition.sequence_columns:
+            signature[seq_column_name] = tf.TensorSpec(shape=[None], dtype=tf.int32, name=seq_column_name)
+        for cxt_column_name in self.data_definition.context_columns:
+            signature[cxt_column_name] = tf.TensorSpec(shape=(), dtype=tf.int32, name=cxt_column_name)
+        self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
+
+class RnnPredictorLite(RnnPredictorBase):
+    """ Tensorflow lite RNN predictor """
+
+    def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
+        super().__init__(data_definition, model)
+
+        # Signature for TF.lite (it seems not to support very well dynamic lengths)
+        # See https://stackoverflow.com/questions/55701663/input-images-with-dynamic-dimensions-in-tensorflow-lite
+        # So, have a fixed shape input, with a "padding" value of -1
+        signature = {}
+        for seq_column_name in self.data_definition.sequence_columns:
+            signature[seq_column_name] = tf.TensorSpec(shape=[data_definition.sequence_length], dtype=tf.int32, name=seq_column_name)
+        for cxt_column_name in self.data_definition.context_columns:
+            signature[cxt_column_name] = tf.TensorSpec(shape=(), dtype=tf.int32, name=cxt_column_name)
+        self.predict_tflite_function = tf.function(func=self._predict_tflite, input_signature=[signature])
+
+    def _predict_tflite(self, input:dict) -> dict:
+        # Remove padding value (-1)
+        processed_input = {}
+        for key in self.data_definition.sequence_columns:
+            processed_input[key] = BasePredictor.remove_tflite_padding( input[key] )
+        for key in self.data_definition.context_columns:
+            processed_input[key] = input[key]
+
+        # Do real preprocessing/prediction
+        return self._predict_tf(processed_input)

@@ -11,9 +11,9 @@ data_definition = model_definition.data_definition
 exported_model_dir = data_definition.get_data_dir_path( ModelDataDefinition.EXPORTED_MODEL_DIR )
 
 # Currently, only GTP is supported with tf lite
-if model_definition.data_definition.model_type != "gpt":
-    raise Exception("TF Lite currently only supported for GPT model")
-predict_module = GptPredictorLite(data_definition, model)
+if model_definition.data_definition.model_type != "gpt" and model_definition.data_definition.model_type != "rnn":
+    raise Exception("TF Lite currently only supported for GPT and RNN model")
+predict_module = model_definition.tflite_predictor_class(data_definition, model)
 
 # Convert the predict function, with preprocessing
 converter = tf.lite.TFLiteConverter.from_concrete_functions([predict_module.predict_tflite_function.get_concrete_function()])

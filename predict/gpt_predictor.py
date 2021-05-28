@@ -6,6 +6,7 @@ from model_data_definition import ModelDataDefinition
 import tensorflow as tf
 
 class GptPredictorBase(BasePredictor):
+    """ Base class for GPT predictors (TF and TF lite) """
 
     def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
         super().__init__(data_definition, model)
@@ -111,6 +112,8 @@ class GptPredictorBase(BasePredictor):
         return element
 
 class GptPredictor(GptPredictorBase):
+    """ Tensorflow GPT predictor """
+
     def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
         super().__init__(data_definition, model)
 
@@ -124,6 +127,7 @@ class GptPredictor(GptPredictorBase):
         self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
 class GptPredictorLite(GptPredictorBase):
+    """ Tensorflow lite GPT predictor """
 
     def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
         super().__init__(data_definition, model)
@@ -143,10 +147,7 @@ class GptPredictorLite(GptPredictorBase):
         # Remove padding value (-1)
         processed_input = {}
         for key in input:
-            input_component = input[key]
-            mask = tf.not_equal(input_component, -1)
-            input_component = tf.boolean_mask(input_component, mask)
-            processed_input[key] = input_component
+            processed_input[key] = BasePredictor.remove_tflite_padding( input[key] )
         
         # Do real preprocessing/prediction
         return self._predict_tf(processed_input)

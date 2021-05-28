@@ -46,7 +46,12 @@ def test_random():
 
         for col_name in model_definition.data_definition.context_columns:
             col_definition = model_definition.data_definition.column_definitions[col_name]
-            input[col_name] = np.random.randint(0, len(col_definition.labels), seq_len + 1, np.int32)
+            if model_definition.data_definition.model_type == "gpt":
+                # Array of sequence length + 1 (item to predict)
+                input[col_name] = np.random.randint(0, len(col_definition.labels), seq_len + 1, np.int32)
+            else:
+                # Scalar
+                input[col_name] = np.random.randint(0, len(col_definition.labels), (), np.int32)
 
         prediction = predictor_lite.predict( input )
         pretty_prediction(prediction, model_definition.data_definition)

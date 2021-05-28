@@ -44,9 +44,12 @@ class PredictorLite:
             input_value = input[input_spec["name"]]
             input_value = np.array(input_value, dtype=np.int32)
 
-            pad_size = input_spec["shape"][0] - input_value.shape[0]
-            if pad_size > 0:
-                input_value = np.pad( input_value , (0, pad_size), 'constant' , constant_values=(-1) )
+            input_shape = input_spec["shape"]
+            # Pad only if input is not scalar
+            if len(input_shape) > 0:
+                pad_size = input_shape[0] - input_value.shape[0]
+                if pad_size > 0:
+                    input_value = np.pad( input_value , (0, pad_size), 'constant' , constant_values=(-1) )
             
             self.interpreter.set_tensor(input_spec["index"], input_value)
 
