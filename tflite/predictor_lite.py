@@ -6,7 +6,7 @@ import tensorflow as tf
 import json
 import numpy as np
 
-# OK: In tf 2.3 / 2.4, named input/outputs are pretty broken:
+# OK: In tf 2.3 / 2.4 / 2.5, named input/outputs are pretty broken:
 # - If you convert a TF module with TFLiteConverter.from_saved_model, you get wrong output names: Output names are *tensor* name
 #   (ex. StatefulPartionedCall:0), not the real *output* name
 # - If you convert a TF module with TFLiteConverter.from_saved_model, input names are weird ("serving_default_REALINPUTNAME")
@@ -14,6 +14,8 @@ import numpy as np
 # - If you convert with TFLiteConverter.from_concrete_functions, you get wrong output names: Names are Identity, Identity_1 (beautiful)
 # It seems these issues are fixed in 2.5 (not published yet): https://github.com/tensorflow/tensorflow/issues/32180#issuecomment-772140542
 # Output names seems can be fixed because they seem to be sorted by name: So, if you sort the real names, you can map them by position
+
+# EDIT tf 2.5: TFLiteConverter.from_concrete_functions output names are still broken, I have not tested TFLiteConverter.from_saved_model
 
 # Here we use a model converted with TFLiteConverter.from_concrete_functions
 
@@ -23,8 +25,8 @@ class PredictorLite:
     def __init__(self, model_definition: ModelDefinition):
         self.model_definition = model_definition
 
-        # Load TF Lite model. TODO: Create a constant for 'model/model.tflite'
-        path = model_definition.data_definition.get_data_dir_path( 'model/model.tflite' )
+        # Load TF Lite model
+        path = PredictorLite.get_tflite_model_path( model_definition.data_definition )
         print("Loading prediction module from " + path)
         self.interpreter = tf.lite.Interpreter(model_path=path)
         self.interpreter.allocate_tensors()
@@ -36,6 +38,11 @@ class PredictorLite:
         # Output names in TF lite are wrong, but they can be mapped by position. These are the right names order:
         self.real_output_names = list(self.model_definition.data_definition.output_columns)
         self.real_output_names.sort()
+
+    @staticmethod
+    def get_tflite_model_path(data_definition: ModelDataDefinition):
+        """ Returns expected path for TF Lite model file """
+        return data_definition.get_data_dir_path( 'model/model.tflite' )
 
     def predict(self, input: dict) -> dict:
 
@@ -65,9 +72,9 @@ class PredictorLite:
             output[col_name] = { "probabilities": output_values.tolist() }
         return output
 
-    def predict_json(self, input_json: str, debug=False) -> str:
+    def predict_json(self, input_json: str) -> str:
         input = json.loads(input_json)
-        return json.dumps( self.predict(input, debug) )
+        return json.dumps( self.predict(input) )
 
     def get_empty_element(self) :
         """ Input entry with context all zeros """

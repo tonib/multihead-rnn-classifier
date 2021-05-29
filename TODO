@@ -1,6 +1,4 @@
 TODO:
-- Model server: Add support for tf lite
-- Add TF Lite support for rnn, exp models (currently only gpt is supported)
 - GPT Prediction preprocessing: Include BOS only if the sequence is empty ??? PROBABILY NOT
 - Change GPT to Keras functional?
 - Model server: Run an initial prediction before notify the server is ready: First execution takes a lot ot time (seconds)
@@ -13,7 +11,6 @@ TODO:
 - Dataset IS BAD: Context columns object type and part type have no value when token is not trainable...
 - Implement perplexity?
 - Allow to test prediction performance from untrained model
-- Upgrade to tf 2.4: I cannot get it work, CUDA 11 fails..., keep 2.3
 - Remove TF other files (eval.py?)
 - If config is "SequenceColumns":["wordType","keywordIdx"], "ContextColumns":["ctxParmType"], it raises exception:
       File "train.py", line 33, in <module>
