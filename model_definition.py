@@ -14,7 +14,7 @@ from predict.rnn_predictor import RnnPredictor, RnnPredictorLite
 from training.rnn_train_exp import RnnTrainExp
 from dataset.rnn_dataset_exp import RnnDatasetExp
 from model.rnn_model_exp import create_rnn_model_exp
-from predict.rnn_predictor_exp import RnnPredictorExp
+from predict.rnn_predictor_exp import RnnPredictorExp, RnnPredictorExpLite
 
 class ModelDefinition:
     """
@@ -44,7 +44,7 @@ class ModelDefinition:
             self.dataset_class = RnnDatasetExp
             self.create_model_function = create_rnn_model_exp
             self.predictor_class = RnnPredictorExp
-            self.tflite_predictor_class = None # Not implemented yet
+            self.tflite_predictor_class = RnnPredictorExpLite
 
         else:
             raise Exception("Unknown model type " + self.data_definition.model_type)

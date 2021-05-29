@@ -139,7 +139,7 @@ class GptPredictorLite(GptPredictorBase):
         for column_name in self.data_definition.sequence_columns:
             signature[column_name] = tf.TensorSpec(shape=[data_definition.sequence_length], dtype=tf.int32, name=column_name)
         for column_name in self.data_definition.context_columns:
-            # Context columns can have a extra position, for token to predict
+            # Context columns will have a extra position, for token to predict
             signature[column_name] = tf.TensorSpec(shape=[data_definition.sequence_length+1], dtype=tf.int32, name=column_name)
         self.predict_tflite_function = tf.function(func=self._predict_tflite, input_signature=[signature])
 

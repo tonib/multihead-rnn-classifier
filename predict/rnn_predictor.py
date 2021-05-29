@@ -5,6 +5,7 @@ from predict.base_predictory import BasePredictor
 import tensorflow as tf
 
 class RnnPredictorBase(BasePredictor):
+    """ Base class for RNN predictors with context only for token to predict (TF and TF lite) """
 
     def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
         super().__init__(data_definition, model)
@@ -66,7 +67,7 @@ class RnnPredictorBase(BasePredictor):
 
 
 class RnnPredictor(RnnPredictorBase):
-    """ Tensorflow RNN predictor """
+    """ Tensorflow RNN predictor with context only for token to predict """
 
     def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
         super().__init__(data_definition, model)
@@ -83,7 +84,7 @@ class RnnPredictor(RnnPredictorBase):
         self.predict_tf_function = tf.function(func=self._predict_tf, input_signature=[signature])
 
 class RnnPredictorLite(RnnPredictorBase):
-    """ Tensorflow lite RNN predictor """
+    """ Tensorflow lite RNN predictor with context only for token to predict """
 
     def __init__(self, data_definition: ModelDataDefinition, model: tf.keras.Model):
         super().__init__(data_definition, model)
