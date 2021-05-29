@@ -1,5 +1,4 @@
 TODO:
-- Test if with tf 2.5 can train RNN with GPU
 - Model server: Add support for tf lite
 - Add TF Lite support for rnn, exp models (currently only gpt is supported)
 - GPT Prediction preprocessing: Include BOS only if the sequence is empty ??? PROBABILY NOT
@@ -80,6 +79,8 @@ Export model and predict / serve:
     saved_model_cli show --dir=data/exportedmodels/1564760074 --tag_set serve --signature_def serving_default
 
 tensorflow_model_server --port=9000 --model_base_path=exportedmodel/1545244360
+
+To fix tf 2.5 issue with libcusolver.so.11 with CUDA 11.2: https://github.com/tensorflow/tensorflow/issues/44777#issuecomment-817303735
 
 START WITH THIS:
 https://stackoverflow.com/questions/46098863/how-to-import-an-saved-tensorflow-model-train-using-tf-estimator-and-predict-on/46139198
