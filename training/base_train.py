@@ -89,7 +89,10 @@ class BaseTrain:
         checkpoint_path_prefix = checkpoints_dir_path + '/checkpoint-'
         checkpoints_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path_prefix + '{epoch:04d}.ckpt',
-            save_weights_only=True, # TODO: Check this (this saves optimizer state?)
+            # TODO: Check this (this saves optimizer state?)
+            # TODO: It seems no, even with save_weights_only=False¯\_(ツ)_/¯: 
+            # TODO: https://github.com/tensorflow/tensorflow/issues/33424#issuecomment-548369529
+            save_weights_only=True,
             verbose=1
         )
         self.callbacks.append( checkpoints_callback )
