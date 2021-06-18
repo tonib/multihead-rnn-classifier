@@ -23,6 +23,6 @@ converter.target_spec.supported_ops = [
 tflite_model = converter.convert()
 
 # Save the model.
-path = data_definition.get_data_dir_path( 'model/model.tflite' )
+path = data_definition.get_data_dir_path( ModelDataDefinition.TFLITE_PATH )
 with open( path, 'wb') as f:
     f.write( tflite_model )

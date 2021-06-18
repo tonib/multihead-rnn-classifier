@@ -22,6 +22,9 @@ class ModelDataDefinition:
     # Tensorboard logs
     TBOARD_LOGS_DIR = 'model/tensorboard_logs'
 
+    # Tensorflow Lite model file path
+    TFLITE_PATH = 'model/model.tflite'
+    
     def _load(self):
         """ Load data from data_info.json file """
         self._read_cmd_line_arguments()

@@ -17,7 +17,7 @@ from time import time
 model_definition = ModelDefinition()
 data_definition = model_definition.data_definition
 
-path = data_definition.get_data_dir_path( 'model/model.tflite' )
+path = data_definition.get_data_dir_path( ModelDataDefinition.TFLITE_PATH )
 
 # Load the TFLite model in TFLite Interpreter
 interpreter = tf.lite.Interpreter(model_path=path)

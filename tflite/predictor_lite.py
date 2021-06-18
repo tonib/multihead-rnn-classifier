@@ -42,7 +42,7 @@ class PredictorLite:
     @staticmethod
     def get_tflite_model_path(data_definition: ModelDataDefinition):
         """ Returns expected path for TF Lite model file """
-        return data_definition.get_data_dir_path( 'model/model.tflite' )
+        return data_definition.get_data_dir_path( ModelDataDefinition.TFLITE_PATH )
 
     def predict(self, input: dict) -> dict:
 

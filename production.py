@@ -29,6 +29,13 @@ dst = os.path.join( data_definition.production_dir , ModelDataDefinition.EXPORTE
 print("Copying " + src + " to " + dst)
 shutil.copytree(src, dst)
 
+# Copy TF Lite model if it exists
+tf_lite_model = data_definition.get_data_dir_path( ModelDataDefinition.TFLITE_PATH )
+if os.path.isfile(tf_lite_model):
+    dst = os.path.join( data_definition.production_dir , ModelDataDefinition.TFLITE_PATH )
+    print("Copying " + tf_lite_model + " to " + dst )
+    shutil.copyfile(tf_lite_model, dst)
+
 # Copy tensorboard 
 src = data_definition.get_data_dir_path( ModelDataDefinition.TBOARD_LOGS_DIR )
 dst = os.path.join( data_definition.production_dir , ModelDataDefinition.TBOARD_LOGS_DIR )
