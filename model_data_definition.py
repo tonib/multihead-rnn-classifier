@@ -38,8 +38,6 @@ class ModelDataDefinition:
 
             # TODO: Remove unused parameters
             # Read settings
-            self.max_train_seconds = int( ModelDataDefinition._read_setting( json_metadata , 'MaxTrainSeconds' , '0' ) )
-            self.min_loss_percentage = float( ModelDataDefinition._read_setting( json_metadata , 'MinLossPercentage' , '0' ) )
             self.percentage_evaluation = float( ModelDataDefinition._read_setting( json_metadata , 'PercentageEvaluation' , '15' ) ) / 100.0
             self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
             self.sequence_length = int( ModelDataDefinition._read_setting( json_metadata , 'SequenceLength' , '128' ) )
@@ -188,8 +186,6 @@ class ModelDataDefinition:
             print("Dropout:", self.dropout)
             print("CellType:", self.cell_type)
         print("LearningRate:", self.learning_rate)
-        print("MaxTrainSeconds:", self.max_train_seconds)
-        print("MinLossPercentage:", self.min_loss_percentage)
         print("PercentageEvaluation:", self.percentage_evaluation)
         print("MaxEpochs:", self.max_epochs)
         print("SequenceLength:", self.sequence_length)
