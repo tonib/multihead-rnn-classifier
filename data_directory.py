@@ -35,8 +35,15 @@ class DataDirectory:
         """ Get n_samples random files from this set """
         return DataDirectory( random.sample(self.file_paths, n_samples) )
 
-    def substract(self, to_substract_set: DataDirectory) -> DataDirectory:
-        """ Return the difference between two datasets """
+    def substract(self, to_substract_set: DataDirectory, check_included: bool) -> DataDirectory:
+        """ Return the difference between two datasets 
+            check_included: True if we should check that any to_substract_set file is in this dataset
+        """
+        if check_included:
+            for to_substract in to_substract_set.file_paths:
+                if to_substract not in self.file_paths:
+                    raise Exception(to_substract + "not found in dataset to substract")
+        
         return DataDirectory( [file_path for file_path in self.file_paths if file_path not in to_substract_set.file_paths] )
 
     @staticmethod
@@ -76,7 +83,7 @@ class DataDirectory:
 
         # Substract evaluation dataset from full dataset
         print("Calculate train dataset")
-        train_set = full_set.substract( eval_set )
+        train_set = full_set.substract( eval_set , True )
         if len(eval_set.file_paths) == 0:
             # Dataset too small
             print("Warning: Evaluation dataset was empty: Using train dataset as evaluation dataset")

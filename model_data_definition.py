@@ -36,7 +36,6 @@ class ModelDataDefinition:
             json_text = file.read()
             json_metadata = json.loads(json_text)
 
-            # TODO: Remove unused parameters
             # Read settings
             self.percentage_evaluation = float( ModelDataDefinition._read_setting( json_metadata , 'PercentageEvaluation' , '15' ) ) / 100.0
             self.max_epochs = ModelDataDefinition._read_setting( json_metadata , 'MaxEpochs' , '10' )
