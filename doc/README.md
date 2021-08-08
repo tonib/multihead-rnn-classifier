@@ -26,11 +26,11 @@ We could define three features for a word: Its token type, text and type. So, th
 What features to use is up to you.
 
 ## Token context
-Token context is hat you now about a token BEFORE this token is typed, and can be useful to predict predict the next token.
+Token context is what you now about a token BEFORE this token is typed, and can be useful to predict predict the next token.
 Define a context is optional, so it could be zero or more features.
 
 As example, if we were defining C, and we can get information about previously declared functions, it would be interesting 
-to feed what is the expected parameter type for that function. This will make easier to the model guess what will be typed
+to feed what is the expected parameters types for that function. This will make easier to the model guess what will be typed
 as parameter.
 
 Also, again in C, it would be useful to know if the code is in a .h or a .c file, as predictions would be very different.
@@ -83,7 +83,7 @@ In previous example we have declared "Text" feature:
 ```
 This will not scale, as in the train set there can be thousands of different names for variables and functions. Even more, if somebody
 types a variable name that is not in the list, it cannot be used as input.
-You can use a hash function to the names, or use BPE, or anything else. Hashing is simple and, if the hash range is large, it work
+You can use a hash function to encode the names, or use BPE, or anything else. Hashing is simple and, if the hash range is large, it work
 well in practice. If your hash function returns a number range of 0..3, you should define a label for each value. Example:
 
 ```json
