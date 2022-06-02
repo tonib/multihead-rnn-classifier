@@ -131,66 +131,16 @@ pandas 0.24.2 # pip install pandas
     REM Install pandas
     pip install pandas==0.24.2
 
-* Install Tensorflow 1.14 in Linux with virtualenv
-    # This is required for me in Ubuntu 20 (https://stackoverflow.com/questions/61541281/python-3-7-venv-broken-after-upgrade-to-ubuntu-20-04)
-    # sudo add-apt-repository ppa:deadsnakes/ppa
-    # sudo apt-get update
-    # sudo apt-get install python3.7
-    # sudo apt-get install python3.7-venv
+* Install Tensorflow 2.4.1 in Ubuntu 20.4 with virtualenv (python 3.8)
+    virtualenv --system-site-packages -p python3 ./venv-tf-2.4.1
 
-    # In Ubuntu 20 use: virtualenv --python=/usr/bin/python3.7 ./venv
-    virtualenv --system-site-packages -p python3 ./venv
-
-    source ./venv/bin/activate
+    source ./venv-tf-2.4.1/bin/activate
     pip install --upgrade pip
     pip list
-    # Only for TF 1.14. It show warnings if numpy=1.17.0 is installed
-    pip install numpy==1.16.4
     #pip install --upgrade tensorflow NOT TO THE LATEST VERSION
-    pip install tensorflow==1.14
+    pip install tensorflow==2.4.1
     # Test TF installation
-    python -c "import tensorflow as tf; tf.enable_eager_execution(); print(tf.reduce_sum(tf.random_normal([1000, 1000])))"
-    pip install pandas==0.24.2
-
-* Install TF 1.14 with GPU support in Ubuntu 20.04 with venv
-
-    # Install TF, and pandas
-    sudo apt install python3-dev python3-pip python3-venv
-    python3 -m venv --system-site-packages ./venv
-    source ./venv/bin/activate
-    pip install --upgrade pip
-    pip list
-    # Only for TF 1.14. It show warnings if numpy=1.17.0 is installed
-    pip install numpy==1.16.4
-    pip install tensorflow-gpu==1.14
-    pip install pandas==0.24.2
-
-    # Add NVIDIA package repositories. This is the repository for Ubuntu 18.04, but it works for 20.04 (repo for 20.04 contains only
-    # CUDA v11)
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-repo-ubuntu1804_10.1.243-1_amd64.deb
-    sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
-    sudo dpkg -i cuda-repo-ubuntu1804_10.1.243-1_amd64.deb
-    sudo apt-get update
-    wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
-    sudo apt install ./nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
-    sudo apt-get update
-
-    # Install NVIDIA driver
-    # I KEPT nvidia-driver-440 and it worked
-    # sudo apt-get install --no-install-recommends nvidia-driver-450
-    # Reboot. Check that GPUs are visible using the command: nvidia-smi
-
-    # Install development and runtime libraries (CUDA 10.0)
-    sudo apt-get install -y --no-install-recommends \
-    cuda-10-0 \
-    libcudnn7=7.6.4.38-1+cuda10.0  \
-    libcudnn7-dev=7.6.4.38-1+cuda10.0;
-
-    sudo apt-get install -y --no-install-recommends \
-        libnvinfer6=6.0.1-1+cuda10.0 \
-        libnvinfer-dev=6.0.1-1+cuda10.0 \
-        libnvinfer-plugin6=6.0.1-1+cuda10.0;
-
+    python -c "import tensorflow as tf; print(tf.reduce_sum(tf.random.normal([1000, 1000])))"
 
 * Prediction format:
 Prediction: {'isCollection': {'class_prediction': 0, 'probabilities': [0.9971703886985779, 0.0028295705560594797]}, 'legthBucket': {'class_prediction': 0, 'probabilities': [0.38102802634239197, 0.3096150755882263, 0.013816392980515957, 0.1163591593503952, 0.006184279453009367, 0.0024974108673632145, 0.0019232947379350662, 0.01665205880999565, 0.005016367882490158, 0.0043900893069803715, 0.0362323597073555, 0.004558942746371031, 0.0015884715830907226, 0.029023174196481705, 0.014890970662236214, 0.04388183727860451, 0.008182627148926258, 0.004159428644925356]}, 'decimalsBucket': {'class_prediction': 0, 'probabilities': [0.9940299987792969, 3.4467918794689467e-06, 0.0036471218336373568, 0.0001381940091960132, 5.111771770316409e-0

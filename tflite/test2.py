@@ -62,4 +62,6 @@ def test_random():
 
         print("-----------------------------\n")
 
-test_random()
+# test_random()
+test_lite_performance()
+
