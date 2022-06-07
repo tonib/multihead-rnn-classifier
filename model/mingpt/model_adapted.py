@@ -55,6 +55,17 @@ def gelu(x):
         (math.sqrt(2 / math.pi) * (x + 0.044715 * tf.pow(x, 3)))))
     return x * cdf
 
+def relu_square(x):
+    """
+    RELU square. Faster, and theoretically, It Should Work (Primer: https://arxiv.org/pdf/2109.08668.pdf)
+    Args:
+        x: float Tensor to perform activation.
+    Returns:
+        `x` with the RELU square activation applied.
+    """
+    # relu_result = tf.nn.relu(x)
+    # return relu_result * relu_result
+    return tf.nn.relu(x) ** 2
 
 def get_activation(identifier):
     """Maps a identifier to a Python function, e.g., "relu" => `tf.nn.relu`.
@@ -67,7 +78,10 @@ def get_activation(identifier):
         A Python function corresponding to the activation function.
     """
     if isinstance(identifier, six.string_types):
-        name_to_fn = {"gelu": gelu}
+        name_to_fn = {
+            "gelu": gelu, 
+            "relu_square": relu_square 
+        }
         identifier = str(identifier).lower()
         if identifier in name_to_fn:
             return tf.keras.activations.get(name_to_fn[identifier])
@@ -147,8 +161,15 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         return output
 
 
-def point_wise_feed_forward_network(d_model, dff, resid_pdrop):
-    return tf.keras.Sequential([tf.keras.layers.Dense(dff, activation=get_activation('gelu'),
+def point_wise_feed_forward_network(d_model, dff, resid_pdrop, activation_function_name: str):
+    """
+    Args:
+        activation_function_name: name of the activation function to use on the first layer. See 'get_activation' for available
+                                  function names
+    Returns:
+        The ff network
+    """
+    return tf.keras.Sequential([tf.keras.layers.Dense(dff, activation=get_activation(activation_function_name),
                                                       kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)),
                                 # (batch_size, seq_len, dff)
                                 tf.keras.layers.Dense(d_model),
@@ -156,15 +177,18 @@ def point_wise_feed_forward_network(d_model, dff, resid_pdrop):
                                 tf.keras.layers.Dropout(resid_pdrop)
                                 ])
 
-
 class EncoderLayer(tf.keras.layers.Layer):
 
-    def __init__(self, d_model, num_heads, attn_pdrop, resid_pdrop):
+    def __init__(self, d_model, num_heads, attn_pdrop, resid_pdrop, activation_function_name: str = 'gelu'):
+        """
+        Args:
+        activation_function_name: name of the activation function to use on the first layer. See 'get_activation' for available
+                                  function names
+        """
         super(EncoderLayer, self).__init__()
         self.mha = MultiHeadAttention(d_model, num_heads,
                                       attn_pdrop, resid_pdrop)
-        self.ffn = point_wise_feed_forward_network(
-            d_model, d_model * 4, resid_pdrop)
+        self.ffn = point_wise_feed_forward_network(d_model, d_model * 4, resid_pdrop, activation_function_name)
 
         self.layernorm1 = tf.keras.layers.LayerNormalization(epsilon=1e-5)
         self.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-5)
@@ -199,7 +223,7 @@ class GPT(tf.keras.Model):
         self.drop = tf.keras.layers.Dropout(data_definition.gpt_embedding_dropout)
         # transformer
         self.blocks = [EncoderLayer(self.n_embd, data_definition.gpt_n_heads, data_definition.gpt_attention_dropout, 
-                                    data_definition.gpt_residual_dropout)
+                                    data_definition.gpt_residual_dropout, data_definition.gpt_activation_function)
                        for _ in range(data_definition.gpt_n_layers)]
                 
         # decoder heads

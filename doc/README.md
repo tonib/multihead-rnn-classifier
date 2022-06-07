@@ -213,7 +213,12 @@ Configuration is defined in data_info.json:
   "GptEmbeddingSize":128,
   "GptNHeads":2,
   "GptNLayers":2,
-  "GptResidualDropout":0.1
+  "GptResidualDropout":0.1,
+
+  // Activation function for the ff first layer. It can be "gelu", 
+  // "relu_square" (https://arxiv.org/pdf/2109.08668.pdf), or other keras activation name (not tested)
+  // Default is "gelu"
+  "GptActivationFunction": "gelu"
 }
 ```
 

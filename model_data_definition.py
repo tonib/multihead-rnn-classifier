@@ -60,6 +60,7 @@ class ModelDataDefinition:
             self.gpt_n_layers = int( ModelDataDefinition._read_setting( json_metadata , 'GptNLayers' , '2' ) )
             self.gpt_n_heads = int( ModelDataDefinition._read_setting( json_metadata , 'GptNHeads' , '2' ) )
             self.gpt_embedding_size = int( ModelDataDefinition._read_setting( json_metadata , 'GptEmbeddingSize' , '128' ) )
+            self.gpt_activation_function = ModelDataDefinition._read_setting( json_metadata , 'GptActivationFunction' , 'gelu' )
 
             if self.cache_dataset and self.max_batches_per_epoch > 0:
                 raise Exception("DatasetCache = True and MaxBatchesPerEpoch > 0 cannot be set at same time. DatasetCache = True is for small datasets")
@@ -180,6 +181,7 @@ class ModelDataDefinition:
             print("GptNLayers:", self.gpt_n_layers)
             print("GptNHeads:", self.gpt_n_heads)
             print("GptEmbeddingSize:", self.gpt_embedding_size)
+            print("GptActivationFunction:", self.gpt_activation_function)
         elif self.model_type == "rnn":
             print("NNetworkElements:", self.n_network_elements)
             print("Dropout:", self.dropout)
