@@ -1,3 +1,4 @@
+from pickle import NONE
 import configure_tf_log # Must be FIRST import
 
 from typing import Type
@@ -110,7 +111,13 @@ class BaseTrain:
 
     def other_callbacks(self):
         # Tensorboard callback, each epoch
-        self.callbacks.append( tf.keras.callbacks.TensorBoard(log_dir=self.data_definition.get_data_dir_path( ModelDataDefinition.TBOARD_LOGS_DIR )) )
+        # Switch these to make profiling
+        profile_batch = 0
+        #profile_batch = (500, 520)
+        self.callbacks.append( tf.keras.callbacks.TensorBoard(
+            log_dir=self.data_definition.get_data_dir_path( ModelDataDefinition.TBOARD_LOGS_DIR ),
+            profile_batch = profile_batch
+        ))
 
         if self.data_definition.log_each_batches > 0:
             # Log each x batches, to check peformance

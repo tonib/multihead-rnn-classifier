@@ -210,7 +210,10 @@ Configuration is defined in data_info.json:
   ...
   "GptAttentionDropout":0.1,
   "GptEmbeddingDropout":0.1,
-  "GptEmbeddingSize":128,
+
+  // Model dimension. If the sum of input dimensions does not match this "GptEmbeddingSize" number, an extra Dense layer
+  // will be added to adapt the input length to the expected GPT input length (a kind of embedding)
+  "GptEmbeddingSize":128, 
   "GptNHeads":2,
   "GptNLayers":2,
   "GptResidualDropout":0.1,

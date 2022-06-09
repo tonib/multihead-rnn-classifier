@@ -158,20 +158,26 @@ class ModelDataDefinition:
             all_columns.append( self.trainable_column )
         return set( all_columns )
 
-    def _print_column_summary(self, title: str, column_names: List[str]):
+    def _print_column_summary(self, title: str, column_names: List[str]) -> int:
+        """ Prints a input / output summary and returns the number of dimensions """
         print(title)
+        n_total_dimensions = 0
         for col_name in column_names:
             column = self.column_definitions[ col_name ]
             if column.embeddable_dimension > 0:
                 txt_embedding = ", Embedable (dim = " + str(column.embeddable_dimension) + ")"
+                n_total_dimensions += column.embeddable_dimension
             else:
                 txt_embedding = ""
+                n_total_dimensions += len(column.labels)
             print("   ", column.name, ":", len(column.labels), "labels", txt_embedding )
+        return n_total_dimensions
 
     def print_summary(self):
         """ Print definitions summary """
-        self._print_column_summary("* SEQUENCE COLUMNS:", self.sequence_columns)
-        self._print_column_summary("* CONTEXT COLUMNS:", self.context_columns)
+        n_sequence_dims: int = self._print_column_summary("* SEQUENCE COLUMNS:", self.sequence_columns)
+        n_context_dims: int = self._print_column_summary("* CONTEXT COLUMNS:", self.context_columns)
+        print("N. total input dimensions:", n_sequence_dims + n_context_dims)
         self._print_column_summary("* OUTPUT COLUMNS:", self.output_columns)
         print("ModelType:", self.model_type)
         if self.model_type == "gpt":

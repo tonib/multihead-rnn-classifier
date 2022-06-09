@@ -29,8 +29,9 @@ TODO:
         ValueError: A `Concatenate` layer should be called on a list of at least 2 inputs
 - RNN: Try to make global embedding (concatenating all inputs), instead of an embedding column by column
 - Primer, improve performance (https://arxiv.org/pdf/2109.08668.pdf)
-    - ReLu square
-    - conv for attention
+    - ReLu square (ADDED)
+    - conv for attention (NOT ADDED, IT SEEMS IT WILL SLOW DOWN THE MODEL)
+    - Increase the ff size to X 6 ("increases dramatically the performance on small models")
 
 - Install and use a linter
 - Add documentation about embedding

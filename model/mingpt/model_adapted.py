@@ -259,14 +259,31 @@ class GPT(tf.keras.Model):
     def create_preprocessing_layers(self, data_definition: ModelDataDefinition) -> int:
         # One hot encoding for each word component
         self.preprocess_layers = {}
+        n_total_dimensions = 0
         for column_name in ( data_definition.sequence_columns + data_definition.context_columns ):
             column_info: ColumnInfo = data_definition.column_definitions[column_name]
             n_labels = len(column_info.labels) + TransformerDataset.N_KEYWORD_VALUES
-            self.preprocess_layers[column_name] = MaskedOneHotEncoding(n_labels)
+            if column_info.embeddable_dimension > 0:
+                # Column is embeddable
+                self.preprocess_layers[column_name] = tf.keras.layers.Embedding(
+                                                n_labels,
+                                                column_info.embeddable_dimension,
+                                                embeddings_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),
+                                                name="embedding_" + column_info.name)
+                n_total_dimensions += column_info.embeddable_dimension
+            else:
+                self.preprocess_layers[column_name] = MaskedOneHotEncoding(n_labels, name='one_hot_' + column_info.name)
+                n_total_dimensions += n_labels - 1 # See MaskedOneHotEncoding for explanation of -1
         
-        # A linear combination of components to calculate an "embedding". TODO: Check if there is a better way to do this embedding
-        self.tok_emb = tf.keras.layers.Dense(self.n_embd, use_bias=False, 
-                                             kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02))
+        # TODO: Check if there is a better way to do this embedding
+        # A linear combination of components to calculate an "embedding". Only needed if self.n_embd is different of the total
+        # number of input dimensions
+        print("GPT model, total input dimension:", n_total_dimensions)
+        if n_total_dimensions != self.n_embd:
+            print(f"Input dimension ({n_total_dimensions}) does not match model dimension ({self.n_embd}), adding a Dense layer to adapt it")
+            self.tok_emb = tf.keras.layers.Dense(self.n_embd, use_bias=False, 
+                                                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),
+                                                name="global_embedding")
 
     @tf.function
     def preprocess_inputs(self, inputs: dict):
@@ -276,8 +293,11 @@ class GPT(tf.keras.Model):
             processed_inputs.append( self.preprocess_layers[key]( inputs[key] ) )
         # Combine all inputs as a single tensor. inputs shape was (batch_size, sequence size, size for each component), so axis=2
         word = tf.concat(processed_inputs, axis=2)
-        # Apply embedding
-        return self.tok_emb(word)
+        
+        # Apply embedding, if it was needed
+        if hasattr(self, "tok_emb"):
+            word = self.tok_emb(word)
+        return word
 
     @tf.function
     def call(self, inputs: dict, training=False):
