@@ -1,4 +1,5 @@
 TODO:
+- Upload new compiled versions of tflite to the repository
 - GPT Prediction preprocessing: Include BOS only if the sequence is empty ??? PROBABILY NOT
 - Change GPT to Keras functional?
 - Add check to be sure context columns are not in output (it will not work)
@@ -32,7 +33,8 @@ TODO:
     - ReLu square (ADDED)
     - conv for attention (NOT ADDED, IT SEEMS IT WILL SLOW DOWN THE MODEL)
     - Increase the ff size to X 6 ("increases dramatically the performance on small models")
-
+- Performers, improve performance (https://paperswithcode.com/paper/rethinking-attention-with-performers)
+    - Replace attention?
 - Install and use a linter
 - Add documentation about embedding
 - Remove warning messages...
@@ -47,7 +49,6 @@ TODO:
 - Allow to configure weight decay?
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
 - Configure MKL ???
-- Slow performance in Windows with custom estimator (dropout?)
 
 REMINDERS
 

@@ -108,11 +108,17 @@ class MultiHeadAttention(tf.keras.layers.Layer):
                                         kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),name="key")
         self.wv = tf.keras.layers.Dense(d_model,
                                         kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),name="value")
+
         # regularization
         self.attn_drop = tf.keras.layers.Dropout(rate=attn_pdrop)
         self.resid_drop = tf.keras.layers.Dropout(rate=resid_pdrop)
+
         # output projection
         self.dense = tf.keras.layers.Dense(d_model,name="projection")
+
+        # Attention scale factor constant:
+        dk = d_model / self.num_heads 
+        self.att_scale_factor = 1.0 / math.sqrt(dk)
 
     def split_heads(self, x, batch_size):
         """Split the last dimension into (num_heads, depth).
@@ -127,21 +133,30 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         q = self.wq(x)  # (batch_size, seq_len, d_model)
         k = self.wk(x)  # (batch_size, seq_len, d_model)
         v = self.wv(x)  # (batch_size, seq_len, d_model)
+
         # (batch_size, num_heads, seq_len_q, depth)
         q = self.split_heads(q, batch_size)
         # (batch_size, num_heads, seq_len_k, depth)
         k = self.split_heads(k, batch_size)
         # (batch_size, num_heads, seq_len_v, depth)
         v = self.split_heads(v, batch_size)
+
         # scaled_attention.shape == (batch_size, num_heads, seq_len_q, depth)
         # (..., seq_len_q, seq_len_k)
         matmul_qk = tf.matmul(q, k, transpose_b=True)
+
         # scale matmul_qk
-        dk = tf.cast(tf.shape(k)[-1], tf.float32)
-        scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
+        # tonib: The divisor is always a constant (dk == d_model / num_heads), so this can be optimized
+        # tonib: More, float multiplication usually is faster than division, so, do a multiplication
+        # dk = tf.cast(tf.shape(k)[-1], tf.float32)
+        # scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
+        scaled_attention_logits = matmul_qk * self.att_scale_factor
+
         # add the mask to the scaled tensor.
+        # TODO, performance: mask * -1e9 could be a constant
         if mask is not None:
             scaled_attention_logits += (mask * -1e9)
+
         # softmax is normalized on the last axis (seq_len_k) so that the scores
         # add up to 1.
         attention_weights = tf.nn.softmax(
