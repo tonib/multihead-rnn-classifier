@@ -31,7 +31,7 @@ class LogCallback(tf.keras.callbacks.Callback):
     def on_train_batch_end(self, batch, logs=None):
         # I get warnings "WARNING:tensorflow:Callback method `on_train_batch_end` is slow compared to the batch time 
         # (batch time: 0.0303s vs `on_train_batch_end` time: 0.0637s). Check your callbacks" when running this. 
-        # I think is false. If I remove this method (with any other callback), training timestep changes from 60ms to 59ms...
+        # I think is false. If I remove this method (without any other callback), training timestep changes from 60ms to 59ms...
         self.print_batch(True, batch, logs)
 
     def on_test_batch_end(self, batch, logs=None):

@@ -152,10 +152,11 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         # scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
         scaled_attention_logits = matmul_qk * self.att_scale_factor
 
+        # tonib: Performance: mask is already feeded with 1.0 * -1e9 values, and always feeded:
         # add the mask to the scaled tensor.
-        # TODO, performance: mask * -1e9 could be a constant
-        if mask is not None:
-            scaled_attention_logits += (mask * -1e9)
+        # if mask is not None:
+        #     scaled_attention_logits += (mask * -1e9)
+        scaled_attention_logits += mask
 
         # softmax is normalized on the last axis (seq_len_k) so that the scores
         # add up to 1.
@@ -262,7 +263,11 @@ class GPT(tf.keras.Model):
         """ Returns the causal mask to use in MultiHeadAttention to avoid to feed future timesteps in current timestep """
         # Mask values: 1 == do not feed this position, 0 == feed this position
         # Ex: [[0. 1. 1.], [0. 0. 1.], [0. 0. 0.]]
-        return 1 - tf.linalg.band_part(tf.ones((sequence_length, sequence_length)), -1, 0)
+        mask = 1 - tf.linalg.band_part(tf.ones((sequence_length, sequence_length)), -1, 0)
+
+        # As a performance improvement: Return the mask with its final value (-1e9 = do not feed this position, 0 == feed this position): 
+        mask = mask * -1e9
+        return mask
 
     def get_config(self) -> dict:
         return { "data_definition": self.data_definition.to_dict() }
@@ -338,11 +343,6 @@ class GPT(tf.keras.Model):
                                              axis=0)  # each position maps to a (learnable) vector
         
         x = self.drop(token_embeddings + position_embeddings, training=training)
-
-        # Causal mask: Do not feed future timesteps in current timestep. (1 == do not feed this position, 0 == feed this position)
-        # Ex: [[0. 1. 1.], [0. 0. 1.], [0. 0. 0.]]
-        # TODO: Could this be a constant? 
-        # mask = 1 - tf.linalg.band_part(tf.ones((t, t)), -1, 0)
 
         for i in range(self.n_layer):
             x = self.blocks[i](x, self.causal_mask, training=training)
