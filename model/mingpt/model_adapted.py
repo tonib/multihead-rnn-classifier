@@ -334,12 +334,14 @@ class GPT(tf.keras.Model):
 
         # Learned tokens position embedding. Each position maps to a (learnable) vector
         # At the end, this just expands self.pos_emb one dimension: (sequence_length, self.n_embd) -> (1, sequence_length, self.n_embd)
-        # TODO: slice call is really needed ???. It seems to do nothing
-        position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [self.block_size, self.n_embd]), axis=0)
+        # tonib: slice call is really needed ???. It seems to do nothing
+        #position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [self.block_size, self.n_embd]), axis=0)
+        position_embeddings = tf.expand_dims(self.pos_emb, axis=0)
 
         # Sum position embeddings to input, and dropout. 
-        # Sum is done at each bach element with the same embeddings. position_embeddings shape: (1, sequence_length, self.n_embd)
+        # Sum is done at each bach element, at last dimension, with the same embeddings for each batch. 
         # token_embeddings shape: (batch_size, sequence_length, self.n_embd)
+        # position_embeddings shape: (1, sequence_length, self.n_embd)
         x = self.drop(token_embeddings + position_embeddings, training=training)
 
         # Apply encoder layers

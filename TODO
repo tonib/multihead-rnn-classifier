@@ -49,6 +49,7 @@ TODO:
 - Allow to configure weight decay?
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
 - Configure MKL ???
+- Try sinusoidal position embedding? faster? (https://www.tutorialexample.com/implement-sinusoidal-position-encoding-in-tensorflow-tensorflow-tutorial/)
 
 REMINDERS
 
