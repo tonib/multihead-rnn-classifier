@@ -118,7 +118,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
 
         # Attention scale factor constant:
         dk = d_model / self.num_heads 
-        self.att_scale_factor = 1.0 / math.sqrt(dk)
+        self.att_scale_factor = tf.constant(1.0 / math.sqrt(dk), dtype=tf.float32)
 
     def split_heads(self, x, batch_size):
         """Split the last dimension into (num_heads, depth).
@@ -267,7 +267,7 @@ class GPT(tf.keras.Model):
 
         # As a performance improvement: Return the mask with its final value (-1e9 = do not feed this position, 0 == feed this position): 
         mask = mask * -1e9
-        return mask
+        return tf.constant(mask, dtype=tf.float32)
 
     def get_config(self) -> dict:
         return { "data_definition": self.data_definition.to_dict() }

@@ -5,6 +5,9 @@ SCRIPT TO DEBUG MODEL EXECUTION IN EAGER MODE
 from model_definition import ModelDefinition
 import tensorflow as tf
 
+# Disable @tf.function decorators
+tf.config.run_functions_eagerly(True)
+
 model_definition = ModelDefinition()
 model = model_definition.create_model_function(model_definition.data_definition)
 
