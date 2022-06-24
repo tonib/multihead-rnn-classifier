@@ -332,18 +332,25 @@ class GPT(tf.keras.Model):
         # token_embeddings = self.tok_emb(inputs)
         # tonib: Preprocess inputs to an "embedding"
         token_embeddings = self.preprocess_inputs(inputs)
+
+        # TODO: It will be always the sequence length
         t = tf.shape(token_embeddings)[1]
         #assert t <= self.block_size, "Cannot forward, model block size is exhausted."
 
         tf.debugging.assert_equal( tf.shape(token_embeddings)[1] , self.block_size , "Wrong sequence length" )
         tf.debugging.assert_equal( tf.shape(token_embeddings)[2] , self.n_embd , "Wrong embedding size" )
 
-        # TODO: Check WTF does this
-        position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [t, self.n_embd]),
-                                             axis=0)  # each position maps to a (learnable) vector
-        
+        # Learned tokens position embedding. Each position maps to a (learnable) vector
+        # At the end, this just expands self.pos_emb one dimension: (sequence_length, self.n_embd) -> (1, sequence_length, self.n_embd)
+        # TODO: slice call is really needed ???. It seems to do nothing
+        position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [t, self.n_embd]), axis=0)
+
+        # Sum position embeddings to input, and dropout. 
+        # Sum is done at each bach element with the same embeddings. position_embeddings shape: (1, sequence_length, self.n_embd)
+        # token_embeddings shape: (batch_size, sequence_length, self.n_embd)
         x = self.drop(token_embeddings + position_embeddings, training=training)
 
+        # Apply encoder layers
         for i in range(self.n_layer):
             x = self.blocks[i](x, self.causal_mask, training=training)
         x = self.ln_f(x)

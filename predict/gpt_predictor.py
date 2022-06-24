@@ -55,7 +55,7 @@ class GptPredictorBase(BasePredictor):
         # Increase input values, to reserve values for keywords
         processed_input = {}
         for column_name in self.all_column_names:
-            processed_input[column_name] = input[column_name] + TransformerDataset.N_KEYWORD_VALUES
+            processed_input[column_name] = tf.add( input[column_name], TransformerDataset.N_KEYWORD_VALUES)
 
         # Add BOS if needed
         processed_input = self._add_bos(processed_input)
