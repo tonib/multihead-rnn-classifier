@@ -235,6 +235,7 @@ class GPT(tf.keras.Model):
         self.pos_emb = self.add_weight("position_embeddings",
                                        shape=[data_definition.sequence_length, self.n_embd],
                                        initializer=tf.keras.initializers.Zeros(),
+                                       trainable=True,
                                        dtype=tf.float32)
         self.drop = tf.keras.layers.Dropout(data_definition.gpt_embedding_dropout)
         # transformer
