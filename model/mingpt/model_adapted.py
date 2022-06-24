@@ -232,8 +232,9 @@ class GPT(tf.keras.Model):
         self.n_embd: int = data_definition.gpt_embedding_size
         self.create_preprocessing_layers(data_definition)
 
+        # Position embeddings. The initial 1 in shape is the batch dimension. Same embeddings will be applied to each batch element
         self.pos_emb = self.add_weight("position_embeddings",
-                                       shape=[data_definition.sequence_length, self.n_embd],
+                                       shape=[1, data_definition.sequence_length, self.n_embd],
                                        initializer=tf.keras.initializers.Zeros(),
                                        trainable=True,
                                        dtype=tf.float32)
@@ -332,17 +333,10 @@ class GPT(tf.keras.Model):
         tf.debugging.assert_equal( token_embeddings_shape[1] , self.block_size , "Wrong sequence length" )
         tf.debugging.assert_equal( token_embeddings_shape[2] , self.n_embd , "Wrong embedding size" )
 
-        # Learned tokens position embedding. Each position maps to a (learnable) vector
-        # At the end, this just expands self.pos_emb one dimension: (sequence_length, self.n_embd) -> (1, sequence_length, self.n_embd)
-        # tonib: slice call is really needed ???. It seems to do nothing
-        #position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [self.block_size, self.n_embd]), axis=0)
-        position_embeddings = tf.expand_dims(self.pos_emb, axis=0)
-
-        # Sum position embeddings to input, and dropout. 
-        # Sum is done at each bach element, at last dimension, with the same embeddings for each batch. 
+        # Position embeddings sum is done at each bach element, at last dimension, with the same embeddings for each batch element 
         # token_embeddings shape: (batch_size, sequence_length, self.n_embd)
         # position_embeddings shape: (1, sequence_length, self.n_embd)
-        x = self.drop(token_embeddings + position_embeddings, training=training)
+        x = self.drop(token_embeddings + self.pos_emb, training=training)
 
         # Apply encoder layers
         for i in range(self.n_layer):
