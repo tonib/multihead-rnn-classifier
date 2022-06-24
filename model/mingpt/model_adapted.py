@@ -322,28 +322,19 @@ class GPT(tf.keras.Model):
     @tf.function
     def call(self, inputs: dict, training=False):
 
-        # tonib: I don't understand this. "tf.shape(inputs)[1]" seems to be the sequence length. Should not be ALWAYS equal to self.block_size?
-        # t = tf.shape(inputs)[1]
-        # assert t <= self.block_size, "Cannot forward, model block size is exhausted."
-
-        # forward the GPT model
-        # each index maps to a (learnable) vector
-
-        # token_embeddings = self.tok_emb(inputs)
-        # tonib: Preprocess inputs to an "embedding"
+        # Convert input dictionary to a dense vector with a token "embedding"
+        # { key: vector with shape: (batch_size, seq_len, 0) } -> vector with shape (batch_size, seq_len, d_model)
         token_embeddings = self.preprocess_inputs(inputs)
 
-        # TODO: It will be always the sequence length
-        t = tf.shape(token_embeddings)[1]
-        #assert t <= self.block_size, "Cannot forward, model block size is exhausted."
-
-        tf.debugging.assert_equal( tf.shape(token_embeddings)[1] , self.block_size , "Wrong sequence length" )
-        tf.debugging.assert_equal( tf.shape(token_embeddings)[2] , self.n_embd , "Wrong embedding size" )
+        # Check dimensions are OK
+        token_embeddings_shape = tf.shape(token_embeddings)
+        tf.debugging.assert_equal( token_embeddings_shape[1] , self.block_size , "Wrong sequence length" )
+        tf.debugging.assert_equal( token_embeddings_shape[2] , self.n_embd , "Wrong embedding size" )
 
         # Learned tokens position embedding. Each position maps to a (learnable) vector
         # At the end, this just expands self.pos_emb one dimension: (sequence_length, self.n_embd) -> (1, sequence_length, self.n_embd)
         # TODO: slice call is really needed ???. It seems to do nothing
-        position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [t, self.n_embd]), axis=0)
+        position_embeddings = tf.expand_dims(tf.slice(self.pos_emb, [0, 0], [self.block_size, self.n_embd]), axis=0)
 
         # Sum position embeddings to input, and dropout. 
         # Sum is done at each bach element with the same embeddings. position_embeddings shape: (1, sequence_length, self.n_embd)
