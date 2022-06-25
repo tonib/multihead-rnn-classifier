@@ -64,7 +64,9 @@ class TransformerDataset(CsvFilesDataset):
 
         # Now do the real processing
         # Here we do NOT filter untrainable sequences (TODO: Mask loss for these untrainable?)
-        return windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
+        # Setting num_parallel_calls=tf.data.experimental.AUTOTUNE (or value >= 2) gives me worst GPU utilization. I don't know why
+        #return windows_ds.map(self.process_full_window, num_parallel_calls=tf.data.experimental.AUTOTUNE, deterministic=not self.shuffle)
+        return windows_ds.map(self.process_full_window)
         
     def pad_sequence(self, inputs, pad_value):
         inputs_length = tf.shape(inputs)[0]
