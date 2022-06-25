@@ -258,9 +258,10 @@ class GPT(tf.keras.Model):
         self.causal_mask = self.create_causal_mask(data_definition.sequence_length)
 
         self.output_columns = data_definition.output_columns
-        self.block_size = data_definition.sequence_length
+        self.sequence_length = data_definition.sequence_length
         self.n_layer = data_definition.gpt_n_layers
-        
+
+
     def create_causal_mask(self, sequence_length: int) -> tf.Tensor:
         """ Returns the causal mask to use in MultiHeadAttention to avoid to feed future timesteps in current timestep """
         # Mask values: 1 == do not feed this position, 0 == feed this position
@@ -307,6 +308,7 @@ class GPT(tf.keras.Model):
                                                 kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),
                                                 name="global_embedding")
 
+
     @tf.function
     def preprocess_inputs(self, inputs: dict):
         # Preprocess each input component
@@ -321,6 +323,7 @@ class GPT(tf.keras.Model):
             word = self.tok_emb(word)
         return word
 
+
     @tf.function
     def call(self, inputs: dict, training=False):
 
@@ -330,7 +333,7 @@ class GPT(tf.keras.Model):
 
         # Check dimensions are OK
         token_embeddings_shape = tf.shape(token_embeddings)
-        tf.debugging.assert_equal( token_embeddings_shape[1] , self.block_size , "Wrong sequence length" )
+        tf.debugging.assert_equal( token_embeddings_shape[1] , self.sequence_length , "Wrong sequence length" )
         tf.debugging.assert_equal( token_embeddings_shape[2] , self.n_embd , "Wrong embedding size" )
 
         # Position embeddings sum is done at each bach element, at last dimension, with the same embeddings for each batch element 
