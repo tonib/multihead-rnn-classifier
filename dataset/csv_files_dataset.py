@@ -40,10 +40,10 @@ class CsvFilesDataset:
         self.dataset = self.dataset.interleave(self._load_csv,
             # cycle_length: Number of csv files to process at same time. It seems to train faster as larger is this value
             # changing this from 64 to 128 trains slower
-            cycle_length=1 if not shuffle else 64, 
+            cycle_length=1 if not shuffle else 16,
             # If have tested values tf.data.AUTOTUNE, None and from 32 to 2. 2 gives the best GPU use. No idea why
             # Theoretically tf.data.AUTOTUNE should do it fine, but no
-            num_parallel_calls=None if not shuffle else 2,
+            num_parallel_calls=None if not shuffle else 16,
             deterministic=not shuffle
         )
         

@@ -355,4 +355,5 @@ class GPT(tf.keras.Model):
 
     @staticmethod
     def create_model(data_definition: ModelDataDefinition) -> tf.keras.Model:
+        # I have not found any way to print a right summary. I have tried to fix the shapes, but it did not help
         return GPT(data_definition)

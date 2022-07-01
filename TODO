@@ -50,6 +50,7 @@ TODO:
 - DOCUMENTATION: Add prerequisites (tf, pandas,...)
 - Configure MKL ???
 - Try sinusoidal position embedding? faster? (https://www.tutorialexample.com/implement-sinusoidal-position-encoding-in-tensorflow-tensorflow-tutorial/)
+- Print model shapes right: https://stackoverflow.com/questions/55235212/model-summary-cant-print-output-shape-while-using-subclass-model
 
 REMINDERS
 
