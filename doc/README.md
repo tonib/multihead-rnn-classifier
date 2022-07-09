@@ -291,7 +291,8 @@ Configuration for training is defined (again) in data_info.json:
   "DatasetCache": false,        // If true, dataset will be cached in "model/cache" directory. It will give bette performance
                                 // for small datasets. Cannot be set if "MaxBatchesPerEpoch" is set. Defaults to false
   "MaxEpochs":32,               // Maximum number of epochs to train. Defaults to 10.
-  "CsvCycleLength": 16          // Number of CSV files to feed in parallel to the model train
+  "CsvCycleLength": 16,         // Number of CSV files to feed in parallel to the model train. Default is 16
+  "ShuffleBufferSize": 1024     // Size, in number of sequences, of train shuffle buffer. Default is 1024
 }
 ```
 
