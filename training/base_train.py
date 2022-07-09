@@ -56,11 +56,12 @@ class BaseTrain:
             train_cache_path = os.path.join(cache_dir_path, "train_cache")
             print("Caching train dataset in " + train_cache_path)
             self.train_dataset.dataset = self.train_dataset.dataset.cache(train_cache_path)
-        self.train_dataset.dataset = self.train_dataset.dataset.shuffle(4096).batch( self.data_definition.batch_size )
+        self.train_dataset.dataset = self.train_dataset.dataset.shuffle( self.data_definition.shuffle_buffer_size ).batch( self.data_definition.batch_size )
         if self.data_definition.max_batches_per_epoch > 0:
             print("Train dataset limited to n. batches:", self.data_definition.max_batches_per_epoch)
             self.train_dataset.dataset = self.train_dataset.dataset.take( self.data_definition.max_batches_per_epoch )
-        self.train_dataset.dataset = self.train_dataset.dataset.prefetch(8)
+        # TODO: Check the prefetch(x) value, it could affect performance (prefech entire shuffle buffers size?)
+        self.train_dataset.dataset = self.train_dataset.dataset.prefetch(64)
 
         # Evaluation dataset (shuffle=True -> Important for performance: It will enable files interleave)
         self.eval_dataset = self.dataset_class(self.eval_files, self.data_definition, shuffle=True)

@@ -47,6 +47,7 @@ class ModelDataDefinition:
             self.batch_size = int( ModelDataDefinition._read_setting( json_metadata , 'BatchSize' , '64' ) )
             self.max_batches_per_epoch = int( ModelDataDefinition._read_setting( json_metadata , 'MaxBatchesPerEpoch' , '0' ) )
             self.csv_cycle_length = int( ModelDataDefinition._read_setting( json_metadata , 'CsvCycleLength' , '16' ) )
+            self.shuffle_buffer_size = int( ModelDataDefinition._read_setting( json_metadata , 'ShuffleBufferSize' , '1024' ) )
 
             self.model_type = ModelDataDefinition._read_setting( json_metadata , 'ModelType' , 'gpt' )
 
@@ -202,6 +203,7 @@ class ModelDataDefinition:
         print("DatasetCache:", self.cache_dataset)
         print("BatchSize:", self.batch_size)
         print("CsvCycleLength:", self.csv_cycle_length)
+        print("ShuffleBufferSize:", self.shuffle_buffer_size)
         print("MaxBatchesPerEpoch:", self.max_batches_per_epoch)
         
         
