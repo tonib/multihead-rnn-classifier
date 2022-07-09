@@ -36,15 +36,21 @@ class CsvFilesDataset:
         # Get entire CSV files in pipeline, as a dictionary, key=CSV column name, value=values in that column
         self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
 
+        # N. parallel calls to process each CSV. Set a maximum (16 is ok for my computer). TODO: This could be another app setting
+        if data_definition.csv_cycle_length > 16:
+            n_parallel_calls = 16
+        else:
+            n_parallel_calls = data_definition.csv_cycle_length
+
         # Get a CSV dataset for each CSV file path
         self.dataset = self.dataset.interleave(self._load_csv,
             # cycle_length: Number of csv files to process at same time. It seems to train faster as larger is this value
             # changing this from 64 to 128 trains slower
             #cycle_length=1 if not shuffle else 16,
-            cycle_length=1 if not shuffle else 32,
+            cycle_length=1 if not shuffle else data_definition.csv_cycle_length,
             # If have tested values tf.data.AUTOTUNE, None and from 32 to 2. 2 gives the best GPU use. No idea why
             # Theoretically tf.data.AUTOTUNE should do it fine, but no
-            num_parallel_calls=None if not shuffle else 16,
+            num_parallel_calls=None if not shuffle else n_parallel_calls,
             deterministic=not shuffle
         )
         

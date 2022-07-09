@@ -46,6 +46,7 @@ class ModelDataDefinition:
             self.cache_dataset = bool( ModelDataDefinition._read_setting( json_metadata , 'DatasetCache' , '' ) ) # Yes, bool('') == False
             self.batch_size = int( ModelDataDefinition._read_setting( json_metadata , 'BatchSize' , '64' ) )
             self.max_batches_per_epoch = int( ModelDataDefinition._read_setting( json_metadata , 'MaxBatchesPerEpoch' , '0' ) )
+            self.csv_cycle_length = int( ModelDataDefinition._read_setting( json_metadata , 'CsvCycleLength' , '16' ) )
 
             self.model_type = ModelDataDefinition._read_setting( json_metadata , 'ModelType' , 'gpt' )
 
@@ -200,6 +201,7 @@ class ModelDataDefinition:
         print("LogEachBatches:", self.log_each_batches)
         print("DatasetCache:", self.cache_dataset)
         print("BatchSize:", self.batch_size)
+        print("CsvCycleLength:", self.csv_cycle_length)
         print("MaxBatchesPerEpoch:", self.max_batches_per_epoch)
         
         
