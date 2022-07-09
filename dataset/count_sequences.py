@@ -36,5 +36,8 @@ train_files, eval_files = DataDirectory.get_train_and_validation_sets(data_defin
 
 print(f"N. train files: {len(train_files.file_paths)}, N. eval files: {len(eval_files.file_paths)}")
 
-print(f"N. train sequences: {count_dataset_sequences(train_files)}")
-print(f"N. eval sequences: {count_dataset_sequences(eval_files)}")
+n_train_sequences = count_dataset_sequences(train_files)
+print(f"N. train sequences: {n_train_sequences} = {n_train_sequences / data_definition.batch_size} batches")
+
+n_eval_sequences = count_dataset_sequences(eval_files)
+print(f"N. eval sequences: {n_eval_sequences} = {n_eval_sequences / data_definition.batch_size} batches")
