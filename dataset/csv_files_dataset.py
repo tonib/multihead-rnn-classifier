@@ -37,10 +37,12 @@ class CsvFilesDataset:
         self.dataset = tf.data.Dataset.list_files(csv_files.file_paths, shuffle=shuffle)
 
         # N. parallel calls to process each CSV. Set a maximum (16 is ok for my computer). TODO: This could be another app setting
-        if data_definition.csv_cycle_length > 16:
-            n_parallel_calls = 16
+        if data_definition.csv_parallel_calls == 0:
+            n_parallel_calls = None
+        elif data_definition.csv_parallel_calls < 0:
+            n_parallel_calls = tf.data.AUTOTUNE
         else:
-            n_parallel_calls = data_definition.csv_cycle_length
+            n_parallel_calls = data_definition.csv_parallel_calls
 
         # Get a CSV dataset for each CSV file path
         self.dataset = self.dataset.interleave(self._load_csv,

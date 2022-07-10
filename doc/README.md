@@ -292,6 +292,9 @@ Configuration for training is defined (again) in data_info.json:
                                 // for small datasets. Cannot be set if "MaxBatchesPerEpoch" is set. Defaults to false
   "MaxEpochs":32,               // Maximum number of epochs to train. Defaults to 10.
   "CsvCycleLength": 16,         // Number of CSV files to feed in parallel to the model train. Default is 16
+  "CsvParallelCalls": 16,       // Number of parallel calls to process CSV files. If > 0, it's the n. of calls. If = 0, 
+                                // is None. If < 0, is tf.data.experimental.AUTOTUNE. See 
+                                // https://www.tensorflow.org/api_docs/python/tf/data/Dataset#interleave
   "ShuffleBufferSize": 1024     // Size, in number of sequences, of train shuffle buffer. Default is 1024
 }
 ```
