@@ -19,17 +19,25 @@ class ModelDataDefinition:
     # Exported model directory
     EXPORTED_MODEL_DIR = 'model/exported_model'
 
+    # Tensorboard directory name
+    TBOARD_DIR_NAME = 'tensorboard_logs'
+
     # Tensorboard logs
-    TBOARD_LOGS_DIR = 'model/tensorboard_logs'
+    TBOARD_LOGS_DIR = 'model/' + TBOARD_DIR_NAME
 
     # Tensorflow Lite model file path
     TFLITE_PATH = 'model/model.tflite'
     
-    def _load(self):
+    def _load(self, read_cmd_line: bool = True, file_path: str = None):
         """ Load data from data_info.json file """
-        self._read_cmd_line_arguments()
 
-        metadata_file_path = self.get_config_file_path()
+        if read_cmd_line:
+            self._read_cmd_line_arguments()
+
+        if file_path == None:
+            metadata_file_path = self.get_config_file_path()
+        else:
+            metadata_file_path = file_path
         print("Reading data structure info from " , metadata_file_path)
         
         with open( metadata_file_path , 'r' , encoding='utf-8' )  as file:
@@ -103,10 +111,10 @@ class ModelDataDefinition:
         return os.path.join( self.data_directory , 'data_info.json' )
 
     @staticmethod
-    def from_file() -> ModelDataDefinition:
+    def from_file(read_cmd_line: bool = True, file_path: str = None) -> ModelDataDefinition:
         """ Create instance and load from file """
         data_definition = ModelDataDefinition()
-        data_definition._load()
+        data_definition._load(read_cmd_line, file_path)
         return data_definition
 
     @staticmethod
