@@ -53,7 +53,10 @@ class CsvFilesDataset:
             # If have tested values tf.data.AUTOTUNE, None and from 32 to 2. 2 gives the best GPU use. No idea why
             # Theoretically tf.data.AUTOTUNE should do it fine, but no
             num_parallel_calls=None if not shuffle else n_parallel_calls,
-            deterministic=not shuffle
+            # Setting deterministic to false is really dangerous, as there is no guarantee that cycle_length will be respected
+            # This means you cannot to know hoy many different files will be feeded to the model train. And this affects to the train speed!
+            #deterministic=not shuffle
+            deterministic=True
         )
         
     def _load_csv(self, file_path):

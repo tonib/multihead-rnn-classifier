@@ -1,7 +1,7 @@
 from pickle import NONE
 import configure_tf_log # Must be FIRST import
 
-from typing import Type
+from typing import TYPE_CHECKING, Type
 
 from data_directory import DataDirectory
 from model_data_definition import ModelDataDefinition
@@ -9,6 +9,7 @@ from training.log_callback import LogCallback
 import tensorflow as tf
 import os
 import time
+from dataset.csv_files_dataset import CsvFilesDataset
 
 class BaseTrain:
     """ Base class for training """
@@ -36,6 +37,15 @@ class BaseTrain:
         self.compile()
         self.print_summary()
 
+    @staticmethod
+    def preprocess_train_dataset(data_definition: ModelDataDefinition, train_dataset: CsvFilesDataset):
+        train_dataset.dataset = train_dataset.dataset.shuffle( data_definition.shuffle_buffer_size ).batch( data_definition.batch_size )
+        if data_definition.max_batches_per_epoch > 0:
+            print("Train dataset limited to n. batches:", data_definition.max_batches_per_epoch)
+            train_dataset.dataset = train_dataset.dataset.take( data_definition.max_batches_per_epoch )
+        # TODO: Check the prefetch(x) value, it could affect performance (prefech entire shuffle buffers size?)
+        train_dataset.dataset = train_dataset.dataset.prefetch(64)
+
     def create_datasets(self):
         # Get train and evaluation source file paths
         self.train_files, self.eval_files = DataDirectory.get_train_and_validation_sets(self.data_definition)
@@ -56,12 +66,13 @@ class BaseTrain:
             train_cache_path = os.path.join(cache_dir_path, "train_cache")
             print("Caching train dataset in " + train_cache_path)
             self.train_dataset.dataset = self.train_dataset.dataset.cache(train_cache_path)
-        self.train_dataset.dataset = self.train_dataset.dataset.shuffle( self.data_definition.shuffle_buffer_size ).batch( self.data_definition.batch_size )
-        if self.data_definition.max_batches_per_epoch > 0:
-            print("Train dataset limited to n. batches:", self.data_definition.max_batches_per_epoch)
-            self.train_dataset.dataset = self.train_dataset.dataset.take( self.data_definition.max_batches_per_epoch )
-        # TODO: Check the prefetch(x) value, it could affect performance (prefech entire shuffle buffers size?)
-        self.train_dataset.dataset = self.train_dataset.dataset.prefetch(64)
+        # self.train_dataset.dataset = self.train_dataset.dataset.shuffle( self.data_definition.shuffle_buffer_size ).batch( self.data_definition.batch_size )
+        # if self.data_definition.max_batches_per_epoch > 0:
+        #     print("Train dataset limited to n. batches:", self.data_definition.max_batches_per_epoch)
+        #     self.train_dataset.dataset = self.train_dataset.dataset.take( self.data_definition.max_batches_per_epoch )
+        # # TODO: Check the prefetch(x) value, it could affect performance (prefech entire shuffle buffers size?)
+        # self.train_dataset.dataset = self.train_dataset.dataset.prefetch(64)
+        BaseTrain.preprocess_train_dataset(self.data_definition, self.train_dataset)
 
         # Evaluation dataset (shuffle=True -> Important for performance: It will enable files interleave)
         self.eval_dataset = self.dataset_class(self.eval_files, self.data_definition, shuffle=True)
