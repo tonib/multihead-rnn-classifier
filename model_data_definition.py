@@ -76,11 +76,18 @@ class ModelDataDefinition:
             if self.cache_dataset and self.max_batches_per_epoch > 0:
                 raise Exception("DatasetCache = True and MaxBatchesPerEpoch > 0 cannot be set at same time. DatasetCache = True is for small datasets")
             
+            # Read shared label sets definitions
+            self.shared_labels: Dict[str, ColumnInfo] = {}
+            if 'SharedLabelsDefinitions' in json_metadata:
+                for json_shared_labels in json_metadata['SharedLabelsDefinitions']:
+                    column : ColumnInfo = self._create_column_info_from_json(json_shared_labels)
+                    self.shared_labels[ column.name ] = column
+
             # Read columns definitions
             self.column_definitions: Dict[str, ColumnInfo] = {}
             for json_column in json_metadata['ColumnDefinitions']:
-                embeddable_dimension = int( ModelDataDefinition._read_setting(json_column, 'EmbeddableDimension', '0' ) )
-                self.column_definitions[ json_column['Name'] ] = ColumnInfo( json_column['Name'] , json_column['Labels'] , embeddable_dimension )
+                column : ColumnInfo = self._create_column_info_from_json(json_column)
+                self.column_definitions[ column.name ] = column
 
             # Sequence column names
             self.sequence_columns = json_metadata['SequenceColumns']
@@ -93,9 +100,27 @@ class ModelDataDefinition:
             # Output column names
             self.output_columns = json_metadata['OutputColumns']       
 
+    def _create_column_info_from_json(self, json_column: dict) -> ColumnInfo:
+        """ Create a ColumnInfo from its json definition """
+        # Check if column references a shared labels set
+        shared_labels_name : str = ModelDataDefinition._read_setting(json_column, "SharedLabelsId", None)
+        if shared_labels_name == None:
+            # Column has it's own labels
+            embeddable_dimension = int( ModelDataDefinition._read_setting(json_column, 'EmbeddableDimension', '0' ) )
+            return ColumnInfo( json_column['Name'] , json_column['Labels'] , embeddable_dimension, None )
+        else:
+            # Column references a shared labels set
+            if shared_labels_name not in self.shared_labels:
+                raise f"{shared_labels_name} is not in SharedLabelsDefinitions"
+            shared_labels: ColumnInfo = self.shared_labels[shared_labels_name]
+            return ColumnInfo( json_column['Name'] , shared_labels.labels , shared_labels.embeddable_dimension, 
+                shared_labels_name )
+
+
     def to_dict(self) -> dict:
-        """ Returns dict with instace values, all serializable. Used to serialize Keras model """
+        """ Returns dict with instance values, all serializable. Used to serialize Keras model """
         values_dict = self.__dict__.copy()
+        values_dict["shared_labels"] = { col_name : self.shared_labels[col_name].__dict__ for col_name in self.shared_labels }
         values_dict["column_definitions"] = { col_name : self.column_definitions[col_name].__dict__ for col_name in self.column_definitions }
         return values_dict
 
@@ -104,6 +129,8 @@ class ModelDataDefinition:
         """ Creates a ModelDataDefinition from a values dict. Used to deserialize Keras model """
         data_definition = ModelDataDefinition()
         data_definition.__dict__ = values_dict.copy()
+        data_definition.shared_labels = { col_name : ColumnInfo(**data_definition.shared_labels[col_name])
+                                               for col_name in data_definition.shared_labels }
         data_definition.column_definitions = { col_name : ColumnInfo(**data_definition.column_definitions[col_name])
                                                for col_name in data_definition.column_definitions }
         return data_definition
@@ -181,7 +208,8 @@ class ModelDataDefinition:
             else:
                 txt_embedding = ""
                 n_total_dimensions += len(column.labels)
-            print("   ", column.name, ":", len(column.labels), "labels", txt_embedding )
+            shared_labels_name = f", Shared labels id: {column.shared_labels_name}" if column.shared_labels_name != None else ""
+            print(f"   {column.name}: {len(column.labels)} labels {txt_embedding} {shared_labels_name}" )
         return n_total_dimensions
 
     def print_summary(self):
