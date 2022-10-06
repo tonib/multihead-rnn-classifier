@@ -75,6 +75,38 @@ A feature can be only in "ColumnDefinitions" or "ContextColumns", not in both (i
 "OutputColumns" if the list of features that will predict the model for the next word. There can be more than one, and a feature can be in 
 "SequenceColumns" and "OutputColumns" at same time. 
 
+## Shared labels sets
+
+If multiple columns have the same labels, they can be defined once using the "SharedLabelsDefinitions" property. Then, on all columns
+that share labels you can reference that labels set using "SharedLabelsId". Example:
+
+```json
+{
+  "SharedLabelsDefinitions":[
+    { "Name":"SharedDataType" , "Labels": ["int, char, float", ...] }
+  ]
+  "ColumnDefinitions":[
+    
+    { "Name":"TokenDataType", "SharedLabelsId": "SharedDataType" },
+    { "Name":"CtxParameterDataType" , "SharedLabelsId": "SharedDataType" },
+    ...
+  ],
+}
+```
+
+## Embeddings
+
+If a column (or a "SharedLabelsDefinitions") is too large, you can define an embedding to a lower dimensionality:
+
+```json
+{
+  "ColumnDefinitions":[
+    
+    { "Name":"TokenType", "Labels": ["A", "huge", "set", "of", "labels"], "EmbeddableDimension": 16 }
+  ],
+}
+```
+
 ## Text features
 
 In previous example we have declared "Text" feature:
