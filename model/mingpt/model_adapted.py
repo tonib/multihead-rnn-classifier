@@ -279,24 +279,49 @@ class GPT(tf.keras.Model):
     def from_config(cfg: dict) -> GPT:
         return GPT( ModelDataDefinition.from_dict( cfg["data_definition"] ) )
 
+
+    def create_preprocess_layer(self, column_info: ColumnInfo) -> tf.keras.layers.Layer:
+        n_labels = len(column_info.labels) + TransformerDataset.N_KEYWORD_VALUES
+        if column_info.embeddable_dimension > 0:
+            # Column is embeddable
+            return tf.keras.layers.Embedding(
+                n_labels,
+                column_info.embeddable_dimension,
+                embeddings_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),
+                name="embedding_" + column_info.name)
+        else:
+            return MaskedOneHotEncoding(n_labels, name='one_hot_' + column_info.name)
+
+
     def create_preprocessing_layers(self, data_definition: ModelDataDefinition) -> int:
-        # One hot encoding for each word component
-        self.preprocess_layers = {}
+        
+        # Create shared preprocessing layers
+        shared_preprocessing_layers : dict[str, tf.keras.layers.Layer] = {}
+        for shared_labels in data_definition.shared_labels.values():
+            shared_preprocessing_layers[shared_labels.name] = self.create_preprocess_layer(shared_labels)
+
+        # Create preprocessing layers for each input
+        self.preprocess_layers : dict[str, tf.keras.layers.Layer] = {}
         n_total_dimensions = 0
         for column_name in ( data_definition.sequence_columns + data_definition.context_columns ):
             column_info: ColumnInfo = data_definition.column_definitions[column_name]
-            n_labels = len(column_info.labels) + TransformerDataset.N_KEYWORD_VALUES
-            if column_info.embeddable_dimension > 0:
-                # Column is embeddable
-                self.preprocess_layers[column_name] = tf.keras.layers.Embedding(
-                                                n_labels,
-                                                column_info.embeddable_dimension,
-                                                embeddings_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),
-                                                name="embedding_" + column_info.name)
-                n_total_dimensions += column_info.embeddable_dimension
+
+            # Get the input encoder
+            if column_info.shared_labels_name != None:
+                # This column uses a shared labels set. All inputs using this shared labels set will use the same encoder:
+                preprocess_input_layer = shared_preprocessing_layers[column_info.shared_labels_name]
             else:
-                self.preprocess_layers[column_name] = MaskedOneHotEncoding(n_labels, name='one_hot_' + column_info.name)
-                n_total_dimensions += n_labels - 1 # See MaskedOneHotEncoding for explanation of -1
+                # Create a custom encoder for this input
+                preprocess_input_layer = self.create_preprocess_layer(column_info)
+            self.preprocess_layers[column_name] = preprocess_input_layer
+
+            # Get the preprocess layer output size
+            if isinstance(preprocess_input_layer, MaskedOneHotEncoding):
+                encoded_output_size = preprocess_input_layer.input_n_labels - 1 # See MaskedOneHotEncoding for explanation of -1
+            else:
+                # Embedding layer
+                encoded_output_size = preprocess_input_layer.output_dim
+            n_total_dimensions += encoded_output_size
         
         # TODO: Check if there is a better way to do this embedding
         # A linear combination of components to calculate an "embedding". Only needed if self.n_embd is different of the total
