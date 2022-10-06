@@ -1,7 +1,6 @@
 TODO:
-- Upload new compiled versions of tflite to the repository
+- Test or remove RNN / RNN exp models... (Now not tested)
 - GPT Prediction preprocessing: Include BOS only if the sequence is empty ??? PROBABILY NOT
-- Change GPT to Keras functional?
 - Add check to be sure context columns are not in output (it will not work)
 - Production:
     - Check if there is a way to use model in C#. If not, check Tensorflow lite?. Memory consumption and setup time is really high with TF2.
